@@ -73,3 +73,10 @@ def square_outline(pcb, corners = [[-1,-1],[-1,1],[1,1],[1,-1]]):
         seg.SetEnd(pcbnew.wxPointMM(corners[(i+1)%4][0]*l, corners[(i+1)%4][1]*l))
         seg.SetLayer(LayerEdgeCuts)
         print("Corner:", seg.GetStart())
+
+def calculate_trace_length(trace):
+    length = 0
+    for i in range(trace.shape[0]-1):
+        dis = trace[i]-trace[i+1]
+        length += np.hypot(dis[0], dis[1])
+    return length

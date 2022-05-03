@@ -4,7 +4,8 @@ Generates the heater tracks required for the PCB heater
 """
 
 """
-cd my_stuff/thermal_satellite/thermal_satellite
+within kicad python terminal in the pcb view 
+cd hestia/hardware/pcb/hestia
 import os, sys
 sys.path.append(os.getcwd())
 import heater_track_gen
@@ -71,9 +72,7 @@ def hilbert_2(path, pos, depth, level, angle, flip=False):
             return new_curve
         else:
             return np.vstack((path,new_curve))
-    
-    if(level == 2):
-        print(angle)
+
     # arg ugly hack with the flip #TODO clean up
     path = hilbert_2(path, new_curve[0], depth+1, level-1, angle+1-2*flip, flip=not flip)
     path = hilbert_2(path, new_curve[1], depth+1, level-1, angle, flip = flip)
@@ -95,6 +94,10 @@ if __name__ == "__main__":
     # simple ploting if run standalone
     import matplotlib.pyplot as plt
     trace = gen_heater_trace(2)
+    length = utils.calculate_trace_length(trace)
+    print(f"trace length = {length:.2f}mm")
+    print("estimated resistance = ??")
+    exit()
     plt.plot(trace[:,0], trace[:,1])
     # trace = gen_heater_trace(2)
     # plt.plot(trace[:,0], trace[:,1])
