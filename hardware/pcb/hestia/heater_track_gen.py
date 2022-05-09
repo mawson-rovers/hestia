@@ -43,26 +43,28 @@ for i in range(4):
                             [np.sin(ang), np.cos(ang)]]
 
 def rotate(angle):
-    """ rotate a path where angle is int 1-3 correspoding to degrees 0-270"""
+    """ rotate a path where angle is int 1-3 correspoding to degrees 0-270 """
     new_curve = np.zeros_like(base_curve)
     for i in range(4):
         new_curve[i] = base_curve[i].dot(rotation_matrix[angle])
     return new_curve
 
 def add_base_curve(loc, angle, size):
-    """a new base hilbert curve as specified angle and size """
+    """ a new base hilbert curve as specified angle and size """
     angle = angle%4
     new_curve = rotate(angle)
     new_curve *= size
     new_curve += loc       
     return new_curve
 
-def hilbert_2(path, pos, depth, level, angle, flip=False):
-    # hilbert curve heater trace
-    # why hilbert no reason just looks like fun also supposedly less fatigue if bent (only a concern for flex) also thought it might be easer to add in holes
-    # https://electronics.stackexchange.com/questions/602319/using-a-pcb-trace-as-a-heater-hilbert-curves
-    # https://www.geeksforgeeks.org/python-hilbert-curve-using-turtle/
-    # https://warehouse-camo.ingress.cmh1.psfhosted.org/10745f1d11eb77724a4ab8721159be851675b7e7/68747470733a2f2f7261772e67697468756275736572636f6e74656e742e636f6d2f67616c7461792f68696c6265727463757276652f6d61696e2f6e325f70332e706e67
+def hilbert_curve(path, pos, depth, level, angle, flip=False):
+    """
+    hilbert curve heater trace
+    why hilbert no reason just looks like fun also supposedly less fatigue if bent (only a concern for flex) also thought it might be easer to add in holes
+    https://electronics.stackexchange.com/questions/602319/using-a-pcb-trace-as-a-heater-hilbert-curves
+    https://www.geeksforgeeks.org/python-hilbert-curve-using-turtle/
+    https://warehouse-camo.ingress.cmh1.psfhosted.org/10745f1d11eb77724a4ab8721159be851675b7e7/68747470733a2f2f7261772e67697468756275736572636f6e74656e742e636f6d2f67616c7461792f68696c6265727463757276652f6d61696e2f6e325f70332e706e67
+    """
 
     new_curve = add_base_curve(pos, angle, 1/(2**depth))
     if(flip):
@@ -72,39 +74,85 @@ def hilbert_2(path, pos, depth, level, angle, flip=False):
             return new_curve
         else:
             return np.vstack((path,new_curve))
+    if(level<1):
+        assert(), f"hilbert level {level} <0"
 
     # arg ugly hack with the flip #TODO clean up
-    path = hilbert_2(path, new_curve[0], depth+1, level-1, angle+1-2*flip, flip=not flip)
-    path = hilbert_2(path, new_curve[1], depth+1, level-1, angle, flip = flip)
-    path = hilbert_2(path, new_curve[2], depth+1, level-1, angle, flip = flip)
-    path = hilbert_2(path, new_curve[3], depth+1, level-1, angle-1-2*flip, flip = not flip)
+    path = hilbert_curve(path, new_curve[0], depth+1, level-1, angle+1-2*flip, flip=not flip)
+    path = hilbert_curve(path, new_curve[1], depth+1, level-1, angle, flip = flip)
+    path = hilbert_curve(path, new_curve[2], depth+1, level-1, angle, flip = flip)
+    path = hilbert_curve(path, new_curve[3], depth+1, level-1, angle-1-2*flip, flip = not flip)
 
     return path
-  
 
-def gen_heater_trace(level, size=10):
-    level = 4
+def hilbert_curve_length(depth, size = 10):
+    """
+    calculate the depth of a given hilbert curve 
+    from https://math.stackexchange.com/questions/2034027/length-of-hilbert-curve-in-3-dimensions
+    """
+    length =  2**depth - (1/(2**depth))
+    return length*size
+
+def gen_heater_trace(center=[0,0], size=10, hilbert_depth=4):
+    """ generate heater trace """
     path = None
-    pos = np.array([0,0])
-    path = hilbert_2(path, pos, 1, level, 3, flip=False)
+    pos = np.array(center)
+    path = hilbert_curve(path, pos, 1, hilbert_depth, 3, flip=False)
     path*=size
     return path
 
+def resistance_per_mm(width, copper_weight=1, temperature=25):
+    """
+    calcualte track resistance
+    https://www.allaboutcircuits.com/tools/trace-resistance-calculator/
+    param:
+    width in mm
+    copper weight in oz/ft
+    """
+    height = 0.0347*copper_weight # convert from oz/ft to mm height
+    ρcopper  =  1.7e-5 #ohm/mm
+    acopper = 3.9e-3 #ohm/ohm/C
+    R = ρcopper * (1/(width * height)) * (1 + acopper * (temperature-25))
+    return R
+
+def calc_width(length, R):
+    """ given a length and desired resistance calculate needed track length """
+    r_mm_desired = R/length
+    r_mm = resistance_per_mm(1)
+    width_desired = r_mm/r_mm_desired
+    return width_desired
+
+def watts2R(watts=15, V=5):
+    """ given a desired wattage and voltage calculate need resistance """
+    I = watts/V
+    #V=IR
+    R = V/I
+    return R
+
 if __name__ == "__main__":
-    # simple ploting if run standalone
-    import matplotlib.pyplot as plt
-    trace = gen_heater_trace(2)
-    length = utils.calculate_trace_length(trace)
-    print(f"trace length = {length:.2f}mm")
-    print("estimated resistance = ??")
+    # for a given hilber curve calulate the feature size (space witbetween middle of tracks)
+    # take 50% and use a strack widht thern cauclate ideal resitance per deoth
+    # R = resistance_per_mm(1)*1000
+    # desired_R = watts2R()
+    width = calc_width(100, 0.3)
+    print(f"width:{width}")
+    # print(f"resistance:{R}")
     exit()
-    plt.plot(trace[:,0], trace[:,1])
-    # trace = gen_heater_trace(2)
-    # plt.plot(trace[:,0], trace[:,1])
-    # plt.gca().invert_yaxis()
-    plt.gca().set_aspect('equal')
-    plt.grid()
+    # simple ploting if run standalone
+    depths = np.arange(1,10,dtype=int)
+    lengths = np.zeros_like(depths)
+    for i, depth in enumerate(depths):
+        # trace = gen_heater_trace(hilbert_depth=depth)
+        # lengths[i] = utils.calculate_trace_length(trace)
+        lengths[i] = hilbert_curve_length(depth)
+    import matplotlib.pyplot as plt
+    
+    plt.plot(depths, lengths)
+    plt.plot(depths, np.load("tmp_og.npy"))
     plt.show()
+    # print(f"trace length = {length:.2f}mm")
+    # print("estimated resistance = ??")
+    # utils.plot_trace(trace)
 
 else:
     # if not main assume run from kicad and generate traces
@@ -132,11 +180,6 @@ else:
     #         layertable[name]=i
 
     print(layertable)
-
-
-
-    # test_track = np.array([[0,0],[100,100]])
-    # utils.addtrack(pcb, test_track)
 
     trace = gen_heater_trace(3, size=50)
     utils.addtracks(pcb, trace)

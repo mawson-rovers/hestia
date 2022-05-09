@@ -80,3 +80,12 @@ def calculate_trace_length(trace):
         dis = trace[i]-trace[i+1]
         length += np.hypot(dis[0], dis[1])
     return length
+
+
+def plot_trace(trace):
+    import matplotlib.pyplot as plt
+    plt.plot(trace[:,0], trace[:,1])
+    plt.gca().invert_yaxis() # try to look like kicad
+    plt.gca().set_aspect('equal')
+    plt.grid()
+    plt.show()
