@@ -14,8 +14,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
 parts/
 sdist/
 var/
@@ -130,3 +128,8 @@ dmypy.json
 
 # Mac desktop files
 .DS_Store
+
+# KiCAD files
+fp-info-cache
+_autosave-*
+*-backups/
