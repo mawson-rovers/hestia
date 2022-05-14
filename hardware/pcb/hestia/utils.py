@@ -30,7 +30,6 @@ def delete_tracks(pcb, name=None):
         print('---------------------------------------------------------------')
 
         for t in tracks:
-            print(t)
             pcb.Delete(t)
         # segments = pcb.GetSegments() # command dose not exist
         # for seg in segments:
@@ -46,7 +45,6 @@ def np_to_point(pos):
 
 def addtracks(pcb, array, width=0.5, layer=LayerFCu):
     # given an array of keypoints lay track between them
-    print(array)
     len = array.shape[0]-1
     for i in range(len):
         vec = array[i:i+2] # extract the vector between to keypoints

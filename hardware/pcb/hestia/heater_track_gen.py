@@ -5,7 +5,7 @@ Generates the heater tracks required for the PCB heater
 
 """
 within kicad python terminal in the pcb view 
-cd hestia/hardware/pcb/hestia
+cd my_stuff/hestia/hardware/pcb/hestia
 import os, sys
 sys.path.append(os.getcwd())
 import heater_track_gen
@@ -93,12 +93,13 @@ def hilbert_curve_length(depth, size = 10):
     length =  2**depth - (1/(2**depth))
     return length*size
 
-def gen_heater_trace(center=[0,0], size=10, hilbert_depth=4):
+def gen_heater_trace(hilbert_depth=4, size=10, center=[0,0]):
     """ generate heater trace """
     path = None
-    pos = np.array(center)
+    pos = np.array([0,0])
     path = hilbert_curve(path, pos, 1, hilbert_depth, 3, flip=False)
     path*=size
+    path += center
     return path
 
 def resistance_per_mm(width, copper_weight=1, temperature=25):
@@ -122,7 +123,7 @@ def calc_width(length, R):
     width_desired = r_mm/r_mm_desired
     return width_desired
 
-def watts2R(watts=15, V=5):
+def watts2R(watts, V=5):
     """ given a desired wattage and voltage calculate need resistance """
     I = watts/V
     #V=IR
@@ -133,9 +134,12 @@ if __name__ == "__main__":
     # for a given hilber curve calulate the feature size (space witbetween middle of tracks)
     # take 50% and use a strack widht thern cauclate ideal resitance per deoth
     # R = resistance_per_mm(1)*1000
-    # desired_R = watts2R()
-    width = calc_width(100, 0.3)
-    print(f"width:{width}")
+    desired_R = watts2R(15)
+    print(f"desired R:{desired_R:.3f}")
+    length = hilbert_curve_length(5, size=50)
+    print(f"length:{length:.3f}")
+    width = calc_width(length, desired_R)
+    print(f"width:{width:.5f}\tminmum:0.127mm")
     # print(f"resistance:{R}")
     exit()
     # simple ploting if run standalone
@@ -178,11 +182,22 @@ else:
     #     name = pcb.GetLayerName(i)
     #     if name != "BAD INDEX!":
     #         layertable[name]=i
-
-    print(layertable)
-
-    trace = gen_heater_trace(3, size=50)
-    utils.addtracks(pcb, trace)
+    #print(layertable)
+    
+    center = np.asarray([90.17,-95.885])/2 # board dimensions /2
+    center += np.asarray([101.6, 157]) # reference offset
+    center += np.asarray([0,5]) #shift down away from connector
+    width = 0.47
+    V = 5
+    print(center)
+    trace = gen_heater_trace(hilbert_depth=5, size=50, center=center)#, center=center)
+    length = utils.calculate_trace_length(trace)
+    R_mm =resistance_per_mm(width)
+    R = R_mm*length
+    I = (V/R)
+    W = I*V
+    print(f"Watts at 5V:{W:.2f}\tResistance:{R:.4f}ohms\tlength:{length:.2f}:mm")
+    utils.addtracks(pcb, trace, width=width)
 
 
     # pcb.Save(f'heater_block_V00_{i}_{d:.1f}mm.kicad_pcb')
