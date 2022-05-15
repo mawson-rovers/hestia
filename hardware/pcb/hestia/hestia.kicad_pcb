@@ -1365,7 +1365,7 @@
 
   (footprint "Hestia:ESQ-126-39-G-D" (layer "F.Cu")
     (tedit 0) (tstamp 612f789f-ea56-44b4-bd18-3895225facab)
-    (at 147.33 68.85)
+    (at 147.32 68.73)
     (property "Sheetfile" "hestia.kicad_sch")
     (property "Sheetname" "")
     (path "/a90ea4ee-84d5-43ab-b229-d1b1cc2731af")
@@ -4363,7 +4363,7 @@
 
   (footprint "Hestia:ESQ-126-39-G-D" (layer "F.Cu")
     (tedit 0) (tstamp ef1b0f59-fd1f-4aec-9628-3fcdefda43b4)
-    (at 147.33 74.18)
+    (at 147.32 73.81)
     (property "Sheetfile" "hestia.kicad_sch")
     (property "Sheetname" "")
     (path "/ce738b1e-8f8b-4ead-9195-642a9471aea6")
