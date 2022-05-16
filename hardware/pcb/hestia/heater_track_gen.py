@@ -136,7 +136,7 @@ if __name__ == "__main__":
     # R = resistance_per_mm(1)*1000
     desired_R = watts2R(15)
     print(f"desired R:{desired_R:.3f}")
-    length = hilbert_curve_length(5, size=50)
+    length = hilbert_curve_length(5, size=30)
     print(f"length:{length:.3f}")
     width = calc_width(length, desired_R)
     print(f"width:{width:.5f}\tminmum:0.127mm")
@@ -187,10 +187,10 @@ else:
     center = np.asarray([90.17,-95.885])/2 # board dimensions /2
     center += np.asarray([101.6, 157]) # reference offset
     center += np.asarray([0,5]) #shift down away from connector
-    width = 0.47
+    width = 0.28
     V = 5
     print(center)
-    trace = gen_heater_trace(hilbert_depth=5, size=50, center=center)#, center=center)
+    trace = gen_heater_trace(hilbert_depth=5, size=30, center=center)#, center=center)
     length = utils.calculate_trace_length(trace)
     R_mm =resistance_per_mm(width)
     R = R_mm*length
