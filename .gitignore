@@ -133,3 +133,5 @@ dmypy.json
 fp-info-cache
 _autosave-*
 *-backups/
+*.kicad_prl
+
