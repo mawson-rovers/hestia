@@ -1,18 +1,22 @@
-name: "Variants demo using --quick-start"
+name: "Kibot PCB build"
 
 # Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch
+# events but only for the main branch
 on:
   push:
     paths:
-      - '*.sch'
+      - '*.kicad_sch'
       - '*.kicad_pcb'
-      - '.github/workflows/kibot_quick_start.yml'
+      - '.github/workflows/kibot*'
+      - '*.kibot.yml'
+      - 'scripts/kibot*'
   pull_request:
     paths:
-      - '*.sch'
+      - '*.kicad_sch'
       - '*.kicad_pcb'
-      - '.github/workflows/kibot_quick_start.yml'
+      - '.github/workflows/kibot*'
+      - '*.kibot.yml'
+      - 'scripts/kibot*'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -23,9 +27,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Quick Start
+    - name: kibot-build.sh
       run: |
-        kibot --quick-start
+        ./scripts/kibot-build.sh
 
     - name: Retrieve results
       uses: actions/upload-artifact@v2

@@ -1,0 +1,157 @@
+kibot:
+  version: 1
+
+global:
+  output: '%f-%i%I%v-%d.%x'   # include schematic date in all filenames
+  date_time_format: '%Y%m%d'  # exclude time from %d in file names
+
+outputs:
+# BOM
+- name: bom_csv
+  type: bom
+  dir: pcb/bom
+  options:
+    format: CSV
+    count_smd_tht: true
+
+# Board views (no components)
+- name: board_top
+  type: pcbdraw
+  dir: pcb/board
+  options:
+    format: png
+    style: set-blue-enig
+- name: board_bottom
+  type: pcbdraw
+  dir: pcb/board
+  options:
+    format: png
+    style: set-blue-enig
+    bottom: true
+
+# Renders
+- name: render_top
+  type: render_3d
+  dir: pcb/render
+  output_id: top
+  options:
+    output: '%f-%I-%d.%x'  # don't include '3D_' in name
+    view: top
+    width: 1200
+    height: 1200
+    zoom: 3
+    ray_tracing: true
+- name: render_bottom
+  type: render_3d
+  dir: pcb/render
+  output_id: bottom
+  extends: render_top
+  options:
+    view: bottom
+- name: render_top_angle
+  type: render_3d
+  dir: pcb/render
+  output_id: top-angle
+  options:
+    output: '%f-%I-%d.%x'  # don't include '3D_' in name
+    view: top
+    width: 1600
+    height: 1200
+    rotate_x: 4
+    rotate_z: -2
+    move_y: 1
+    zoom: 3
+    ray_tracing: true
+- name: render_bottom_angle
+  type: render_3d
+  dir: pcb/render
+  output_id: bottom-angle
+  extends: render_top_angle
+  options:
+    view: bottom
+    rotate_x: 3
+    rotate_z: 7
+
+# Schematic
+- name: basic_pdf_sch_print
+  comment: Schematic in PDF format
+  type: pdf_sch_print
+  dir: schematic
+
+# Gerbers & drill files - PCBWay as a demo
+- name: pcbway_gerbers
+  comment: Gerbers compatible with PCBWay
+  type: gerber
+  dir: pcb/manufacturers/pcbway
+  options:
+    exclude_edge_layer: true
+    exclude_pads_from_silkscreen: true
+    plot_sheet_reference: false
+    plot_footprint_refs: true
+    plot_footprint_values: true
+    force_plot_invisible_refs_vals: false
+    tent_vias: true
+    use_protel_extensions: true
+    create_gerber_job_file: false
+    output: '%f.%x'
+    gerber_precision: 4.6
+    use_gerber_x2_attributes: false
+    use_gerber_net_attributes: false
+    disable_aperture_macros: true
+    line_width: 0.1
+    subtract_mask_from_silk: false
+    inner_extension_pattern: .gl%N
+  layers: &id002
+  - layer: F.Cu
+    suffix: F_Cu
+    description: Front copper
+  - layer: B.Cu
+    suffix: B_Cu
+    description: Bottom copper
+  - layer: B.Paste
+    suffix: B_Paste
+    description: Bottom solder paste
+  - layer: F.Paste
+    suffix: F_Paste
+    description: Front solder paste
+  - layer: B.Silkscreen
+    suffix: B_Silkscreen
+    description: Bottom silkscreen (artwork)
+  - layer: F.Silkscreen
+    suffix: F_Silkscreen
+    description: Front silkscreen (artwork)
+  - layer: B.Mask
+    suffix: B_Mask
+    description: Bottom soldermask (negative)
+  - layer: F.Mask
+    suffix: F_Mask
+    description: Front soldermask (negative)
+  - layer: Edge.Cuts
+    suffix: Edge_Cuts
+    description: Board shape
+- name: pcbway_drill
+  comment: Drill files compatible with PCBWay
+  type: excellon
+  dir: pcb/manufacturers/pcbway
+  options:
+    metric_units: false
+    minimal_header: true
+    zeros_format: SUPPRESS_LEADING
+    left_digits: 2
+    right_digits: 4
+    pth_and_npth_single_file: false
+    pth_id: ''
+    npth_id: -NPTH
+    output: '%f%i.drl'
+- name: pcbway
+  comment: ZIP file for PCBWay
+  type: compress
+  dir: pcb/manufacturers
+  options:
+    format: ZIP
+    files:
+    - from_output: pcbway_gerbers
+      dest: /
+    - from_output: pcbway_drill
+      dest: /
+    move_files: false
