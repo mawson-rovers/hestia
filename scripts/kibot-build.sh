@@ -5,7 +5,7 @@
 # - kibot should be on the PATH
 
 PCB_PATH="$PWD/hardware/pcb/hestia"
-BUILD_PATH="$PWD/build"
+BUILD_PATH="$PWD/build/pcb"
 
 set -e  # abort if any command fails
 

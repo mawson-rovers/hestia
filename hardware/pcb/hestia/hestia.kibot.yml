@@ -11,10 +11,15 @@ global:
 #  run_erc: true
 
 outputs:
+# Report
+- name: report
+  comment: PCB summary report
+  type: report
+
 # BOM
 - name: bom_csv
+  comment: Bill of materials (CSV)
   type: bom
-  dir: pcb/bom
   options:
     format: CSV
     count_smd_tht: true
@@ -23,28 +28,95 @@ outputs:
 - name: basic_pdf_sch_print
   comment: Schematic in PDF format
   type: pdf_sch_print
-  dir: pcb/schematic
 
 # Board views (no components)
 - name: board_top
+  comment: Top view of board
   type: pcbdraw
-  dir: pcb/board
+  dir: render
+  output_id: board-top
   options:
+    output: '%f-%I-%d.%x'  # don't duplicate top in the name
     format: png
     style: set-blue-enig
 - name: board_bottom
+  comment: Bottom view of board
   type: pcbdraw
-  dir: pcb/board
+  dir: render
+  output_id: board-bottom
+  extends: board_top
   options:
-    format: png
-    style: set-blue-enig
     bottom: true
+
+# PDF summary file
+- name: pcb_print_pdf
+  comment: PCB PDF version
+  type: pcb_print
+  options:
+    format: PDF
+    pages:
+    - sheet: Front copper
+      layers:
+      - layer: F.Cu
+      - layer: F.Mask
+        color: '#14332440'
+      - layer: F.Paste
+      - layer: F.Silkscreen
+      - layer: Edge.Cuts
+      - layer: User.Comments
+      - layer: User.2
+    - sheet: Bottom copper
+      mirror: true
+      layers:
+      - layer: B.Cu
+      - layer: B.Mask
+        color: '#14332440'
+      - layer: B.Paste
+      - layer: B.Silkscreen
+      - layer: Edge.Cuts
+      - layer: User.Comments
+      - layer: User.2
+    - sheet: Bottom courtyard area
+      mirror: true
+      layers:
+      - layer: B.Courtyard
+      - layer: Edge.Cuts
+      - layer: User.Comments
+      - layer: User.2
+    - sheet: Front courtyard area
+      layers:
+      - layer: F.Courtyard
+      - layer: Edge.Cuts
+      - layer: User.Comments
+      - layer: User.2
+    - sheet: Bottom documentation
+      mirror: true
+      layers:
+      - layer: B.Fab
+      - layer: Edge.Cuts
+      - layer: User.Comments
+      - layer: User.2
+    - sheet: Front documentation
+      layers:
+      - layer: F.Fab
+      - layer: Edge.Cuts
+      - layer: User.Comments
+      - layer: User.2
+
+
+# STEP file
+- name: step
+  comment: 3D model in STEP format
+  type: step
+  dir: render
+  run_by_default: false  # output is too big to include by default (>10 MB)
 
 # Renders
 - name: render_top
+  comment: Top render
   type: render_3d
-  dir: pcb/render
-  output_id: top
+  dir: render
+  output_id: render-top
   options:
     output: '%f-%I-%d.%x'  # don't include '3D_' in name
     view: top
@@ -53,16 +125,18 @@ outputs:
     zoom: 3
     ray_tracing: true
 - name: render_bottom
+  comment: Bottom render
   type: render_3d
-  dir: pcb/render
-  output_id: bottom
+  dir: render
+  output_id: render-bottom
   extends: render_top
   options:
     view: bottom
 - name: render_top_angle
+  comment: Top angle render
   type: render_3d
-  dir: pcb/render
-  output_id: top-angle
+  dir: render
+  output_id: render-top-angle
   options:
     output: '%f-%I-%d.%x'  # don't include '3D_' in name
     view: top
@@ -74,9 +148,10 @@ outputs:
     zoom: 3
     ray_tracing: true
 - name: render_bottom_angle
+  comment: Bottom angle render
   type: render_3d
-  dir: pcb/render
-  output_id: bottom-angle
+  dir: render
+  output_id: render-bottom-angle
   extends: render_top_angle
   options:
     view: bottom
@@ -87,7 +162,7 @@ outputs:
 - name: pcbway_gerbers
   comment: Gerbers compatible with PCBWay
   type: gerber
-  dir: pcb/manufacturers/pcbway
+  dir: manufacturers/pcbway
   options:
     exclude_edge_layer: true
     exclude_pads_from_silkscreen: true
@@ -137,7 +212,7 @@ outputs:
 - name: pcbway_drill
   comment: Drill files compatible with PCBWay
   type: excellon
-  dir: pcb/manufacturers/pcbway
+  dir: manufacturers/pcbway
   options:
     metric_units: false
     minimal_header: true
@@ -151,7 +226,7 @@ outputs:
 - name: pcbway
   comment: ZIP file for PCBWay
   type: compress
-  dir: pcb/manufacturers
+  dir: manufacturers
   options:
     format: ZIP
     files:
@@ -160,3 +235,4 @@ outputs:
     - from_output: pcbway_drill
       dest: /
     move_files: false
+
