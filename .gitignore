@@ -134,4 +134,6 @@ fp-info-cache
 _autosave-*
 *-backups/
 *.kicad_prl
+*.kicad_pcb-bak
+*.kicad_sch-bak
 
