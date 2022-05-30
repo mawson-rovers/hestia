@@ -1,7 +1,6 @@
 name: "Kibot PCB build"
 
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the main branch
+# Run the workflow on pushes with PCB or kibot config changes
 on:
   push:
     paths:
@@ -10,17 +9,9 @@ on:
       - '.github/workflows/kibot*'
       - '*.kibot.yml'
       - 'scripts/kibot*'
-  pull_request:
-    paths:
-      - '*.kicad_sch'
-      - '*.kicad_pcb'
-      - '.github/workflows/kibot*'
-      - '*.kibot.yml'
-      - 'scripts/kibot*'
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  quick:
+  kibot:
     runs-on: ubuntu-latest
     container: setsoft/kicad_auto:dev_k6
 
@@ -31,8 +22,8 @@ jobs:
       run: |
         ./scripts/kibot-build.sh
 
-    - name: Retrieve results
+    - name: Save build output
       uses: actions/upload-artifact@v2
       with:
-        name: Automatic_outputs
-        path: Generated
+        name: build
+        path: build
