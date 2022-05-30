@@ -4,10 +4,8 @@ name: "Kibot PCB build"
 on:
   push:
     paths:
-      - '*.kicad_sch'
-      - '*.kicad_pcb'
+      - 'hardware/pcb/**'
       - '.github/workflows/kibot*'
-      - '*.kibot.yml'
       - 'scripts/kibot*'
 
 jobs:
