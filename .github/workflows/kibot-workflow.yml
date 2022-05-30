@@ -1,0 +1,29 @@
+name: "Kibot PCB build"
+
+# Run the workflow on pushes with PCB or kibot config changes
+on:
+  push:
+    paths:
+      - '*.kicad_sch'
+      - '*.kicad_pcb'
+      - '.github/workflows/kibot*'
+      - '*.kibot.yml'
+      - 'scripts/kibot*'
+
+jobs:
+  kibot:
+    runs-on: ubuntu-latest
+    container: setsoft/kicad_auto:dev_k6
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: kibot-build.sh
+      run: |
+        ./scripts/kibot-build.sh
+
+    - name: Save build output
+      uses: actions/upload-artifact@v2
+      with:
+        name: build
+        path: build
