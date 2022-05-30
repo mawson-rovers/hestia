@@ -6,9 +6,20 @@ global:
   date_time_format: '%Y%m%d'  # exclude time from %d in file names
 
 # Uncomment these on main where the checks are fixed
-#preflight:
-#  run_drc: true
-#  run_erc: true
+preflight:
+  run_drc: true
+  run_erc: true
+  filters:
+    # DRC known warnings (as of 30 May 2022)
+    - error: track_dangling
+    - error: via_dangling
+    - error: silk_overlap
+    - error: silk_over_copper
+    # ERC known errors (30 May 2022)
+    - error: pin_not_connected
+    - error: power_pin_not_driven
+    - error: pin_to_pin
+    # do not add more items to this list - fix them!
 
 outputs:
 # Report
