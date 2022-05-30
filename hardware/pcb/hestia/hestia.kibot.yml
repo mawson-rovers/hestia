@@ -23,7 +23,7 @@ outputs:
 - name: basic_pdf_sch_print
   comment: Schematic in PDF format
   type: pdf_sch_print
-  dir: schematic
+  dir: pcb/schematic
 
 # Board views (no components)
 - name: board_top
