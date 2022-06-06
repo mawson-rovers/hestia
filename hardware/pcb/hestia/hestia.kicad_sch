@@ -4,6 +4,13 @@
 
   (paper "A4")
 
+  (title_block
+    (title "Hestia")
+    (date "2022-06-06")
+    (rev "1.1")
+    (company "Mawson Rovers")
+  )
+
   (lib_symbols
     (symbol "Connector:Conn_01x01_Female" (pin_names (offset 1.016) hide) (in_bom yes) (on_board yes)
       (property "Reference" "J" (id 0) (at 0 2.54 0)
@@ -7627,7 +7634,7 @@
     (uuid 625ae97f-78a2-4e06-8434-7fcc7304d994)
     (property "Reference" "J6" (id 0) (at 24.13 172.72 0))
     (property "Value" "Conn_02x07_Odd_Even" (id 1) (at 24.13 175.26 0))
-    (property "Footprint" "" (id 2) (at 22.86 186.69 0)
+    (property "Footprint" "Connector_PinHeader_2.00mm:PinHeader_2x07_P2.00mm_Vertical" (id 2) (at 22.86 186.69 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "~" (id 3) (at 22.86 186.69 0)
@@ -8862,7 +8869,7 @@
     (property "Reference" "#PWR0168" (id 0) (at 29.21 86.36 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Value" "" (id 1) (at 29.21 77.47 0))
+    (property "Value" "+3.3VA" (id 1) (at 29.21 77.47 0))
     (property "Footprint" "" (id 2) (at 29.21 82.55 0)
       (effects (font (size 1.27 1.27)) hide)
     )

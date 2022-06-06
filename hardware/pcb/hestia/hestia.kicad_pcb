@@ -5,6 +5,13 @@
   )
 
   (paper "A4")
+  (title_block
+    (title "Hestia")
+    (date "2022-06-06")
+    (rev "1.1")
+    (company "Mawson Rovers")
+  )
+
   (layers
     (0 "F.Cu" signal)
     (31 "B.Cu" signal)
@@ -9463,7 +9470,7 @@
   (gr_text "+3V3\n" (at 104.14 146.586) (layer "B.SilkS") (tstamp 9782eee8-df8e-41ac-9d2a-1b79a4786ffe)
     (effects (font (size 1 1) (thickness 0.15)) (justify mirror))
   )
-  (gr_text "Hestia v1.0 2022-05-21\nDesigned in Australia\n" (at 187.198 72.164 90) (layer "B.SilkS") (tstamp db562cff-25e0-4ced-9d77-451c7914fdb3)
+  (gr_text "${TITLE} v${REVISION} ${ISSUE_DATE}\nDesigned in Australia\n" (at 187.198 72.164 90) (layer "B.SilkS") (tstamp db562cff-25e0-4ced-9d77-451c7914fdb3)
     (effects (font (size 1 1) (thickness 0.15)) (justify left mirror))
   )
   (gr_text "SDA" (at 172.0342 136.7943) (layer "B.SilkS") (tstamp ef277a21-f25f-444e-a67b-29438916bc21)
@@ -9852,6 +9859,7 @@
   (via (at 106.9594 130.4951) (size 0.8) (drill 0.4) (layers "F.Cu" "B.Cu") (free) (net 104) (tstamp 6eb0e340-61fd-4286-88f7-a5f01b19198c))
   (via (at 115.182642 131.771458) (size 0.8) (drill 0.4) (layers "F.Cu" "B.Cu") (free) (net 104) (tstamp 6f3e27ca-4e48-461d-914f-926123e4dc2f))
   (via (at 126.238 125.758) (size 0.8) (drill 0.4) (layers "F.Cu" "B.Cu") (free) (net 104) (tstamp 702e4e3e-f4b5-46ff-8b27-246dcd72269e))
+  (via (at 112.5474 88.2803) (size 0.8) (drill 0.4) (layers "F.Cu" "B.Cu") (free) (net 104) (tstamp 7062eec7-b8e2-4710-a6f4-4ecc40a3ed5c))
   (via (at 150.9776 146.2304) (size 0.8) (drill 0.4) (layers "F.Cu" "B.Cu") (free) (net 104) (tstamp 70730cc4-ebb9-47e7-b6b7-5f6c48a76a61))
   (via (at 123.2154 139.8931) (size 0.8) (drill 0.4) (layers "F.Cu" "B.Cu") (free) (net 104) (tstamp 7196c5f5-84c2-49a2-ad6e-2918acedc9ce))
   (via (at 123.317 111.407) (size 0.8) (drill 0.4) (layers "F.Cu" "B.Cu") (free) (net 104) (tstamp 73d899fb-68c4-4708-8a5d-ad10d316bc82))
@@ -9983,7 +9991,6 @@
   (via (at 160.3248 139.5502) (size 0.8) (drill 0.4) (layers "F.Cu" "B.Cu") (free) (net 104) (tstamp f589af7b-bc3a-4d9e-9ca4-7b0220247f29))
   (via (at 116.1034 89.6011) (size 0.8) (drill 0.4) (layers "F.Cu" "B.Cu") (free) (net 104) (tstamp f598fd5d-2078-423e-8391-2c14bbd7c950))
   (via (at 179.197 151.92) (size 0.8) (drill 0.4) (layers "F.Cu" "B.Cu") (free) (net 104) (tstamp f699e0d0-2c27-43bf-8995-3fd2d6a7039a))
-  (via (at 112.5474 88.2803) (size 0.8) (drill 0.4) (layers "F.Cu" "B.Cu") (free) (net 104) (tstamp f699e0d0-2c27-43bf-8995-3fd2d6a7039a))
   (via (at 183.515 148.364) (size 0.8) (drill 0.4) (layers "F.Cu" "B.Cu") (free) (net 104) (tstamp fa107209-321d-408a-b888-2a07381bbecc))
   (via (at 160.2994 144.9858) (size 0.8) (drill 0.4) (layers "F.Cu" "B.Cu") (free) (net 104) (tstamp fbe9ff19-114b-4b67-9ef9-96573e99037d))
   (via (at 132.842 148.999) (size 0.8) (drill 0.4) (layers "F.Cu" "B.Cu") (free) (net 104) (tstamp fc08d6cb-8566-480d-a00c-614c2d332de8))
