@@ -430,6 +430,18 @@
     [
       "e63e39d7-6ac0-4ffd-8aa3-1841a4541b55",
       ""
+    ],
+    [
+      "05bc7b3d-8834-4e3f-a014-0abddc6f66d0",
+      "thermistors"
+    ],
+    [
+      "183d8dab-785b-44fb-8399-e41202bbafe3",
+      "PC104"
+    ],
+    [
+      "a735371e-e30b-43a5-a892-13a5329e8971",
+      "buck_converter"
     ]
   ],
   "text_variables": {}
