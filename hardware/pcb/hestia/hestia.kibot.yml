@@ -2,8 +2,9 @@ kibot:
   version: 1
 
 global:
-  output: '%f-%i%I%v-%d.%x'   # include schematic date in all filenames
-  date_time_format: '%Y%m%d'  # exclude time from %d in file names
+  output: '%f-%i%I%v-%D.%x'    # include build date in all filenames
+  date_time_format: '%Y%m%d'  # exclude time from %d in file names (if used)
+  date_format: '%Y%m%d'        # use same format for %D
 
 preflight:
   fill_zones: true
@@ -56,7 +57,7 @@ outputs:
   dir: render
   output_id: board-top
   options:
-    output: '%f-%I-%d.%x'  # don't duplicate top in the name
+    output: '%f-%I-%D.%x'  # don't duplicate top in the name
     format: png
     style: set-blue-enig
 - name: board_bottom
@@ -138,7 +139,7 @@ outputs:
   dir: render
   output_id: render-top
   options:
-    output: '%f-%I-%d.%x'  # don't include '3D_' in name
+    output: '%f-%I-%D.%x'  # don't include '3D_' in name
     view: top
     width: 1200
     height: 1200
@@ -158,7 +159,7 @@ outputs:
   dir: render
   output_id: render-top-angle
   options:
-    output: '%f-%I-%d.%x'  # don't include '3D_' in name
+    output: '%f-%I-%D.%x'  # don't include '3D_' in name
     view: top
     width: 1600
     height: 1200
