@@ -5,10 +5,11 @@ global:
   output: '%f-%i%I%v-%d.%x'   # include schematic date in all filenames
   date_time_format: '%Y%m%d'  # exclude time from %d in file names
 
-# TODO: make these exclusions more specific or fix them
 preflight:
+  fill_zones: true
   run_drc: true
   run_erc: true
+  # TODO: make these exclusions more specific or fix them
   filters:
     # DRC known warnings (as of 30 May 2022)
     - error: track_dangling
