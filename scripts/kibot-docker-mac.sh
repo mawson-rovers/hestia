@@ -6,6 +6,6 @@ docker run -i \
     -v $HOME/Library/Preferences/kicad:/root/.config/kicad \
     -e 'KICAD6_3DMODEL_DIR=/local/kicad/3dmodels' \
     -w /local/src \
-    -t setsoft/kicad_auto_test:ki6 \
+    -t setsoft/kicad_auto:ki6.0.5_Debian \
     ./scripts/kibot-build.sh
  #        /bin/bash  # use for debugging
