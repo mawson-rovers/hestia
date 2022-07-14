@@ -4,6 +4,13 @@
 
   (paper "A4")
 
+  (title_block
+    (title "Hestia")
+    (date "2022-07-14")
+    (rev "2.0")
+    (company "Mawson Rovers")
+  )
+
   (lib_symbols
     (symbol "Connector:TestPoint" (pin_numbers hide) (pin_names (offset 0.762) hide) (in_bom yes) (on_board yes)
       (property "Reference" "TP" (id 0) (at 0 6.858 0)
@@ -1019,10 +1026,10 @@
     (property "Reference" "U1" (id 0) (at 160.655 76.835 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
-    (property "Value" "" (id 1) (at 146.685 86.995 0)
+    (property "Value" "LM2655MTC-3.3/NOPB" (id 1) (at 146.685 86.995 0)
       (effects (font (size 0.9 0.9)) (justify left))
     )
-    (property "Footprint" "" (id 2) (at 155.575 95.885 0)
+    (property "Footprint" "Package_SO:TSSOP-16_4.4x5mm_P0.65mm" (id 2) (at 155.575 95.885 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "https://www.ti.com/lit/ds/symlink/lm2655.pdf?ts=1657771011072&ref_url=https%253A%252F%252Fwww.ti.com%252Fproduct%252FLM2655%252Fpart-details%252FLM2655MTC-3.3%252FNOPB" (id 3) (at 155.575 95.885 0)

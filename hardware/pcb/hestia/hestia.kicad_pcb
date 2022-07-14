@@ -7,8 +7,8 @@
   (paper "A4")
   (title_block
     (title "Hestia")
-    (date "2022-06-06")
-    (rev "1.1")
+    (date "2022-07-14")
+    (rev "2.0")
     (company "Mawson Rovers")
   )
 

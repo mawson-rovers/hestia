@@ -4,6 +4,13 @@
 
   (paper "A4")
 
+  (title_block
+    (title "Hestia")
+    (date "2022-07-14")
+    (rev "2.0")
+    (company "Mawson Rovers")
+  )
+
   (lib_symbols
     (symbol "Hestia:ESQ-126-39-G-D" (in_bom yes) (on_board yes)
       (property "Reference" "J" (id 0) (at -2.54 68.58 0)
