@@ -1,31 +1,8 @@
 //******************************************************************************
-//   MSP430x261x Demo - USCI_B0, I2C Slave multiple byte TX/RX
+//   MSP430x261x ADC to I2C
 //
-//   Description: I2C master communicates to I2C slave sending and receiving
-//   3 different messages of different length. (This is the slave code). The
-//   slave will be in LPM0 mode, waiting for the master to initiate the
-//   communication. The slave will send/receive bytes based on the master's
-//   request. The slave will handle I2C bytes sent/received using the
-//   I2C interrupt.
-//   ACLK = NA, MCLK = SMCLK = DCO 16MHz.
-//
-//
-//                   MSP430F2619         3.3V
-//                 -----------------   /|\ /|\
-//            /|\ |                 |   |  4.7k
-//             |  |                 |  4.7k |
-//             ---|RST              |   |   |
-//                |                 |   |   |
-//                |             P3.2|---|---+- I2C Clock (UCB0SCL)
-//                |                 |   |
-//                |             P3.1|---+----- I2C Data (UCB0SDA)
-//                |                 |
-//                |                 |
-//
-//   Nima Eskandari and Ryan Meredith
-//   Texas Instruments Inc.
-//   January 2018
-//   Built with CCS V7.3
+//   Description: read from a given adc pin and allow reading over i2c
+//   i2c commands can be sent to change the adc pin and turn on the heater #TODO
 //******************************************************************************
 
 #include <msp430.h> 
@@ -35,6 +12,8 @@
 #include "i2c.h"
 
 union I2C_Packet_t message;
+volatile unsigned int aResults[8];
+int acitve_sensor = 0;
 
 //******************************************************************************
 // Main ************************************************************************
@@ -45,25 +24,37 @@ union I2C_Packet_t message;
 
 int main(void) {
     WDTCTL = WDTPW | WDTHOLD;   // Stop watchdog timer
-    message.sensor = 100;
+    message.sensor = 0xFF; // init to bad value
 
     initClockTo16MHz();
     initGPIO();
     initI2C();
     initADC();
 
-//    __bis_SR_register(LPM0_bits + GIE);
+    // #TODO continously read and filter ADC values and send to internal array
     for (;;)
     {
-      ADC12CTL0 |= ADC12SC;                   // Start convn, software controlled
+      //TODO replace with timer
+      ADC12CTL0 |= ADC12SC;                   // Start conversion, software controlled
       __bis_SR_register(CPUOFF + GIE + LPM0_bits);        // LPM0, ADC12_ISR will force exit
     }
-    return 0;
 }
 
 void I2C_Slave_ProcessCMD(uint8_t cmd)
 {
-    //Fill out the TransmitBuffer
+    if(cmd<7){
+        acitve_sensor = cmd;
+        if(cmd>2){
+            P5OUT |= LED_YELLOW;                        // LED_1 on
+            P5OUT &= ~LED_GREEN;                        // LED_2 off
+        }else{
+            P5OUT |= LED_GREEN;                        // LED_1 on
+            P5OUT &= ~LED_YELLOW;                        // LED_2 off
+        }
+    }
+    // TOOD turn on heater with commaad
+    // TOOD checksum??
+    // Fill out the TransmitBuffer
     CopyArray(message.I2CPacket);
 }
 
@@ -86,14 +77,24 @@ void initGPIO()
     P5OUT &= ~(LED_YELLOW | LED_GREEN);                          // Turn off red led
 }
 
+
+
 void initADC()
 {
-    ADC12CTL0 = SHT0_2 + ADC12ON;             // Set sampling time, turn on ADC12
-    ADC12CTL1 = SHP;                          // Use sampling timer
-    ADC12IE = 0x01;                           // Enable interrupt
-    ADC12CTL0 |= ENC;                         // Conversion enabled
-    P6DIR &= ~0x01;                            // P6.0, i/p
-    P6SEL |= 0x01;                            // P6.0-ADC option select
+    P6SEL = 0x0F;                             // Enable A/D channel inputs
+    ADC12CTL0 = ADC12ON+MSC+SHT0_8;           // Turn on ADC12, extend sampling time
+                                              // to avoid overflow of results
+    ADC12CTL1 = SHP+CONSEQ_3;                 // Use sampling timer, repeated sequence
+    ADC12MCTL0 = INCH_0;                      // ref+=AVcc, channel = A0
+    ADC12MCTL1 = INCH_1;                      // ref+=AVcc, channel = A1
+    ADC12MCTL2 = INCH_2;                      // ref+=AVcc, channel = A2
+    ADC12MCTL3 = INCH_3;                      // ref+=AVcc, channel = A3
+    ADC12MCTL4 = INCH_4;                      // ref+=AVcc, channel = A4
+    ADC12MCTL5 = INCH_5;                      // ref+=AVcc, channel = A5
+    ADC12MCTL6 = INCH_6;                      // ref+=AVcc, channel = A6
+    ADC12MCTL7 = INCH_7+EOS;                  // ref+=AVcc, channel = A7, end seq.
+    ADC12IE = 0x08;                           // Enable ADC12IFG.3
+    ADC12CTL0 |= ENC;                         // Enable conversions
 }
 
 // ADC12 interrupt service routine
@@ -106,8 +107,16 @@ void __attribute__ ((interrupt(ADC12_VECTOR))) ADC12_ISR (void)
 #error Compiler not supported!
 #endif
 {
-    P5OUT |= LED_GREEN;                          // LED_1 on
-    P5OUT &= ~LED_YELLOW;                         // LED_2 off
-    message.sensor = ADC12MEM0;
+    // TODO apply low pass filter
+    aResults[0] = ADC12MEM0;             // Move A0 results, IFG is cleared
+    aResults[1] = ADC12MEM1;             // Move A1 results, IFG is cleared
+    aResults[2] = ADC12MEM2;             // Move A2 results, IFG is cleared
+    aResults[3] = ADC12MEM3;             // Move A3 results, IFG is cleared
+    aResults[4] = ADC12MEM4;             // Move A4 results, IFG is cleared
+    aResults[5] = ADC12MEM5;             // Move A5 results, IFG is cleared
+    aResults[6] = ADC12MEM6;             // Move A6 results, IFG is cleared
+    aResults[7] = ADC12MEM7;             // Move A7 results, IFG is cleared
+
+    message.sensor = aResults[acitve_sensor]; // update the sensor message not sure if this is a good idea to do here
     __bic_SR_register_on_exit(CPUOFF);      // Clear CPUOFF bit from 0(SR)
 }

@@ -12,6 +12,7 @@
  * */
 void I2C_Slave_ProcessCMD(uint8_t cmd);
 void initGPIO();
+void set_adc_channel(int channel);
 void initClockTo16MHz();
 void initADC();
 
