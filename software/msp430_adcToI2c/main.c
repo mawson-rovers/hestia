@@ -31,7 +31,7 @@ int main(void) {
     initI2C();
     initADC();
 
-    // #TODO continously read and filter ADC values and send to internal array
+    // #TODO continuously read and filter ADC values and send to internal array
     for (;;)
     {
       //TODO replace with timer
@@ -48,11 +48,11 @@ void I2C_Slave_ProcessCMD(uint8_t cmd)
             P5OUT |= LED_YELLOW;                        // LED_1 on
             P5OUT &= ~LED_GREEN;                        // LED_2 off
         }else{
-            P5OUT |= LED_GREEN;                        // LED_1 on
+            P5OUT |= LED_GREEN;                          // LED_1 on
             P5OUT &= ~LED_YELLOW;                        // LED_2 off
         }
     }
-    // TOOD turn on heater with commaad
+    // TOOD turn on heater with comand
     // TOOD checksum??
     // Fill out the TransmitBuffer
     CopyArray(message.I2CPacket);
