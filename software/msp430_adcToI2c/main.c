@@ -11,9 +11,14 @@
 #include "main.h"
 #include "i2c.h"
 
-union I2C_Packet_t message;
+union I2C_Packet_t message_tx;
 volatile unsigned int aResults[8];
 int acitve_sensor = 0;
+int control_sensor = 0; // sensor used for PWM control
+double target_temprature = -999;
+int heater_mode = HEATER_MODE_PWM;
+int current_pwm = 0;
+
 
 //******************************************************************************
 // Main ************************************************************************
@@ -24,12 +29,14 @@ int acitve_sensor = 0;
 
 int main(void) {
     WDTCTL = WDTPW | WDTHOLD;   // Stop watchdog timer
-    message.sensor = 0xFF; // init to bad value
+    message_tx.sensor = 0xFF; // init to impossible/hard to reach value for fault detection
 
     initClockTo16MHz();
     initGPIO();
     initI2C();
     initADC();
+
+//    PRxData = (unsigned char *)RxBuffer;    // Start of RX buffer
 
     // #TODO continuously read and filter ADC values and send to internal array
     for (;;)
@@ -37,25 +44,57 @@ int main(void) {
       //TODO replace with timer
       ADC12CTL0 |= ADC12SC;                   // Start conversion, software controlled
       __bis_SR_register(CPUOFF + GIE + LPM0_bits);        // LPM0, ADC12_ISR will force exit
+
     }
 }
 
-void I2C_Slave_ProcessCMD(uint8_t cmd)
+void I2C_Slave_ProcessCMD(unsigned char *message_rx, uint16_t length)
 {
-    if(cmd<7){
-        acitve_sensor = cmd;
-        if(cmd>2){
-            P5OUT |= LED_YELLOW;                        // LED_1 on
-            P5OUT &= ~LED_GREEN;                        // LED_2 off
-        }else{
-            P5OUT |= LED_GREEN;                          // LED_1 on
-            P5OUT &= ~LED_YELLOW;                        // LED_2 off
-        }
+    // make more like a read write register thing
+    // need to take multiple byte sin first byte is register remaining byte is command
+    // http://nilhcem.com/android-things/arduino-as-an-i2c-slave
+    uint8_t cmd = message_rx[0];
+    unsigned char *package = message_rx+1; // ignore the command
+    if(cmd == COMAND_RESET){
+        // TOOD reset also 0 seems dangers oh well
+    }else if(cmd >= COMAND_SENSOR_LOW && cmd <= COMAND_SENSOR_HIGH){
+        // set active adc to read from
+        acitve_sensor = cmd-1;
+        TransmitLen = 2;
+        // Fill out the TransmitBuffer
+        CopyArray(message_tx.I2CPacket);
+    }else if(cmd == COMAND_HEATER_MODE){
+        // Set the heater mode
+        heater_mode = package[0];
+    }else if(cmd == COMAND_TARGET_TEMP){
+        target_temprature = *((float*) package); //#TODO check this works
+        // Should be as the memory is fully allocated
+        TransmitLen = 0;
+    }else if(cmd == COMAND_TARGET_SENSOR){
+        control_sensor = package[0];
+        TransmitLen = 0;
+    }else if(cmd == COMAND_PWM_FREQUENCY){
+        current_pwm = package[0];
+        TransmitLen = 0;
+    }else{
+        // unknown command
     }
-    // TOOD turn on heater with comand
+
     // TOOD checksum??
-    // Fill out the TransmitBuffer
-    CopyArray(message.I2CPacket);
+}
+
+void heater_proccess(){
+    if(heater_mode == HEATER_MODE_OFF){
+        current_pwm = 0;
+    }else if(heater_mode == HEATER_MODE_PID){
+        // #TODO PID controller
+    }else if(heater_mode == HEATER_MODE_PWM){
+
+    }else{
+        // unknown heater mode
+    }
+    // TODO verify PWM works
+    CCR2 = current_pwm;                                 // CCR2 PWM duty cycle 0%
 }
 
 void initClockTo16MHz()
@@ -74,7 +113,13 @@ void initGPIO()
     //I2C Pins
     P3SEL |= BIT1 | BIT2;                     // P3.1,2 option select
     P5DIR |= 0x0F;                            // Set P1.0 to output direction
-    P5OUT &= ~(LED_YELLOW | LED_GREEN);                          // Turn off red led
+    P5OUT &= ~(LED_YELLOW | LED_GREEN);       // Turn off red led
+    P1DIR |= HEATER_PIN;                      // P1.7 output
+    P1SEL |= HEATER_PIN;                      // P1.7 TA2 options
+    CCR0 = 512-1;                             // PWM Period
+    CCTL2 = OUTMOD_7;                         // CCR2 reset/set
+    CCR2 = 0;                                 // CCR2 PWM duty cycle 0%
+    TACTL = TASSEL_2 + MC_1;                  // SMCLK, up mode
 }
 
 
@@ -117,6 +162,6 @@ void __attribute__ ((interrupt(ADC12_VECTOR))) ADC12_ISR (void)
     aResults[6] = ADC12MEM6;             // Move A6 results, IFG is cleared
     aResults[7] = ADC12MEM7;             // Move A7 results, IFG is cleared
 
-    message.sensor = aResults[acitve_sensor]; // update the sensor message not sure if this is a good idea to do here
+    message_tx.sensor = aResults[acitve_sensor]; // update the sensor message not sure if this is a good idea to do here
     __bic_SR_register_on_exit(CPUOFF);      // Clear CPUOFF bit from 0(SR)
 }
