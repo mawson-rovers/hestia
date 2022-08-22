@@ -86,7 +86,7 @@ def render_sensor(sensor, callback=None):
         ui.label("{} ({})".format(sensor.label, sensor.id)) \
             .tooltip(format_addr(sensor.addr))
         temp_label = ui.label("n/a")
-        if callback is not None:
+        if callback:
             ui.timer(1.0, lambda: callback(temp_label))
 
 
