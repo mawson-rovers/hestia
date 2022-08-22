@@ -82,7 +82,6 @@ def read_msp430_temp(i2c_device: int, addr: int) -> Decimal:
     with SMBus(i2c_device) as bus:
         v = read_int(bus, MSP430_I2C_ADDR, addr, byteorder="little", signed=False)
     voltage = v / MSP430_ADC_RESOLUTION * MSP430_ADC_VREF
-    print("{}: {}".format(addr, voltage))
     try:
         temp = 1 / (1/298.15 + 1 / NB21K00103_THERMISTOR_B_VALUE *
                     math.log(voltage / (MSP430_ADC_VREF - voltage))) - 273.15
