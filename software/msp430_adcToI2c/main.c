@@ -12,12 +12,11 @@
 #include "i2c.h"
 
 union I2C_Packet_t message_tx;
-volatile unsigned int aResults[8];
-int acitve_sensor = 0;
-int control_sensor = 0; // sensor used for PWM control
-double target_temprature = -999;
-int heater_mode = HEATER_MODE_PWM;
-int current_pwm = 0;
+volatile unsigned int adc_readings[8];
+unsigned int control_sensor = 0; // sensor used for PWM control
+double target_temperature = -999;
+unsigned int heater_mode = HEATER_MODE_PWM;
+unsigned int current_pwm = 0;
 
 
 //******************************************************************************
@@ -29,7 +28,7 @@ int current_pwm = 0;
 
 int main(void) {
     WDTCTL = WDTPW | WDTHOLD;   // Stop watchdog timer
-    message_tx.sensor = 0xFF; // init to impossible/hard to reach value for fault detection
+    message_tx.data = 0xFF; // init to impossible/hard to reach value for fault detection
 
     initClockTo16MHz();
     initGPIO();
@@ -54,29 +53,43 @@ void I2C_Slave_ProcessCMD(unsigned char *message_rx, uint16_t length)
     // need to take multiple byte sin first byte is register remaining byte is command
     // http://nilhcem.com/android-things/arduino-as-an-i2c-slave
     uint8_t cmd = message_rx[0];
-    unsigned char *package = message_rx+1; // ignore the command
-    if(cmd == COMAND_RESET){
-        // TOOD reset also 0 seems dangers oh well
-    }else if(cmd >= COMAND_SENSOR_LOW && cmd <= COMAND_SENSOR_HIGH){
+    unsigned char *package = message_rx + 1; // ignore the command
+    if (cmd >= COMMAND_SENSOR_LOW && cmd <= COMMAND_SENSOR_HIGH)
+    {
         // set active adc to read from
-        acitve_sensor = cmd-1;
+        message_tx.data = adc_readings[cmd - 1];
+
         TransmitLen = 2;
         // Fill out the TransmitBuffer
         CopyArray(message_tx.I2CPacket);
-    }else if(cmd == COMAND_HEATER_MODE){
+    }
+    else if (cmd == COMMAND_HEATER_MODE)
+    {
         // Set the heater mode
         heater_mode = package[0];
-    }else if(cmd == COMAND_TARGET_TEMP){
-        target_temprature = *((float*) package); //#TODO check this works
+    }
+    else if (cmd == COMMAND_TARGET_TEMP)
+    {
+        target_temperature = *((float*) package); //#TODO check this works
         // Should be as the memory is fully allocated
         TransmitLen = 0;
-    }else if(cmd == COMAND_TARGET_SENSOR){
+    }
+    else if (cmd == COMMAND_TARGET_SENSOR)
+    {
         control_sensor = package[0];
         TransmitLen = 0;
-    }else if(cmd == COMAND_PWM_FREQUENCY){
+    }
+    else if (cmd == COMMAND_PWM_FREQUENCY)
+    {
         current_pwm = package[0];
         TransmitLen = 0;
-    }else{
+    }
+    else if (cmd == COMMAND_RESET)
+    {
+        // TODO implement reset
+    }
+    else
+    {
         // unknown command
     }
 
@@ -153,15 +166,14 @@ void __attribute__ ((interrupt(ADC12_VECTOR))) ADC12_ISR (void)
 #endif
 {
     // TODO apply low pass filter
-    aResults[0] = ADC12MEM0;             // Move A0 results, IFG is cleared
-    aResults[1] = ADC12MEM1;             // Move A1 results, IFG is cleared
-    aResults[2] = ADC12MEM2;             // Move A2 results, IFG is cleared
-    aResults[3] = ADC12MEM3;             // Move A3 results, IFG is cleared
-    aResults[4] = ADC12MEM4;             // Move A4 results, IFG is cleared
-    aResults[5] = ADC12MEM5;             // Move A5 results, IFG is cleared
-    aResults[6] = ADC12MEM6;             // Move A6 results, IFG is cleared
-    aResults[7] = ADC12MEM7;             // Move A7 results, IFG is cleared
+    adc_readings[0] = ADC12MEM0;             // Move A0 results, IFG is cleared
+    adc_readings[1] = ADC12MEM1;             // Move A1 results, IFG is cleared
+    adc_readings[2] = ADC12MEM2;             // Move A2 results, IFG is cleared
+    adc_readings[3] = ADC12MEM3;             // Move A3 results, IFG is cleared
+    adc_readings[4] = ADC12MEM4;             // Move A4 results, IFG is cleared
+    adc_readings[5] = ADC12MEM5;             // Move A5 results, IFG is cleared
+    adc_readings[6] = ADC12MEM6;             // Move A6 results, IFG is cleared
+    adc_readings[7] = ADC12MEM7;             // Move A7 results, IFG is cleared
 
-    message_tx.sensor = aResults[acitve_sensor]; // update the sensor message not sure if this is a good idea to do here
     __bic_SR_register_on_exit(CPUOFF);      // Clear CPUOFF bit from 0(SR)
 }
