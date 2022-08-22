@@ -91,7 +91,7 @@ def read_msp430_temp(i2c_device: int, addr: int) -> Decimal:
 
 
 def format_temp(temp: Decimal) -> str:
-    return "{:.2f} °C".format(temp)
+    return "{:.2f} °C".format(temp) if not temp.is_nan() else 'n/a'
 
 
 def format_addr(addr: int) -> str:
