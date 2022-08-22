@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import math
 from dataclasses import dataclass
 from decimal import Decimal
 
@@ -24,6 +25,10 @@ PRIMARY_SENSORS = [
     Sensor("J10", 0x0A, "Mounted"),
     Sensor("J11", 0x0B, "Mounted"),
 ]
+
+MSP430_ADC_VREF = 3.3
+MSP430_ADC_RESOLUTION = 1 << 12
+NB21K00103_THERMISTOR_B_VALUE = 3630
 
 ADS7828_I2C_ADDR = 0x4A
 SECONDARY_SENSORS = [
@@ -75,8 +80,15 @@ def read_max31725_temp(i2c_device: int, addr: int) -> Decimal:
 
 def read_msp430_temp(i2c_device: int, addr: int) -> Decimal:
     with SMBus(i2c_device) as bus:
-        t = read_int(bus, MSP430_I2C_ADDR, addr, byteorder="little", signed=False)
-    return Decimal(t)
+        v = read_int(bus, MSP430_I2C_ADDR, addr, byteorder="little", signed=False)
+    voltage = v / MSP430_ADC_RESOLUTION * MSP430_ADC_VREF
+    print("{}: {}".format(addr, voltage))
+    try:
+        temp = 1 / (1/298.15 + 1 / NB21K00103_THERMISTOR_B_VALUE *
+                    math.log(voltage / (MSP430_ADC_VREF - voltage))) - 273.15
+    except ValueError:
+        return Decimal(math.nan)
+    return Decimal(temp)
 
 
 def format_temp(temp: Decimal) -> str:
