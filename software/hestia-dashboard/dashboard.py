@@ -54,23 +54,29 @@ MAX31725_CF_LSB = Decimal('0.00390625')
 BEAGLE_I2C_BUS = 2
 
 
-def read_int(bus, addr, reg, signed=False):
+def read_int(bus, addr, reg, byteorder="big", signed=False):
     return int.from_bytes(bus.read_i2c_block_data(
-        addr, reg, 2), byteorder="big", signed=signed)
+        addr, reg, 2), byteorder=byteorder, signed=signed)
 
 
-def write_int(bus, addr, reg, val):
-    bus.write_i2c_block_data(addr, reg,
-                             list(int.to_bytes(val, 2, "big")))
+def write_int(bus, addr, reg, val, byteorder="big", signed=False):
+    bus.write_i2c_block_data(addr, reg, list(
+        int.to_bytes(val, 2, byteorder=byteorder, signed=signed)))
 
 
-def read_temp_celsius(i2c_device: int, addr: int) -> Decimal:
+def read_max31725_temp(i2c_device: int, addr: int) -> Decimal:
     # logic adapted from https://os.mbed.com/teams/MaximIntegrated/code/MAX31725_Accurate_Temperature_Sensor/
     with SMBus(i2c_device) as bus:
         t = read_int(bus, addr, MAX31725_REG_TEMP, signed=True)
         temp = Decimal(t) * MAX31725_CF_LSB
     # todo: add 64 deg if extended format enabled
     return temp
+
+
+def read_msp430_temp(i2c_device: int, addr: int) -> Decimal:
+    with SMBus(i2c_device) as bus:
+        t = read_int(bus, MSP430_I2C_ADDR, addr, byteorder="little", signed=False)
+    return Decimal(t)
 
 
 def format_temp(temp: Decimal) -> str:
@@ -97,7 +103,8 @@ def main():
     ui.markdown('### Primary sensors')
     with ui.row():
         for sensor in PRIMARY_SENSORS:
-            render_sensor(sensor)
+            render_sensor(sensor, lambda label, sensor2=sensor: label.set_text(format_temp(
+                read_msp430_temp(BEAGLE_I2C_BUS, sensor2.addr))))
 
     ui.markdown('### Secondary sensors')
     with ui.row():
@@ -107,9 +114,8 @@ def main():
     ui.markdown('### Tertiary sensors')
     with ui.row():
         for sensor in TERTIARY_SENSORS:
-            render_sensor(sensor, lambda label: label.set_text(
-                format_temp(
-                    read_temp_celsius(BEAGLE_I2C_BUS, sensor.addr))))
+            render_sensor(sensor, lambda label, sensor2=sensor: label.set_text(format_temp(
+                read_max31725_temp(BEAGLE_I2C_BUS, sensor2.addr))))
 
     ui.run(title='Hestia dashboard', port=8081)
 
