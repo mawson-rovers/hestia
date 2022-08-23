@@ -1,6 +1,7 @@
 #include <msp430.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include "main.h"
 #include "i2c.h"
 
@@ -62,8 +63,6 @@ void __attribute__ ((interrupt(USCIAB0TX_VECTOR))) USCIAB0TX_ISR (void)
   // UCB0IV;
   if (IFG2 & UCB0RXIFG)                 // Receive Data Interrupt
   {
-      //Must read from UCB0RXBUF
-      uint8_t rx_val = UCB0RXBUF;
       P5OUT |= LED_GREEN;                          // LED_1 on
       P5OUT &= ~LED_YELLOW;                         // LED_2 off
       // I2C slave
@@ -104,6 +103,7 @@ void __attribute__ ((interrupt(USCIAB0RX_VECTOR))) USCIAB0RX_ISR (void)
         P5OUT |= LED_YELLOW;                          // Yellow LED on
         P5OUT &= ~LED_GREEN;                          // Green LED off
         PRxData = (unsigned char *)RxBuffer;
+//        fprintf(stderr, "got cmd %d, length %d\n", (uint8_t) PRxData[0], RXByteCtr);
         I2C_Slave_ProcessCMD(PRxData, RXByteCtr);
         RXByteCtr = 0;
         if(UCB0STAT){

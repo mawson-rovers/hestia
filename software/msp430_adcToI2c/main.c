@@ -8,6 +8,7 @@
 #include <msp430.h> 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include "main.h"
 #include "i2c.h"
 
@@ -58,6 +59,7 @@ void I2C_Slave_ProcessCMD(unsigned char *message_rx, uint16_t length)
     {
         // set active adc to read from
         message_tx.data = adc_readings[cmd - 1];
+//        fprintf(stderr, "  read ADC value %d from sensor %d\n", adc_readings[cmd - 1], cmd-1);
 
         TransmitLen = 2;
         // Fill out the TransmitBuffer
