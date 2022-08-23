@@ -2,9 +2,14 @@
 import math
 from dataclasses import dataclass
 from decimal import Decimal
+import logging
+from random import random
 
 from nicegui import ui
 from smbus2 import SMBus
+
+logger = logging.getLogger(name='hestia.dashboard')
+logger.setLevel(logging.INFO)
 
 
 @dataclass
@@ -26,9 +31,10 @@ PRIMARY_SENSORS = [
     Sensor("J11", 0x0B, "Mounted"),
 ]
 
-MSP430_ADC_VREF = 3.3
 MSP430_ADC_RESOLUTION = 1 << 12
 NB21K00103_THERMISTOR_B_VALUE = 3630
+ZERO_CELSIUS_IN_KELVIN = 273.15
+NB21K00103_THERMISTOR_REF_TEMP_K = 25.0 + ZERO_CELSIUS_IN_KELVIN
 
 ADS7828_I2C_ADDR = 0x4A
 SECONDARY_SENSORS = [
@@ -71,21 +77,30 @@ def write_int(bus, addr, reg, val, byteorder="big", signed=False):
 
 def read_max31725_temp(i2c_device: int, addr: int) -> Decimal:
     # logic adapted from https://os.mbed.com/teams/MaximIntegrated/code/MAX31725_Accurate_Temperature_Sensor/
-    with SMBus(i2c_device) as bus:
-        t = read_int(bus, addr, MAX31725_REG_TEMP, signed=True)
-        temp = Decimal(t) * MAX31725_CF_LSB
-    # todo: add 64 deg if extended format enabled
-    return temp
+    try:
+        with SMBus(i2c_device) as bus:
+            t = read_int(bus, addr, MAX31725_REG_TEMP, signed=True)
+            temp = Decimal(t) * MAX31725_CF_LSB
+        # todo: add 64 deg if extended format enabled
+        return temp
+    except OSError as error:
+        logger.warning("Could not read MAX31725 sensor 0x%02x: %s", addr, error)
+        return Decimal(math.nan)
 
 
 def read_msp430_temp(i2c_device: int, addr: int) -> Decimal:
-    with SMBus(i2c_device) as bus:
-        v = read_int(bus, MSP430_I2C_ADDR, addr, byteorder="little", signed=False)
-    voltage = v / MSP430_ADC_RESOLUTION * MSP430_ADC_VREF
     try:
-        temp = 1 / (1/298.15 + 1 / NB21K00103_THERMISTOR_B_VALUE *
-                    math.log(voltage / (MSP430_ADC_VREF - voltage))) - 273.15
-    except ValueError:
+        with SMBus(i2c_device) as bus:
+            adc_val = read_int(bus, MSP430_I2C_ADDR, addr, byteorder="little", signed=False)
+            logger.debug('Read value <%d> from ADC addr %s', adc_val, format_addr(addr))
+            temp = (1 / (1 / NB21K00103_THERMISTOR_REF_TEMP_K +
+                         1 / NB21K00103_THERMISTOR_B_VALUE *
+                         math.log(MSP430_ADC_RESOLUTION / adc_val - 1)) - ZERO_CELSIUS_IN_KELVIN)
+    except (ValueError, ZeroDivisionError):
+        # ignore values out of range (zero/negative)
+        return Decimal(math.nan)
+    except OSError as error:
+        logger.warning("Could not read MSP430 input 0x%02x: %s", addr, error)
         return Decimal(math.nan)
     return Decimal(temp)
 
@@ -95,7 +110,7 @@ def format_temp(temp: Decimal) -> str:
 
 
 def format_addr(addr: int) -> str:
-    return "0x{:2x}".format(addr)
+    return "0x{:02x}".format(addr)
 
 
 def render_sensor(sensor, callback=None):
@@ -104,7 +119,7 @@ def render_sensor(sensor, callback=None):
             .tooltip(format_addr(sensor.addr))
         temp_label = ui.label("n/a")
         if callback:
-            ui.timer(1.0, lambda: callback(temp_label))
+            ui.timer(1.0 + random(), lambda: callback(temp_label))
 
 
 def main():
