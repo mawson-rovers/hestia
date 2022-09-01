@@ -24,11 +24,11 @@ PRIMARY_SENSORS = [
     Sensor("TH1", 0x01, "Centre"),
     Sensor("TH2", 0x02, "Top-left of heater"),
     Sensor("TH3", 0x03, "Bottom-right of heater"),
-    Sensor("J7", 0x07, "Mounted"),
-    Sensor("J8", 0x08, "Mounted"),
-    Sensor("J9", 0x09, "Mounted"),
-    Sensor("J10", 0x0A, "Mounted"),
-    Sensor("J11", 0x0B, "Mounted"),
+    Sensor("J7", 0x04, "Mounted"),
+    Sensor("J8", 0x05, "Mounted"),
+    Sensor("J9", 0x06, "Mounted"),
+    Sensor("J10", 0x07, "Mounted"),
+    Sensor("J11", 0x08, "Mounted"),
 ]
 
 MSP430_ADC_RESOLUTION = 1 << 12
