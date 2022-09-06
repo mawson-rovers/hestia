@@ -48,6 +48,19 @@ int main(void) {
     }
 }
 
+void adc_proccess(unsigned char cmd){
+    if (cmd >= COMMAND_SENSOR_LOW && cmd <= COMMAND_SENSOR_HIGH)
+       {
+           // set active adc to read from
+           message_tx.data = cmd; //adc_readings[cmd - 1];
+   //        fprintf(stderr, "  read ADC value %d from sensor %d\n", adc_readings[cmd - 1], cmd-1);
+
+           TransmitLen = 2;
+           // Fill out the TransmitBuffer
+           CopyArray(message_tx.I2CPacket);
+       }
+}
+
 void I2C_Slave_ProcessCMD(unsigned char *message_rx, uint16_t length)
 {
     // make more like a read write register thing
@@ -55,17 +68,8 @@ void I2C_Slave_ProcessCMD(unsigned char *message_rx, uint16_t length)
     // http://nilhcem.com/android-things/arduino-as-an-i2c-slave
     uint8_t cmd = message_rx[0];
     unsigned char *package = message_rx + 1; // ignore the command
-    if (cmd >= COMMAND_SENSOR_LOW && cmd <= COMMAND_SENSOR_HIGH)
-    {
-        // set active adc to read from
-        message_tx.data = adc_readings[cmd - 1];
-//        fprintf(stderr, "  read ADC value %d from sensor %d\n", adc_readings[cmd - 1], cmd-1);
 
-        TransmitLen = 2;
-        // Fill out the TransmitBuffer
-        CopyArray(message_tx.I2CPacket);
-    }
-    else if (cmd == COMMAND_HEATER_MODE)
+    if (cmd == COMMAND_HEATER_MODE)
     {
         // Set the heater mode
         heater_mode = package[0];

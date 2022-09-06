@@ -17,11 +17,13 @@
  * cmd: The command/register address received
  * */
 void heater_proccess();
+void adc_proccess(unsigned char cmd);
 void I2C_Slave_ProcessCMD(unsigned char *message, uint16_t length);
 void initGPIO();
 void set_adc_channel(int channel);
 void initClockTo16MHz();
 void initADC();
+
 
 
 #endif

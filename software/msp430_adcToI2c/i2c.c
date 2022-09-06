@@ -61,12 +61,15 @@ void __attribute__ ((interrupt(USCIAB0TX_VECTOR))) USCIAB0TX_ISR (void)
 #endif
 {
   // UCB0IV;
-  if (IFG2 & UCB0RXIFG)                 // Receive Data Interrupt
+  if (IFG2 & UCB0RXIFG)       // Receive Data Interrupt
   {
-      P5OUT |= LED_GREEN;                          // LED_1 on
-      P5OUT &= ~LED_YELLOW;                         // LED_2 off
+      P5OUT |= LED_GREEN;     // LED_1 on
+      P5OUT &= ~LED_YELLOW;   // LED_2 off
       // I2C slave
-      *PRxData++ = UCB0RXBUF;                   // Move RX data to address PRxData
+      *PRxData++ = UCB0RXBUF; // Move RX data to address PRxData
+      if(RXByteCtr == 0){     // first byte
+          adc_proccess(UCB0RXBUF);
+      }
       RXByteCtr++;                              // Increment RX byte count
   }
   else if (IFG2 & UCB0TXIFG)            // Transmit Data Interrupt
