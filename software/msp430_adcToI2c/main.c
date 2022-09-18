@@ -17,7 +17,8 @@ volatile unsigned int adc_readings[8];
 unsigned int control_sensor = 0; // sensor used for PWM control
 double target_temperature = -999;
 unsigned int heater_mode = HEATER_MODE_PWM;
-unsigned int current_pwm = 0;
+unsigned int current_pwm = 50; // Currently bit banged 8 bit resoliton
+unsigned int counter = 0;
 
 
 //******************************************************************************
@@ -44,7 +45,7 @@ int main(void) {
       //TODO replace with timer
       ADC12CTL0 |= ADC12SC;                   // Start conversion, software controlled
       __bis_SR_register(CPUOFF + GIE + LPM0_bits);        // LPM0, ADC12_ISR will force exit
-
+      heater_proccess();
     }
 }
 
@@ -112,8 +113,20 @@ void heater_proccess(){
     }else{
         // unknown heater mode
     }
-    // TODO verify PWM works
-    CCR2 = current_pwm;                                 // CCR2 PWM duty cycle 0%
+    // TODO PWM currently dosen't seem to be working so bit banging
+//    CCR2 = current_pwm;                                 // CCR2 PWM duty cycle 0%
+    // temprarary bit bang hack
+    if(current_pwm>counter){
+        P1OUT |= HEATER_PIN;
+        P5OUT |= LED_YELLOW;    // LED_2 on
+    }else{
+        P1OUT &= ~HEATER_PIN;
+        P5OUT &= ~LED_YELLOW;   // LED_2 off
+    }
+    counter++;
+    if(counter>255){
+        counter = 0;
+    }
 }
 
 void initClockTo16MHz()
@@ -134,11 +147,12 @@ void initGPIO()
     P5DIR |= 0x0F;                            // Set P1.0 to output direction
     P5OUT &= ~(LED_YELLOW | LED_GREEN);       // Turn off red led
     P1DIR |= HEATER_PIN;                      // P1.7 output
-    P1SEL |= HEATER_PIN;                      // P1.7 TA2 options
-    CCR0 = 512-1;                             // PWM Period
-    CCTL2 = OUTMOD_7;                         // CCR2 reset/set
-    CCR2 = 0;                                 // CCR2 PWM duty cycle 0%
-    TACTL = TASSEL_2 + MC_1;                  // SMCLK, up mode
+//    P1SEL |= HEATER_PIN;                      // P1.7 TA2 options
+    P1OUT &=  ~HEATER_PIN;                    // Turn off the heater
+//    CCR0 = 512-1;                             // PWM Period
+//    CCTL2 = OUTMOD_7;                         // CCR2 reset/set
+//    CCR2 = 100;                                 // CCR2 PWM duty cycle 0%
+//    TACTL = TASSEL_2 + MC_1;                  // SMCLK, up mode
 }
 
 

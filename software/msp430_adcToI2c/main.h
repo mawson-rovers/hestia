@@ -4,7 +4,7 @@
 // GPIO PINS
 #define LED_GREEN 0x04
 #define LED_YELLOW 0x08
-#define HEATER_PIN 0x07
+#define HEATER_PIN 0x80
 
 // heater modes
 #define HEATER_MODE_OFF 0x00
