@@ -63,8 +63,8 @@ void __attribute__ ((interrupt(USCIAB0TX_VECTOR))) USCIAB0TX_ISR (void)
   // UCB0IV;
   if (IFG2 & UCB0RXIFG)       // Receive Data Interrupt
   {
-      P5OUT |= LED_GREEN;     // LED_1 on
-      P5OUT &= ~LED_YELLOW;   // LED_2 off
+//      P5OUT |= LED_GREEN;     // LED_1 on
+//      P5OUT &= ~LED_YELLOW;   // LED_2 off
       // I2C slave
       *PRxData++ = UCB0RXBUF; // Move RX data to address PRxData
       if(RXByteCtr == 0){     // first byte
@@ -103,8 +103,8 @@ void __attribute__ ((interrupt(USCIAB0RX_VECTOR))) USCIAB0RX_ISR (void)
 {
     if (UCB0STAT & UCSTPIFG)                        //Stop or NACK Interrupt
     {
-        P5OUT |= LED_YELLOW;                          // Yellow LED on
-        P5OUT &= ~LED_GREEN;                          // Green LED off
+//        P5OUT |= LED_YELLOW;                          // Yellow LED on
+//        P5OUT &= ~LED_GREEN;                          // Green LED off
         PRxData = (unsigned char *)RxBuffer;
 //        fprintf(stderr, "got cmd %d, length %d\n", (uint8_t) PRxData[0], RXByteCtr);
         I2C_Slave_ProcessCMD(PRxData, RXByteCtr);
@@ -118,8 +118,8 @@ void __attribute__ ((interrupt(USCIAB0RX_VECTOR))) USCIAB0RX_ISR (void)
     }
     if (UCB0STAT & UCSTTIFG)                        //Start Interrupt???
     {
-        P5OUT |= LED_YELLOW;                          // Yellow LED on
-        P5OUT |= LED_GREEN;                           // Green LED on
+//        P5OUT |= LED_YELLOW;                          // Yellow LED on
+//        P5OUT |= LED_GREEN;                           // Green LED on
         UCB0STAT &= ~(UCSTTIFG);                    //Clear START Flags
         TransmitIndex = 0;
         // clear the rx buffer
