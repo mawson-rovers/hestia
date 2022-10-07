@@ -1,7 +1,6 @@
 #include <msp430.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <stdio.h>
 #include "main.h"
 #include "i2c.h"
 
@@ -25,6 +24,8 @@ void CopyArray(uint8_t *source)
     }
     TransmitIndex = 0;
 }
+
+
 
 
 //******************************************************************************
@@ -106,7 +107,6 @@ void __attribute__ ((interrupt(USCIAB0RX_VECTOR))) USCIAB0RX_ISR (void)
 //        P5OUT |= LED_YELLOW;                          // Yellow LED on
 //        P5OUT &= ~LED_GREEN;                          // Green LED off
         PRxData = (unsigned char *)RxBuffer;
-//        fprintf(stderr, "got cmd %d, length %d\n", (uint8_t) PRxData[0], RXByteCtr);
         I2C_Slave_ProcessCMD(PRxData, RXByteCtr);
         RXByteCtr = 0;
         if(UCB0STAT){

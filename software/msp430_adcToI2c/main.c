@@ -8,7 +8,6 @@
 #include <msp430.h> 
 #include <stdint.h>
 #include <stdbool.h>
-#include <stdio.h>
 #include "main.h"
 #include "i2c.h"
 
