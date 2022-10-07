@@ -1,3 +1,4 @@
+import contextlib
 import logging
 from enum import Enum
 
@@ -7,7 +8,8 @@ logger = logging.getLogger(name='hestia.heater')
 logger.setLevel(logging.DEBUG)
 
 MSP430_I2C_ADDR = 0x08
-MSP430_REG_HEATER = 0x40
+MSP430_REG_HEATER_MODE = 0x40
+MSP430_REG_PWM_FREQUENCY = 0x43
 
 
 class HeaterMode(Enum):
@@ -18,9 +20,21 @@ class HeaterMode(Enum):
 
 
 def enable_heater():
-    i2c_write_int(MSP430_I2C_ADDR, MSP430_REG_HEATER, HeaterMode.PWM.value, byteorder="little")
+    i2c_write_int(MSP430_I2C_ADDR, MSP430_REG_HEATER_MODE, HeaterMode.PWM.value, byteorder="little")
 
 
 def disable_heater():
-    i2c_write_int(MSP430_I2C_ADDR, MSP430_REG_HEATER, HeaterMode.OFF.value, byteorder="little")
+    i2c_write_int(MSP430_I2C_ADDR, MSP430_REG_HEATER_MODE, HeaterMode.OFF.value, byteorder="little")
 
+
+def set_heater_pwm(pwm_freq: int):
+    i2c_write_int(MSP430_I2C_ADDR, MSP430_REG_PWM_FREQUENCY, pwm_freq, byteorder="little")
+
+
+@contextlib.contextmanager
+def on():
+    enable_heater()
+    try:
+        yield None
+    finally:
+        disable_heater()
