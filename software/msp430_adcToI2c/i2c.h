@@ -15,7 +15,7 @@
 
 union I2C_Packet_t{
  uint16_t data;
- uint8_t I2CPacket[sizeof(int)];
+ uint8_t I2CPacket[sizeof(uint16_t)];
 };
 
 static uint8_t TransmitLen = 0;
