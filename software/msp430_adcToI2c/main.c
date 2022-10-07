@@ -16,7 +16,7 @@ volatile unsigned int adc_readings[8];
 unsigned int control_sensor = 0; // sensor used for PWM control
 double target_temperature = -999;
 unsigned int heater_mode = HEATER_MODE_OFF;
-unsigned int current_pwm = 50; // Currently bit banged 8 bit resoliton
+unsigned int current_pwm = HEATER_PWM_FREQ; // Currently bit-banged 8 bit resolution
 unsigned int counter = 0;
 
 
@@ -108,7 +108,7 @@ void heater_proccess(){
     }else if(heater_mode == HEATER_MODE_PID){
         // #TODO PID controller
     }else if(heater_mode == HEATER_MODE_PWM){
-
+        current_pwm = HEATER_PWM_FREQ;
     }else{
         // unknown heater mode
     }

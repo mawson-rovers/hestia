@@ -11,6 +11,8 @@
 #define HEATER_MODE_PID 0x01
 #define HEATER_MODE_PWM 0x02
 
+#define HEATER_PWM_FREQ 50
+
 // ADC
 #define ADC_MIN_VALUE 0x10
 #define ADC_UNKNOWN_VALUE 0xffff
