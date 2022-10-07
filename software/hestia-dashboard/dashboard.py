@@ -9,7 +9,7 @@ from nicegui import ui
 from smbus2 import SMBus
 
 logger = logging.getLogger(name='hestia.dashboard')
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 
 @dataclass
@@ -115,11 +115,10 @@ def format_addr(addr: int) -> str:
 
 def render_sensor(sensor, callback=None):
     with ui.card():
-        ui.label("{} ({})".format(sensor.label, sensor.id)) \
-            .tooltip(format_addr(sensor.addr))
+        ui.label("{} ({}, {})".format(sensor.label, sensor.id, format_addr(sensor.addr)))
         temp_label = ui.label("n/a")
         if callback:
-            ui.timer(1.0 + random(), lambda: callback(temp_label))
+            ui.timer(5.0 + random() * 5.0, lambda: callback(temp_label))
 
 
 def main():
@@ -129,8 +128,9 @@ def main():
     ui.markdown('### Primary sensors')
     with ui.row():
         for sensor in PRIMARY_SENSORS:
-            render_sensor(sensor, lambda label, sensor2=sensor: label.set_text(format_temp(
-                read_msp430_temp(BEAGLE_I2C_BUS, sensor2.addr))))
+            render_sensor(sensor, lambda label, sensor2=sensor: label.set_text(
+                format_addr(sensor2.addr) + ': ' +
+                format_temp(read_msp430_temp(BEAGLE_I2C_BUS, sensor2.addr))))
 
     ui.markdown('### Secondary sensors')
     with ui.row():
