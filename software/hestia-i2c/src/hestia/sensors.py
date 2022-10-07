@@ -2,7 +2,7 @@ import logging
 import math
 from dataclasses import dataclass
 
-from smbus2 import SMBus
+from hestia.i2c import i2c_read_int
 
 logger = logging.getLogger(name='hestia.sensors')
 logger.setLevel(logging.DEBUG)
@@ -59,22 +59,10 @@ MAX31725_REG_MAX = 0x03
 MAX31725_CF_LSB = 0.00390625
 
 
-def read_int(i2c_device, addr, reg, byteorder="big", signed=False):
-    with SMBus(i2c_device) as bus:
-        return int.from_bytes(bus.read_i2c_block_data(
-            addr, reg, 2), byteorder=byteorder, signed=signed)
-
-
-def write_int(i2c_device, addr, reg, val, byteorder="big", signed=False):
-    with SMBus(i2c_device) as bus:
-        bus.write_i2c_block_data(addr, reg, list(
-            int.to_bytes(val, 2, byteorder=byteorder, signed=signed)))
-
-
-def read_max31725_temp(i2c_device: int, addr: int) -> float:
+def read_max31725_temp(addr: int) -> float:
     # logic adapted from https://os.mbed.com/teams/MaximIntegrated/code/MAX31725_Accurate_Temperature_Sensor/
     try:
-        t = read_int(i2c_device, addr, MAX31725_REG_TEMP, signed=True)
+        t = i2c_read_int(addr, MAX31725_REG_TEMP, signed=True)
         # todo: add 64 deg if extended format enabled
         return float(t) * MAX31725_CF_LSB
     except OSError as error:
@@ -82,9 +70,9 @@ def read_max31725_temp(i2c_device: int, addr: int) -> float:
         return math.nan
 
 
-def read_msp430_temp(i2c_device: int, addr: int) -> float:
+def read_msp430_temp(addr: int) -> float:
     try:
-        adc_val = read_int(i2c_device, MSP430_I2C_ADDR, addr, byteorder="little", signed=False)
+        adc_val = i2c_read_int(MSP430_I2C_ADDR, addr, byteorder="little", signed=False)
         logger.debug('Read value <%d> from ADC addr %s', adc_val, format_addr(addr))
         return (1 / (1 / NB21K00103_THERMISTOR_REF_TEMP_K +
                      1 / NB21K00103_THERMISTOR_B_VALUE *
