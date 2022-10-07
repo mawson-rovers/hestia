@@ -3,15 +3,6 @@
 #define SLAVE_ADDR  0x08
 #define MAX_BUFFER_SIZE 2
 
-// ic2 commands
-// #TODO think there was some example code that did this better but anyway
-#define COMMAND_SENSOR_LOW       0x01
-#define COMMAND_SENSOR_HIGH      0x08
-#define COMMAND_HEATER_MODE      0x40
-#define COMMAND_TARGET_TEMP      0x41
-#define COMMAND_TARGET_SENSOR    0x42
-#define COMMAND_PWM_FREQUENCY    0x43
-#define COMMAND_RESET            0x50
 
 union I2C_Packet_t{
  uint16_t data;

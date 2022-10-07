@@ -6,12 +6,21 @@
 #define LED_YELLOW 0x08
 #define HEATER_PIN 0x80
 
+// I2C commands
+#define COMMAND_SENSOR_LOW       0x01
+#define COMMAND_SENSOR_HIGH      0x08
+#define COMMAND_HEATER_MODE      0x40
+#define COMMAND_TARGET_TEMP      0x41
+#define COMMAND_TARGET_SENSOR    0x42
+#define COMMAND_PWM_FREQUENCY    0x43
+#define COMMAND_RESET            0x50
+
 // heater modes
 #define HEATER_MODE_OFF 0x00
 #define HEATER_MODE_PID 0x01
 #define HEATER_MODE_PWM 0x02
 
-#define HEATER_PWM_FREQ 50
+#define HEATER_PWM_FREQ_DEFAULT 50
 
 // ADC
 #define ADC_MIN_VALUE 0x10

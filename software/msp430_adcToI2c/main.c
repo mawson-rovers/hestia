@@ -16,7 +16,7 @@ volatile unsigned int adc_readings[8];
 unsigned int control_sensor = 0; // sensor used for PWM control
 double target_temperature = -999;
 unsigned int heater_mode = HEATER_MODE_OFF;
-unsigned int current_pwm = HEATER_PWM_FREQ; // Currently bit-banged 8 bit resolution
+unsigned int current_pwm = HEATER_PWM_FREQ_DEFAULT; // Currently bit-banged 8 bit resolution
 unsigned int counter = 0;
 
 
@@ -102,29 +102,33 @@ void I2C_Slave_ProcessCMD(unsigned char *message_rx, uint16_t length)
     // TOOD checksum??
 }
 
-void heater_proccess(){
-    if(heater_mode == HEATER_MODE_OFF){
-        current_pwm = 0;
-    }else if(heater_mode == HEATER_MODE_PID){
-        // #TODO PID controller
-    }else if(heater_mode == HEATER_MODE_PWM){
-        current_pwm = HEATER_PWM_FREQ;
-    }else{
-        // unknown heater mode
+void heater_proccess()
+{
+    if (heater_mode == HEATER_MODE_PWM)
+    {
+        // TODO PWM currently dosen't seem to be working so bit banging
+        // CCR2 = current_pwm;                                 // CCR2 PWM duty cycle 0%
+        if (current_pwm > counter)
+        {
+            P1OUT |= HEATER_PIN;
+            P5OUT |= LED_YELLOW;    // LED_2 on
+        }
+        else
+        {
+            P1OUT &= ~HEATER_PIN;
+            P5OUT &= ~LED_YELLOW;   // LED_2 off
+        }
+        counter++;
+        if (counter > 255)
+        {
+            counter = 0;
+        }
     }
-    // TODO PWM currently dosen't seem to be working so bit banging
-//    CCR2 = current_pwm;                                 // CCR2 PWM duty cycle 0%
-    // temprarary bit bang hack
-    if(current_pwm>counter){
-        P1OUT |= HEATER_PIN;
-        P5OUT |= LED_YELLOW;    // LED_2 on
-    }else{
+    else
+    {
+        // just turn everything off
         P1OUT &= ~HEATER_PIN;
         P5OUT &= ~LED_YELLOW;   // LED_2 off
-    }
-    counter++;
-    if(counter>255){
-        counter = 0;
     }
 }
 
