@@ -15,7 +15,7 @@ union I2C_Packet_t message_tx;
 volatile unsigned int adc_readings[8];
 unsigned int control_sensor = 0; // sensor used for PWM control
 double target_temperature = -999;
-unsigned int heater_mode = HEATER_MODE_PWM;
+unsigned int heater_mode = HEATER_MODE_OFF;
 unsigned int current_pwm = 50; // Currently bit banged 8 bit resoliton
 unsigned int counter = 0;
 
@@ -29,7 +29,7 @@ unsigned int counter = 0;
 
 int main(void) {
     WDTCTL = WDTPW | WDTHOLD;   // Stop watchdog timer
-    message_tx.data = 0xFF; // init to impossible/hard to reach value for fault detection
+    message_tx.data = ADC_UNKNOWN_VALUE; // init to impossible/hard to reach value for fault detection
 
     initClockTo16MHz();
     initGPIO();
@@ -52,8 +52,8 @@ void adc_proccess(unsigned char cmd){
     if (cmd >= COMMAND_SENSOR_LOW && cmd <= COMMAND_SENSOR_HIGH)
        {
            // set active adc to read from
-           message_tx.data = cmd; //adc_readings[cmd - 1];
-   //        fprintf(stderr, "  read ADC value %d from sensor %d\n", adc_readings[cmd - 1], cmd-1);
+           unsigned int sensor = cmd - 1;
+           message_tx.data = adc_readings[sensor];
 
            TransmitLen = 2;
            // Fill out the TransmitBuffer
@@ -184,15 +184,15 @@ void __attribute__ ((interrupt(ADC12_VECTOR))) ADC12_ISR (void)
 #error Compiler not supported!
 #endif
 {
-    // TODO apply low pass filter
-    adc_readings[0] = ADC12MEM0;             // Move A0 results, IFG is cleared
-    adc_readings[1] = ADC12MEM1;             // Move A1 results, IFG is cleared
-    adc_readings[2] = ADC12MEM2;             // Move A2 results, IFG is cleared
-    adc_readings[3] = ADC12MEM3;             // Move A3 results, IFG is cleared
-    adc_readings[4] = ADC12MEM4;             // Move A4 results, IFG is cleared
-    adc_readings[5] = ADC12MEM5;             // Move A5 results, IFG is cleared
-    adc_readings[6] = ADC12MEM6;             // Move A6 results, IFG is cleared
-    adc_readings[7] = ADC12MEM7;             // Move A7 results, IFG is cleared
+    adc_readings[0] = ADC12MEM0 >= ADC_MIN_VALUE ? ADC12MEM0 : ADC_UNKNOWN_VALUE;
+    adc_readings[1] = ADC12MEM1 >= ADC_MIN_VALUE ? ADC12MEM1 : ADC_UNKNOWN_VALUE;
+    adc_readings[2] = ADC12MEM2 >= ADC_MIN_VALUE ? ADC12MEM2 : ADC_UNKNOWN_VALUE;
+    adc_readings[3] = ADC12MEM3 >= ADC_MIN_VALUE ? ADC12MEM3 : ADC_UNKNOWN_VALUE;
+    adc_readings[4] = ADC12MEM4 >= ADC_MIN_VALUE ? ADC12MEM4 : ADC_UNKNOWN_VALUE;
+    adc_readings[5] = ADC12MEM5 >= ADC_MIN_VALUE ? ADC12MEM5 : ADC_UNKNOWN_VALUE;
+    adc_readings[6] = ADC12MEM6 >= ADC_MIN_VALUE ? ADC12MEM6 : ADC_UNKNOWN_VALUE;
+    adc_readings[7] = ADC12MEM7 >= ADC_MIN_VALUE ? ADC12MEM7 : ADC_UNKNOWN_VALUE;
+    // IFG is cleared by reads
 
     __bic_SR_register_on_exit(CPUOFF);      // Clear CPUOFF bit from 0(SR)
 }
