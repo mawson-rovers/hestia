@@ -1,8 +1,10 @@
-from smbus2 import SMBus
+"""
+This is an internal module. See :meth:`hestia.board.Hestia` for the public API.
 
-##
-# Utility methods for I2C interface using smbus2
-##
+Utility methods for I2C interface using smbus2
+"""
+
+from smbus2 import SMBus
 
 BEAGLE_I2C_BUS = 2
 

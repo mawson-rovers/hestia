@@ -1,10 +1,12 @@
+import contextlib
 import logging
 import math
 from dataclasses import dataclass
 from enum import Enum
+from time import sleep
 from typing import Dict, List
 
-from hestia import sensors
+from hestia import sensors, heater
 
 logger = logging.getLogger('hestia.board')
 
@@ -71,3 +73,25 @@ class Hestia:
             else:
                 logger.warning('Unknown sensor interface: %s', sensor.iface)
         return values
+
+    @contextlib.contextmanager
+    def heating(self, power_level: int = 50):
+        heater.set_heater_pwm(power_level)
+        heater.enable_heater()
+        try:
+            yield self
+        finally:
+            heater.disable_heater()
+
+    def heating_thermostat(self, temp: int = 80):
+        heater.set_heater_pwm(255)
+        try:
+            while True:
+                t = self.read_center_temp()
+                if t < temp - 1:
+                    heater.enable_heater()
+                else:
+                    heater.disable_heater()
+                sleep(5)
+        finally:
+            heater.disable_heater()  # always disable heater at end

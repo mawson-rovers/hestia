@@ -1,4 +1,7 @@
-import contextlib
+"""
+This is an internal module. See :meth:`hestia.board.Hestia` for the public API.
+"""
+
 import logging
 from enum import Enum
 
@@ -29,12 +32,3 @@ def disable_heater():
 
 def set_heater_pwm(pwm_freq: int):
     i2c_write_int(MSP430_I2C_ADDR, MSP430_REG_PWM_FREQUENCY, pwm_freq, byteorder="little")
-
-
-@contextlib.contextmanager
-def on():
-    enable_heater()
-    try:
-        yield None
-    finally:
-        disable_heater()

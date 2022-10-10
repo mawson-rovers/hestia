@@ -1,3 +1,7 @@
+"""
+This is an internal module. See :meth:`hestia.board.Hestia` for the public API.
+"""
+
 import logging
 import math
 
