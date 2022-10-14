@@ -36,7 +36,7 @@ def main():
                   flush=True)
 
         while True:
-            timestamp = datetime.now().timestamp()
+            timestamp = datetime.now().strftime("%Y-%m-%d %T.%f")
             values = hestia.read_sensor_values()
             if not all(map(math.isnan, values.values())):
                 print(timestamp,
