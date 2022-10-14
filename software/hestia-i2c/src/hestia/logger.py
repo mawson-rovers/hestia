@@ -18,7 +18,8 @@ def main():
     if not log_path.exists():
         log_path.mkdir(parents=True)
 
-    file = log_path / ("hestia-data-%s.csv" % datetime.today().strftime('%Y-%m-%d'))
+    start_date = datetime.now()
+    file = log_path / ("hestia-data-%s.csv" % start_date.strftime('%Y-%m-%d'))
     write_header = not file.exists()
 
     hestia = Hestia()
@@ -44,7 +45,10 @@ def main():
                       sep=",",
                       flush=True)
             sleep(5)
+            if datetime.now().day > start_date.day:
+                return  # start a new file if day ticks over
 
 
 if __name__ == '__main__':
-    main()
+    while True:  # loops for each new day
+        main()
