@@ -76,12 +76,14 @@ class Hestia:
 
     @contextlib.contextmanager
     def heating(self, power_level: int = 50):
+        logger.info('Enabling heating at power level %d' % power_level)
         heater.set_heater_pwm(power_level)
         heater.enable_heater()
         try:
             yield self
         finally:
             heater.disable_heater()
+            logger.info('Disabled heating')
 
     def heating_thermostat(self, temp: int = 80):
         heater.set_heater_pwm(255)
@@ -92,6 +94,6 @@ class Hestia:
                     heater.enable_heater()
                 else:
                     heater.disable_heater()
-                sleep(5)
+                sleep(1)
         finally:
             heater.disable_heater()  # always disable heater at end
