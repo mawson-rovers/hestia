@@ -1,4 +1,5 @@
 import logging
+import math
 from time import sleep
 
 from hestia import Hestia
@@ -6,6 +7,12 @@ from hestia import Hestia
 log = logging.getLogger(__name__)
 
 hestia = Hestia()
+
+
+def test_sensors():
+    for sensor, temp in hestia.read_sensor_values().items():
+        log.info('%s (0x%02x) => %.2f', sensor.label, sensor.addr, temp)
+        assert 10.0 <= temp <= 80.0 or math.isnan(temp)
 
 
 def test_heater_works():

@@ -51,3 +51,26 @@ def read_msp430_temp(addr: int) -> float:
     except OSError as error:
         logger.warning("Could not read MSP430 input 0x%02x: %s", addr, error)
         return math.nan
+
+
+def ads7828_channel_select(addr: int) -> int:
+    # implement crazy channel select - top bit is odd/even, low bits are floor(addr/2)
+    # see ADS7828 datasheet for more details
+    return ((addr & 0x01) << 2) | (addr >> 1)
+
+
+def ads7828_command(addr: int) -> int:
+    # set SD = 1, PD0 = 1 (see ADS7828 datasheet, p11)
+    return 0x84 | (ads7828_channel_select(addr) << 4)
+
+
+def read_ads7828_temp(addr: int) -> float:
+    try:
+        adc_cmd = ads7828_command(addr)
+        logger.debug('Converted addr 0x%02x to ADS7828 command: %s', addr, '{0:b}'.format(adc_cmd))
+        adc_val = i2c_read_int(0x48, adc_cmd, byteorder="big", signed=False)
+        logger.info('Read value <%d> from ADC addr 0x%02x', adc_val, addr)
+        return adc_val
+    except OSError as error:
+        logger.warning("Could not read ADS7828 input 0x%02x: %s", addr, error)
+        return math.nan
