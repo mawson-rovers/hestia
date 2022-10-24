@@ -67,7 +67,7 @@ class Hestia:
             if sensor.iface == SensorInterface.MSP430:
                 values[sensor] = sensors.read_msp430_temp(sensor.addr)
             elif sensor.iface == SensorInterface.ADS7828:
-                values[sensor] = math.nan  # todo - implement ADS reads
+                values[sensor] = sensors.read_ads7828_temp(sensor.addr)
             elif sensor.iface == SensorInterface.MAX31725:
                 values[sensor] = sensors.read_max31725_temp(sensor.addr)
             else:

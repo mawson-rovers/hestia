@@ -11,13 +11,14 @@ logger = logging.getLogger(name='hestia.sensors')
 logger.setLevel(logging.DEBUG)
 
 MSP430_I2C_ADDR = 0x08
-
 MSP430_ADC_RESOLUTION = 1 << 12
+
 NB21K00103_THERMISTOR_B_VALUE = 3630
 ZERO_CELSIUS_IN_KELVIN = 273.15
 NB21K00103_THERMISTOR_REF_TEMP_K = 25.0 + ZERO_CELSIUS_IN_KELVIN
 
-ADS7828_I2C_ADDR = 0x4A
+ADS7828_I2C_ADDR = 0x4a
+ADS7828_ADC_RESOLUTION = 1 << 12
 
 MAX31725_REG_TEMP = 0x00
 MAX31725_REG_CONFIG = 0x01
@@ -42,14 +43,19 @@ def read_msp430_temp(addr: int) -> float:
     try:
         adc_val = i2c_read_int(MSP430_I2C_ADDR, addr, byteorder="little", signed=False)
         logger.debug('Read value <%d> from ADC addr 0x%02x', adc_val, addr)
-        return (1 / (1 / NB21K00103_THERMISTOR_REF_TEMP_K +
-                     1 / NB21K00103_THERMISTOR_B_VALUE *
-                     math.log(MSP430_ADC_RESOLUTION / adc_val - 1)) - ZERO_CELSIUS_IN_KELVIN)
-    except (ValueError, ZeroDivisionError):
-        # ignore values out of range (zero/negative)
-        return math.nan
+        return adc_val_to_temp(adc_val, MSP430_ADC_RESOLUTION)
     except OSError as error:
         logger.warning("Could not read MSP430 input 0x%02x: %s", addr, error)
+        return math.nan
+
+
+def adc_val_to_temp(adc_val: int, adc_resolution: int) -> float:
+    try:
+        return (1 / (1 / NB21K00103_THERMISTOR_REF_TEMP_K +
+                     1 / NB21K00103_THERMISTOR_B_VALUE *
+                     math.log(adc_resolution / adc_val - 1)) - ZERO_CELSIUS_IN_KELVIN)
+    except (ValueError, ZeroDivisionError):
+        # ignore values out of range (zero/negative)
         return math.nan
 
 
@@ -70,7 +76,7 @@ def read_ads7828_temp(addr: int) -> float:
         logger.debug('Converted addr 0x%02x to ADS7828 command: %s', addr, '{0:b}'.format(adc_cmd))
         adc_val = i2c_read_int(0x48, adc_cmd, byteorder="big", signed=False)
         logger.info('Read value <%d> from ADC addr 0x%02x', adc_val, addr)
-        return adc_val
+        return adc_val_to_temp(adc_val, ADS7828_ADC_RESOLUTION)
     except OSError as error:
         logger.warning("Could not read ADS7828 input 0x%02x: %s", addr, error)
         return math.nan
