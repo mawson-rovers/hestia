@@ -23,12 +23,15 @@ class HeaterMode(Enum):
 
 
 def enable_heater():
+    logger.info('Enabling heater')
     i2c_write_int(MSP430_I2C_ADDR, MSP430_REG_HEATER_MODE, HeaterMode.PWM.value, byteorder="little")
 
 
 def disable_heater():
+    logger.info('Disabling heater')
     i2c_write_int(MSP430_I2C_ADDR, MSP430_REG_HEATER_MODE, HeaterMode.OFF.value, byteorder="little")
 
 
 def set_heater_pwm(pwm_freq: int):
+    logger.info('Setting heater power level %d' % pwm_freq)
     i2c_write_int(MSP430_I2C_ADDR, MSP430_REG_PWM_FREQUENCY, pwm_freq, byteorder="little")
