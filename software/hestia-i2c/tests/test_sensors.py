@@ -1,4 +1,7 @@
 import logging
+import math
+
+from pytest import approx
 
 from hestia import sensors
 
@@ -25,3 +28,13 @@ def test_ads7828_command():
     assert sensors.ads7828_command(5) == 0b11100100
     assert sensors.ads7828_command(6) == 0b10110100
     assert sensors.ads7828_command(7) == 0b11110100
+
+
+def test_adc_val_to_temp():
+    resolution = 4096
+    assert sensors.adc_val_to_temp(1024, resolution) == approx(0.323, 0.001)
+    assert sensors.adc_val_to_temp(2048, resolution) == approx(25.0, 0.001)
+    assert sensors.adc_val_to_temp(3072, resolution) == approx(54.57, 0.001)
+    assert math.isnan(sensors.adc_val_to_temp(resolution, resolution))
+    assert math.isnan(sensors.adc_val_to_temp(0, resolution))
+    assert math.isnan(sensors.adc_val_to_temp(-250, resolution))

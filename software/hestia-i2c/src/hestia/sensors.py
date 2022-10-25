@@ -55,7 +55,7 @@ def adc_val_to_temp(adc_val: int, adc_resolution: int) -> float:
                      1 / NB21K00103_THERMISTOR_B_VALUE *
                      math.log(adc_resolution / adc_val - 1)) - ZERO_CELSIUS_IN_KELVIN)
     except (ValueError, ZeroDivisionError):
-        # ignore values out of range (zero/negative)
+        # return NaN if value out of range (zero/negative)
         return math.nan
 
 
