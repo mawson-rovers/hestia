@@ -1,0 +1,11 @@
+[Unit]
+Description=Hestia logger
+
+[Service]
+Environment=HESTIA_LOG_PATH=/mnt/data/hestia/logs
+Environment=TZ=Australia/Sydney
+WorkingDirectory=/home/debian/src/hestia-i2c/src
+ExecStart=/home/debian/src/hestia-i2c/venv/bin/python -m hestia.logger
+
+[Install]
+WantedBy=multi-user.target
