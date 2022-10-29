@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Hestia API server</title>
+</head>
+<body>
+
+<h1>Hestia API server</h1>
+<p>Were you looking for the <a href="https://uts.dashboard.space">web app</a>?</p>
+
+<h3>Log files</h3>
+<ul>
+    {% for l in log_files %}
+    <li><a href="{{ l.url }}">{{ l.name }}</a></li>
+    {% endfor %}
+</ul>
+
+<h3>Development resources</h3>
+<ul>
+    <li><a href="/api">JSON API</a></li>
+</ul>
+
+</body>
+</html>

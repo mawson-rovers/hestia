@@ -54,16 +54,18 @@ _sensors = [
 
 
 class Hestia:
-    def sensors(self) -> List[Sensor]:
-        return _sensors.copy()
+    def __init__(self) -> None:
+        super().__init__()
+        self.sensors = _sensors
+        self.center_sensor = self.sensors[0]
 
     def read_center_temp(self) -> float:
-        assert _sensors[0].iface == SensorInterface.MSP430
-        return sensors.read_msp430_temp(_sensors[0].addr)
+        assert self.center_sensor.iface == SensorInterface.MSP430
+        return sensors.read_msp430_temp(self.center_sensor.addr)
 
     def read_sensor_values(self) -> Dict[Sensor, float]:
         values = {}
-        for sensor in self.sensors():
+        for sensor in self.sensors:
             if sensor.iface == SensorInterface.MSP430:
                 values[sensor] = sensors.read_msp430_temp(sensor.addr)
             elif sensor.iface == SensorInterface.ADS7828:

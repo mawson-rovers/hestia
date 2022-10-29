@@ -4,19 +4,47 @@ import sys
 from datetime import datetime
 from pathlib import Path
 from time import sleep
+from typing import List
 
 from hestia import Hestia
 
+LOG_PATH_ENV_VAR = 'HESTIA_LOG_PATH'
 
-def main():
-    try:
-        log_path = Path(os.environ['HESTIA_LOG_PATH'])
-    except KeyError:
+
+def log_path_configured() -> bool:
+    return LOG_PATH_ENV_VAR in os.environ
+
+
+def get_or_create_log_path() -> Path:
+    if not log_path_configured():
         print("Specify HESTIA_LOG_PATH environment variable", file=sys.stderr)
         exit(1)
 
+    log_path = Path(os.environ[LOG_PATH_ENV_VAR])
     if not log_path.exists():
         log_path.mkdir(parents=True)
+
+    return log_path
+
+
+def get_log_files() -> List[Path]:
+    """
+    :return: list of log files in reverse name order (should be most-recent first)
+    """
+    if not log_path_configured():
+        return []
+
+    log_path = Path(os.environ[LOG_PATH_ENV_VAR])
+    if not log_path.exists():
+        return []
+
+    return sorted(list(log_path.glob('hestia-data-*.csv')),
+                  key=lambda f: f.name,
+                  reverse=True)
+
+
+def main():
+    log_path = get_or_create_log_path()
 
     start_date = datetime.now()
     file = log_path / ("hestia-data-%s.csv" % start_date.strftime('%Y-%m-%d'))
