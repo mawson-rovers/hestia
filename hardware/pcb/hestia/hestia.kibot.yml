@@ -8,8 +8,8 @@ global:
 
 preflight:
   fill_zones: true
-  run_drc: true
-  run_erc: true
+  run_drc: false # disabled during v2 board development - MR 2022-10-31
+  run_erc: false # disabled during v2 board development - MR 2022-10-31
   # TODO: make these exclusions more specific or fix them
   filters:
     # DRC known warnings (as of 30 May 2022)
