@@ -13,6 +13,7 @@
 #define COMMAND_TARGET_TEMP      0x41
 #define COMMAND_TARGET_SENSOR    0x42
 #define COMMAND_PWM_FREQUENCY    0x43
+#define COMMAND_GET_PWM          0x4F
 #define COMMAND_RESET            0x50
 
 // heater modes
@@ -32,7 +33,7 @@
  * cmd: The command/register address received
  * */
 void heater_proccess();
-void adc_proccess(unsigned char cmd);
+void proccess_cmd_tx(unsigned char cmd);
 void I2C_Slave_ProcessCMD(unsigned char *message, uint16_t length);
 void initGPIO();
 void set_adc_channel(int channel);

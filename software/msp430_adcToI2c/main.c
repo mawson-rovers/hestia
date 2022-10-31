@@ -48,17 +48,25 @@ int main(void) {
     }
 }
 
-void adc_proccess(unsigned char cmd){
+void proccess_cmd_tx(unsigned char cmd){
     if (cmd >= COMMAND_SENSOR_LOW && cmd <= COMMAND_SENSOR_HIGH)
-       {
-           // set active adc to read from
-           unsigned int sensor = cmd - 1;
-           message_tx.data = adc_readings[sensor];
+    {
+        // set active adc to read from
+        unsigned int sensor = cmd - 1;
+        message_tx.data = adc_readings[sensor];
 
-           TransmitLen = 2;
-           // Fill out the TransmitBuffer
-           CopyArray(message_tx.I2CPacket);
-       }
+        // Fill out the Transmit Buffer
+        TransmitLen = 2;
+        CopyArray(message_tx.I2CPacket);
+    }else if(cmd == COMMAND_GET_PWM){
+        message_tx.data = current_pwm;
+
+        // Fill out hte transmit Buffer
+        TransmitLen = 2;
+        CopyArray(message_tx.I2CPacket);
+    }else{
+        // Uknown command
+    }
 }
 
 void I2C_Slave_ProcessCMD(unsigned char *message_rx, uint16_t length)

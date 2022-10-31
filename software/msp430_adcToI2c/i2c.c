@@ -69,7 +69,7 @@ void __attribute__ ((interrupt(USCIAB0TX_VECTOR))) USCIAB0TX_ISR (void)
       // I2C slave
       *PRxData++ = UCB0RXBUF; // Move RX data to address PRxData
       if(RXByteCtr == 0){     // first byte
-          adc_proccess(UCB0RXBUF);
+          proccess_cmd_tx(UCB0RXBUF);
       }
       RXByteCtr++;                              // Increment RX byte count
   }
