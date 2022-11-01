@@ -50,8 +50,8 @@ def main():
     file = log_path / ("hestia-data-%s.csv" % start_date.strftime('%Y-%m-%d'))
     write_header = not file.exists()
 
-    hestia = Hestia()
-    sensors = hestia.sensors()
+    board = Hestia()
+    sensors = board.sensors
 
     with file.open(mode='a', newline='\r\n') as f:
         print("Logging sensor data to %s..." % file, file=sys.stderr)
@@ -65,7 +65,7 @@ def main():
 
         while True:
             timestamp = datetime.now().strftime("%Y-%m-%d %T.%f")
-            values = hestia.read_sensor_values()
+            values = board.read_sensor_values()
             if not all(map(math.isnan, values.values())):
                 print(timestamp,
                       *['%.4f' % values[s] if not math.isnan(values[s]) else '' for s in sensors],
@@ -73,7 +73,7 @@ def main():
                       sep=",",
                       flush=True)
             sleep(5)
-            if datetime.now().day > start_date.day:
+            if datetime.now().day != start_date.day:
                 return  # start a new file if day ticks over
 
 
