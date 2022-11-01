@@ -24,6 +24,8 @@ def api():
         "sensors": sensor_data,
         "center_temp": board.read_center_temp(),
         "heater": "OFF",
+        "heater_voltage": 0.0,
+        "heater_current": 0.0,
         "log_files": get_log_files(attrs=('name', 'url')),
     })
 
