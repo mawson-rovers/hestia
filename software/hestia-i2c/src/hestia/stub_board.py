@@ -31,7 +31,7 @@ _stub_values = {
 
 class StubHestia(Hestia):
     def read_sensor_values(self) -> Dict[Sensor, float]:
-        return {s: _stub_values.get(s.id, math.nan) for s in self.sensors()}
+        return {s: _stub_values.get(s.id, math.nan) for s in self.sensors}
 
     def read_center_temp(self) -> float:
         return _stub_values['TH1']
