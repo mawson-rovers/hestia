@@ -1,30 +1,13 @@
 import contextlib
 import logging
-import math
-from dataclasses import dataclass
-from enum import Enum
+from collections import OrderedDict
 from time import sleep
-from typing import Dict, List
+from typing import Dict
 
-from hestia import sensors, heater
+from hestia import heater
+from hestia.sensors import Sensor, SensorInterface
 
 logger = logging.getLogger('hestia.board')
-
-
-class SensorInterface(str, Enum):
-    MSP430 = 'MSP430'
-    ADS7828 = 'ADS7828'
-    MAX31725 = 'MAX31725'
-
-
-@dataclass(frozen=True)
-class Sensor:
-    id: str
-    iface: SensorInterface
-    addr: int
-    label: str
-    pos_x: float = 0.0
-    pos_y: float = 0.0
 
 
 _sensors = [
@@ -60,21 +43,10 @@ class Hestia:
         self.center_sensor = self.sensors[0]
 
     def read_center_temp(self) -> float:
-        assert self.center_sensor.iface == SensorInterface.MSP430
-        return sensors.read_msp430_temp(self.center_sensor.addr)
+        return self.center_sensor.read_temp()
 
     def read_sensor_values(self) -> Dict[Sensor, float]:
-        values = {}
-        for sensor in self.sensors:
-            if sensor.iface == SensorInterface.MSP430:
-                values[sensor] = sensors.read_msp430_temp(sensor.addr)
-            elif sensor.iface == SensorInterface.ADS7828:
-                values[sensor] = sensors.read_ads7828_temp(sensor.addr)
-            elif sensor.iface == SensorInterface.MAX31725:
-                values[sensor] = sensors.read_max31725_temp(sensor.addr)
-            else:
-                logger.warning('Unknown sensor interface: %s', sensor.iface)
-        return values
+        return OrderedDict((s, s.read_temp()) for s in self.sensors)
 
     @contextlib.contextmanager
     def heating(self, power_level: int = 50):

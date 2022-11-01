@@ -4,6 +4,8 @@ This is an internal module. See :meth:`hestia.board.Hestia` for the public API.
 
 import logging
 import math
+from dataclasses import dataclass
+from enum import Enum
 
 from hestia.i2c import i2c_read_int
 
@@ -26,6 +28,33 @@ MAX31725_REG_THYST_LOW_TRIP = 0x02
 MAX31725_REG_TOS_HIGH_TRIP = 0x03
 MAX31725_REG_MAX = 0x03
 MAX31725_CF_LSB = 0.00390625
+
+
+class SensorInterface(str, Enum):
+    MSP430 = 'MSP430'
+    ADS7828 = 'ADS7828'
+    MAX31725 = 'MAX31725'
+
+
+@dataclass(frozen=True)
+class Sensor:
+    id: str
+    iface: SensorInterface
+    addr: int
+    label: str
+    pos_x: float = 0.0
+    pos_y: float = 0.0
+
+    def read_temp(self):
+        if self.iface == SensorInterface.MSP430:
+            return read_msp430_temp(self.addr)
+        elif self.iface == SensorInterface.ADS7828:
+            return read_ads7828_temp(self.addr)
+        elif self.iface == SensorInterface.MAX31725:
+            return read_max31725_temp(self.addr)
+        else:
+            logger.warning('Unknown sensor interface: %s', self.iface)
+            return math.nan
 
 
 def read_max31725_temp(addr: int) -> float:
