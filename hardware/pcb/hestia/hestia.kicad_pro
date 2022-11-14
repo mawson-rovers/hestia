@@ -383,7 +383,7 @@
       "idf": "",
       "netlist": "hestia.net",
       "specctra_dsn": "",
-      "step": "",
+      "step": "../../../build/hestia-2022-10-31.STEP",
       "vrml": ""
     },
     "page_layout_descr_file": ""
