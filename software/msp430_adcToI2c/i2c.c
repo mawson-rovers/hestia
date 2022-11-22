@@ -12,14 +12,12 @@ unsigned char *PRxData;                     // Pointer to RX data
 unsigned char RXByteCtr;
 volatile unsigned char RxBuffer[128];       // Allocate 128 byte of RAMk
 
-void CopyArray(uint8_t *source)
-{
+void CopyArray(uint8_t *source) {
     // copy data into transmitt buffer
     //TODO disable interupt
     //TODO take sensor message
     uint8_t copyIndex = 0;
-    for (copyIndex = 0; copyIndex < MAX_BUFFER_SIZE; copyIndex++)
-    {
+    for (copyIndex = 0; copyIndex < MAX_BUFFER_SIZE; copyIndex++) {
         TransmitBuffer[copyIndex] = source[copyIndex];
     }
     TransmitIndex = 0;
@@ -33,8 +31,7 @@ void CopyArray(uint8_t *source)
 //******************************************************************************
 
 
-void initI2C()
-{
+void initI2C() {
     UCB0CTL1 |= UCSWRST;                      // Enable SW reset
     UCB0CTL0 = UCMODE_3 + UCSYNC;             // I2C Slave, synchronous mode
     UCB0I2COA = SLAVE_ADDR;                   // Own Address
@@ -56,35 +53,34 @@ void initI2C()
 #pragma vector = USCIAB0TX_VECTOR
 __interrupt void USCIAB0TX_ISR(void)
 #elif defined(__GNUC__)
-void __attribute__ ((interrupt(USCIAB0TX_VECTOR))) USCIAB0TX_ISR (void)
+void __attribute__ ((interrupt(USCIAB0TX_VECTOR))) USCIAB0TX_ISR(void)
 #else
 #error Compiler not supported!
 #endif
 {
-  // UCB0IV;
-  if (IFG2 & UCB0RXIFG)       // Receive Data Interrupt
-  {
+    // UCB0IV;
+    if (IFG2 & UCB0RXIFG)       // Receive Data Interrupt
+    {
 //      P5OUT |= LED_GREEN;     // LED_1 on
 //      P5OUT &= ~LED_YELLOW;   // LED_2 off
-      // I2C slave
-      *PRxData++ = UCB0RXBUF; // Move RX data to address PRxData
-      if(RXByteCtr == 0){     // first byte
-          proccess_cmd_tx(UCB0RXBUF);
-      }
-      RXByteCtr++;                              // Increment RX byte count
-  }
-  else if (IFG2 & UCB0TXIFG)            // Transmit Data Interrupt
-  {
+        // I2C slave
+        *PRxData++ = UCB0RXBUF; // Move RX data to address PRxData
+        if (RXByteCtr == 0) {     // first byte
+            process_cmd_tx(UCB0RXBUF);
+        }
+        RXByteCtr++;                              // Increment RX byte count
+    } else if (IFG2 & UCB0TXIFG)            // Transmit Data Interrupt
+    {
 //      P5OUT |= LED_YELLOW;                          // LED_2 on
 //      P5OUT &= ~LED_GREEN;                         // LED_1 off
-      //Must write to UCB0TXBUF
-      TransmitLen = 2;
-      if(TransmitIndex < TransmitLen & TransmitIndex < MAX_BUFFER_SIZE){
-          UCB0TXBUF = TransmitBuffer[TransmitIndex++];
-      }else{
-          UCB0TXBUF = 0; // Out of range
-      }
-  }
+        //Must write to UCB0TXBUF
+        TransmitLen = 2;
+        if ((TransmitIndex < TransmitLen) & TransmitIndex < MAX_BUFFER_SIZE) {
+            UCB0TXBUF = TransmitBuffer[TransmitIndex++];
+        } else {
+            UCB0TXBUF = 0; // Out of range
+        }
+    }
 }
 
 
@@ -97,7 +93,7 @@ void __attribute__ ((interrupt(USCIAB0TX_VECTOR))) USCIAB0TX_ISR (void)
 #pragma vector = USCIAB0RX_VECTOR
 __interrupt void USCIAB0RX_ISR(void)
 #elif defined(__GNUC__)
-void __attribute__ ((interrupt(USCIAB0RX_VECTOR))) USCIAB0RX_ISR (void)
+void __attribute__ ((interrupt(USCIAB0RX_VECTOR))) USCIAB0RX_ISR(void)
 #else
 #error Compiler not supported!
 #endif
@@ -106,10 +102,10 @@ void __attribute__ ((interrupt(USCIAB0RX_VECTOR))) USCIAB0RX_ISR (void)
     {
 //        P5OUT |= LED_YELLOW;                          // Yellow LED on
 //        P5OUT &= ~LED_GREEN;                          // Green LED off
-        PRxData = (unsigned char *)RxBuffer;
+        PRxData = (unsigned char *) RxBuffer;
         I2C_Slave_ProcessCMD(PRxData, RXByteCtr);
         RXByteCtr = 0;
-        if(UCB0STAT){
+        if (UCB0STAT) {
             TransmitIndex = 0;
         }
         UCB0STAT &=
@@ -124,6 +120,6 @@ void __attribute__ ((interrupt(USCIAB0RX_VECTOR))) USCIAB0RX_ISR (void)
         TransmitIndex = 0;
         // clear the rx buffer
         RXByteCtr = 0;
-        PRxData = (unsigned char *)RxBuffer;
+        PRxData = (unsigned char *) RxBuffer;
     }
 }

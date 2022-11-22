@@ -97,6 +97,7 @@
 					</fileInfo>
 					<sourceEntries>
 						<entry excluding="build" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="build/CMakeFiles/Progress"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

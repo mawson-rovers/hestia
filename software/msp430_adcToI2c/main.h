@@ -7,14 +7,15 @@
 #define HEATER_PIN 0x80
 
 // I2C commands
-#define COMMAND_SENSOR_LOW       0x01
-#define COMMAND_SENSOR_HIGH      0x08
-#define COMMAND_HEATER_MODE      0x40
-#define COMMAND_TARGET_TEMP      0x41
-#define COMMAND_TARGET_SENSOR    0x42
-#define COMMAND_PWM_FREQUENCY    0x43
-#define COMMAND_GET_PWM          0x4F
-#define COMMAND_RESET            0x50
+#define COMMAND_SENSOR_LOW          0x01
+#define COMMAND_SENSOR_HIGH         0x08
+#define COMMAND_WRITE_HEATER_MODE   0x40
+#define COMMAND_TARGET_TEMP         0x41
+#define COMMAND_TARGET_SENSOR       0x42
+#define COMMAND_WRITE_PWM_FREQ      0x43
+#define COMMAND_READ_HEATER_MODE    0x48
+#define COMMAND_READ_PWM_FREQ       0x49
+#define COMMAND_RESET               0x50
 
 // heater modes
 #define HEATER_MODE_OFF 0x00
@@ -33,7 +34,7 @@
  * cmd: The command/register address received
  * */
 void heater_proccess();
-void proccess_cmd_tx(unsigned char cmd);
+void process_cmd_tx(unsigned char cmd);
 void I2C_Slave_ProcessCMD(unsigned char *message, uint16_t length);
 void initGPIO();
 void set_adc_channel(int channel);
