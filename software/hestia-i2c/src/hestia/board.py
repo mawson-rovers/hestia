@@ -5,10 +5,14 @@ from time import sleep
 from typing import Dict
 
 from hestia import heater
+from hestia.i2c import i2c_write_int
 from hestia.sensors import Sensor, SensorInterface
 
 logger = logging.getLogger('hestia.board')
 
+
+MSP430_I2C_ADDR = 0x08
+MSP430_COMMAND_RESET = 0x50
 
 _sensors = [
     Sensor("TH1", SensorInterface.MSP430, 0x01, "Centre"),
@@ -76,3 +80,7 @@ class Hestia:
                 sleep(1)
         finally:
             heater.disable_heater()  # always disable heater at end
+
+    def reset(self):
+        logger.info("Sending reset command")
+        i2c_write_int(MSP430_I2C_ADDR, MSP430_COMMAND_RESET, 0, byteorder="little")
