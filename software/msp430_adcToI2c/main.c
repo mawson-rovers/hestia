@@ -49,19 +49,19 @@ int main(void) {
         //TODO replace with timer
         ADC12CTL0 |= ADC12SC;                   // Start conversion, software controlled
         __bis_SR_register(CPUOFF + GIE + LPM0_bits);        // LPM0, ADC12_ISR will force exit
-        heater_proccess();
+        heater_process();
     }
 }
 
 void process_cmd_tx(unsigned char cmd) {
-    if (cmd >= COMMAND_SENSOR_LOW && cmd <= COMMAND_SENSOR_HIGH) {
+    if (cmd >= COMMAND_READ_SENSOR_LOW && cmd <= COMMAND_READ_SENSOR_HIGH) {
         // set active adc to read from
         unsigned int sensor = cmd - 1;
         transmit_uint(adc_readings[sensor]);
-    } else if (cmd == COMMAND_READ_PWM_FREQ) {
-        transmit_uint(current_pwm);
     } else if (cmd == COMMAND_READ_HEATER_MODE) {
         transmit_uint(heater_mode);
+    } else if (cmd == COMMAND_READ_PWM_FREQ) {
+        transmit_uint(current_pwm);
     } else {
         // Unknown command
     }
@@ -84,11 +84,11 @@ void I2C_Slave_ProcessCMD(unsigned char *message_rx, uint16_t length) {
     if (cmd == COMMAND_WRITE_HEATER_MODE) {
         // Set the heater mode
         heater_mode = package[0];
-    } else if (cmd == COMMAND_TARGET_TEMP) {
+    } else if (cmd == COMMAND_WRITE_TARGET_TEMP) {
         target_temperature = *((float *) package); //#TODO check this works
         // Should be as the memory is fully allocated
         TransmitLen = 0;
-    } else if (cmd == COMMAND_TARGET_SENSOR) {
+    } else if (cmd == COMMAND_WRITE_TARGET_SENSOR) {
         control_sensor = package[0];
         TransmitLen = 0;
     } else if (cmd == COMMAND_WRITE_PWM_FREQ) {
@@ -103,7 +103,7 @@ void I2C_Slave_ProcessCMD(unsigned char *message_rx, uint16_t length) {
     // TOOD checksum??
 }
 
-void heater_proccess() {
+void heater_process() {
     if (heater_mode == HEATER_MODE_PWM) {
         // TODO PWM currently dosen't seem to be working so bit banging
         // CCR2 = current_pwm;                                 // CCR2 PWM duty cycle 0%
