@@ -95,7 +95,7 @@ void I2C_Slave_ProcessCMD(unsigned char *message_rx, uint16_t length) {
         current_pwm = package[0];
         TransmitLen = 0;
     } else if (cmd == COMMAND_RESET) {
-        // TODO implement reset
+        WDTCTL = 0xDEAD;  // write to the WDT password to trigger a reset
     } else {
         // unknown command
     }
