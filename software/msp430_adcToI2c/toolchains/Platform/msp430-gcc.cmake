@@ -19,6 +19,7 @@ FUNCTION(add_platform_executable EXECUTABLE_NAME DEPENDENCIES)
     FOREACH(device ${DEVICES})
 
         SET(ELF_FILE ${EXE_NAME}-${device}.elf)
+        SET(HEX_FILE ${EXE_NAME}-${device}.hex)
         SET(MAP_FILE ${EXE_NAME}-${device}.map)
         SET(LST_FILE ${EXE_NAME}-${device}.lst)
         SET(SYM_FILE ${EXE_NAME}-${device}.sym)
@@ -67,13 +68,8 @@ FUNCTION(add_platform_executable EXECUTABLE_NAME DEPENDENCIES)
         )
 
         ADD_CUSTOM_TARGET(
-                ${EXE_NAME}-${device}-upload
-                # TODO Try to resolve the gdb_agent_console problem described here
-                # http://e2e.ti.com/support/development_tools/code_composer_studio/f/81/p/647037/2378562#2378562
-                # and then TODO create script to burn the chip - via mspdebug or MAPFlasher or anything.
-                #export LD_LIBRARY_PATH=${FLASHER_PATH}:$LD_LIBRARY_PATH
-                #PROGBIN -w "last-burn.hex" -v -g -z [VCC]
-                #${FLASHER_PATH} ${PROGBIN} ${MSP430_OBJCOPY} ${ELF_FILE}
+                flash-${EXE_NAME}-${device}
+                DYLD_LIBRARY_PATH=${FLASHER_PATH} ${MSP430_FLASHER} -n ${device} -w ${HEX_FILE} -v -g -z [VCC]
                 DEPENDS ${HEX_FILE}
         )
 
