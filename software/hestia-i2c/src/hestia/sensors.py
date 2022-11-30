@@ -104,7 +104,7 @@ def read_ads7828_temp(addr: int) -> float:
         adc_cmd = ads7828_command(addr)
         logger.debug('Converted addr 0x%02x to ADS7828 command: %s', addr, '{0:b}'.format(adc_cmd))
         adc_val = i2c_read_int(0x48, adc_cmd, byteorder="big", signed=False)
-        logger.info('Read value <%d> from ADC addr 0x%02x', adc_val, addr)
+        logger.debug('Read value <%d> from ADC addr 0x%02x', adc_val, addr)
         return adc_val_to_temp(adc_val, ADS7828_ADC_RESOLUTION)
     except OSError as error:
         logger.warning("Could not read ADS7828 input 0x%02x: %s", addr, error)
