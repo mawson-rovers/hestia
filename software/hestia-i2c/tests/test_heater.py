@@ -18,9 +18,12 @@ def test_sensors():
 def test_heater_works():
     start_temp = hestia.read_center_temp()
     log.info('Start temp: %.2f', start_temp)
+    assert not hestia.is_heater_enabled(), "Heater should not be enabled before"
     with hestia.heating():
+        assert hestia.is_heater_enabled(), "Heater should be enabled"
         sleep(30)
     finish_temp = hestia.read_center_temp()
+    assert not hestia.is_heater_enabled(), "Heater should not be enabled after"
     log.info('Finish temp: %.2f', finish_temp)
     assert 5.0 < (finish_temp - start_temp) <= 40.0, "Should increase temperature a bit"
 

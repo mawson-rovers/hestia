@@ -36,6 +36,7 @@ _sensors = [
 ]
 
 
+# noinspection PyMethodMayBeStatic
 class Hestia:
     def __init__(self) -> None:
         super().__init__()
@@ -47,6 +48,12 @@ class Hestia:
 
     def read_sensor_values(self) -> Dict[Sensor, float]:
         return OrderedDict((s, s.read_temp()) for s in self.sensors)
+
+    def is_heater_enabled(self) -> bool:
+        return heater.is_enabled()
+
+    def get_heater_pwm(self) -> int:
+        return heater.get_heater_pwm()
 
     @contextlib.contextmanager
     def heating(self, power_level: int = 50):
