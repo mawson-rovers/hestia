@@ -1,5 +1,7 @@
+import csv
 import math
 import os
+from collections import deque
 from pathlib import Path
 
 from flask import Flask, jsonify, Response, stream_with_context, render_template
@@ -22,6 +24,10 @@ def api():
                    if not math.isnan(value)}
     heater_enabled = board.is_heater_enabled()
     return jsonify({
+        "api_urls": {
+            "recent": "/api/recent",
+            "log": "/api/log/<filename>"
+        },
         "active_sensors": len(sensor_data),
         "sensors": sensor_data,
         "center_temp": board.read_center_temp(),
@@ -43,6 +49,17 @@ def get_log_files(attrs=('name', 'url', 'file')):
 def get_board():
     # switch to stub implementation for local dev
     return Hestia() if i2c.device_exists() else StubHestia()
+
+
+@app.route("/api/recent")
+def get_recent():
+    try:
+        file = logger.get_log_files()[0]
+    except IndexError:
+        return jsonify([])
+    with file.open('r') as fh:
+        csv_reader = csv.DictReader(fh)
+        return jsonify(list(deque(csv_reader, maxlen=100)))
 
 
 @app.route("/log/<filename>")
