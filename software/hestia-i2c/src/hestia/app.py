@@ -2,9 +2,12 @@ import csv
 import math
 import os
 from collections import deque
+from datetime import datetime
 from pathlib import Path
+from typing import List, Dict, Any
 
-from flask import Flask, jsonify, Response, stream_with_context, render_template
+from flask import Flask, jsonify, Response, render_template
+
 from hestia import Hestia, StubHestia, logger, i2c
 
 app = Flask("hestia")
@@ -18,18 +21,14 @@ def home():
 @app.route("/api")
 def api():
     board = get_board()
-
-    sensor_data = {sensor.id: {"sensor": sensor, "value": value}
-                   for sensor, value in board.read_sensor_values().items()
-                   if not math.isnan(value)}
     heater_enabled = board.is_heater_enabled()
     return jsonify({
         "api_urls": {
-            "recent": "/api/recent",
-            "log": "/api/log/<filename>"
+            "data": "/api/data",
+            "log_data": "/api/log_data",
+            "log_download": "/api/log/<filename>"
         },
-        "active_sensors": len(sensor_data),
-        "sensors": sensor_data,
+        "sensors": {sensor.id: sensor for sensor in board.sensors},
         "center_temp": board.read_center_temp(),
         "heater_enabled": heater_enabled,
         "heater_pwm_freq": board.get_heater_pwm() if heater_enabled else None,
@@ -42,6 +41,7 @@ def api():
 def get_log_files(attrs=('name', 'url', 'file')):
     def to_dict(f):
         return {'name': f.name, 'url': '/log/%s' % f.name, 'file': f}
+
     return [{k: v for k, v in to_dict(f).items() if k in attrs}
             for f in logger.get_log_files()]
 
@@ -51,15 +51,33 @@ def get_board():
     return Hestia() if i2c.device_exists() else StubHestia()
 
 
-@app.route("/api/recent")
-def get_recent():
+@app.route("/api/data")
+def data():
+    board = get_board()
+    timestamp = datetime.now().strftime("%Y-%m-%d %T.%f")
+    return {sensor.id: [[timestamp, value]] if not math.isnan(value) else []
+            for sensor, value in board.read_sensor_values().items()}
+
+
+@app.route("/api/log_data")
+def full_data():
+    board = get_board()
+    sensors = board.sensors
+    log_data = get_data_from_logs()
+    return jsonify({s.id: list([ld['timestamp'], float(ld[s.id])]
+                               for ld in log_data
+                               if ld[s.id] != "")
+                    for s in sensors})
+
+
+def get_data_from_logs() -> List[Dict[str, Any]]:
     try:
         file = logger.get_log_files()[0]
     except IndexError:
-        return jsonify([])
+        return []
     with file.open('r') as fh:
         csv_reader = csv.DictReader(fh)
-        return jsonify(list(deque(csv_reader, maxlen=100)))
+        return list(deque(csv_reader, maxlen=100))
 
 
 @app.route("/log/<filename>")
@@ -79,4 +97,3 @@ def log(filename: str):
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=os.environ.get('FLASK_PORT', 5000))
-
