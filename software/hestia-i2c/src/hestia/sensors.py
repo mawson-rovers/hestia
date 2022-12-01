@@ -47,11 +47,11 @@ class Sensor:
 
     def read_temp(self):
         if self.iface == SensorInterface.MSP430:
-            return read_msp430_temp(self.addr)
+            return round(read_msp430_temp(self.addr), 4)
         elif self.iface == SensorInterface.ADS7828:
-            return read_ads7828_temp(self.addr)
+            return round(read_ads7828_temp(self.addr), 4)
         elif self.iface == SensorInterface.MAX31725:
-            return read_max31725_temp(self.addr)
+            return round(read_max31725_temp(self.addr), 4)
         else:
             logger.warning('Unknown sensor interface: %s', self.iface)
             return math.nan
