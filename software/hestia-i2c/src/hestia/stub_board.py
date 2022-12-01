@@ -30,10 +30,28 @@ _stub_values = {
 
 
 class StubHestia(Hestia):
+    def __init__(self):
+        super().__init__()
+        self.heater_enabled: bool = False
+        self.heater_pwm: int = 50
+
     def read_sensor_values(self) -> Dict[Sensor, float]:
         return {s: _stub_values.get(s.id, math.nan) for s in self.sensors}
 
     def read_center_temp(self) -> float:
         return _stub_values['TH1']
 
+    def is_heater_enabled(self) -> bool:
+        return self.heater_enabled
 
+    def get_heater_pwm(self) -> int:
+        return self.heater_pwm
+
+    def set_heater_pwm(self, power_level: int):
+        self.heater_pwm = power_level
+
+    def enable_heater(self):
+        self.heater_enabled = True
+
+    def disable_heater(self):
+        self.heater_enabled = False

@@ -59,27 +59,36 @@ class Hestia:
     def get_heater_pwm(self) -> int:
         return heater.get_heater_pwm()
 
+    def set_heater_pwm(self, power_level: int):
+        heater.set_heater_pwm(power_level)
+
+    def enable_heater(self):
+        heater.enable_heater()
+
+    def disable_heater(self):
+        heater.disable_heater()
+
     @contextlib.contextmanager
     def heating(self, power_level: int = 50):
-        heater.set_heater_pwm(power_level)
-        heater.enable_heater()
+        self.set_heater_pwm(power_level)
+        self.enable_heater()
         try:
             yield self
         finally:
-            heater.disable_heater()
+            self.disable_heater()
 
     def heating_thermostat(self, temp: int = 80):
-        heater.set_heater_pwm(255)
+        self.set_heater_pwm(255)
         try:
             while True:
                 t = self.read_center_temp()
                 if t < temp - 1:
-                    heater.enable_heater()
+                    self.enable_heater()
                 else:
-                    heater.disable_heater()
+                    self.disable_heater()
                 sleep(1)
         finally:
-            heater.disable_heater()  # always disable heater at end
+            self.disable_heater()  # always disable heater at end
 
     def reset(self):
         logger.info("Sending reset command")

@@ -20,10 +20,13 @@ def api():
     sensor_data = {sensor.id: {"sensor": sensor, "value": value}
                    for sensor, value in board.read_sensor_values().items()
                    if not math.isnan(value)}
+    heater_enabled = board.is_heater_enabled()
     return jsonify({
+        "active_sensors": len(sensor_data),
         "sensors": sensor_data,
         "center_temp": board.read_center_temp(),
-        "heater": "OFF",
+        "heater_enabled": heater_enabled,
+        "heater_pwm_freq": board.get_heater_pwm() if heater_enabled else None,
         "heater_voltage": 0.0,
         "heater_current": 0.0,
         "log_files": get_log_files(attrs=('name', 'url')),
