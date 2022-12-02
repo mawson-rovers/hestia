@@ -5,24 +5,46 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Hestia API server</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script defer src="{{ url_for('static', filename='status.js') }}"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script defer src="{{ url_for('static', filename='chart.js') }}"></script>
 </head>
 <body>
 
 <h1>Hestia control panel</h1>
-<div class="status">
 
+<h3>Status</h3>
+<div style="display: flex">
+    <div>Core temperature</div>
+    <div><input disabled id="core-temperature" size="10" value="n/a"></div>
+</div>
+<div style="display: flex">
+    <div>Heater mode</div>
+    <div><input disabled id="heater-mode" size="10" value="n/a"></div>
+    <div><button id="heater-toggle">Toggle</button></div>
+</div>
+
+<h3>Temperature chart</h3>
+<div style="max-width: 800px; height: 400px">
+    <canvas id="temperature-chart"></canvas>
 </div>
 
 <h3>Log files</h3>
 <ul>
     {% for l in log_files %}
-    <li><a href="{{ l.url }}">{{ l.name }}</a></li>
+        <li><a href="{{ l.url }}">{{ l.name }}</a></li>
     {% endfor %}
 </ul>
 
-<h3>Development resources</h3>
+<h3>Development APIs</h3>
 <ul>
-    <li><a href="/api">JSON API</a></li>
+    <li><a href="/api">API Overview</a></li>
+    <li><a href="/api/status">Status</a></li>
+    <li><a href="/api/data">Latest data</a></li>
+    <li><a href="/api/log_data">Recently logged data</a></li>
 </ul>
 
 </body>

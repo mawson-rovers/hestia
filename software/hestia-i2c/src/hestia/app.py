@@ -1,4 +1,5 @@
 import csv
+import logging
 import math
 import os
 from collections import deque
@@ -6,36 +7,55 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Any
 
-from flask import Flask, jsonify, Response, render_template
+from flask import Flask, jsonify, Response, render_template, request, redirect
 
-from hestia import Hestia, StubHestia, logger, i2c
+from hestia import Hestia, logger, i2c, stub_instance
 
 app = Flask("hestia")
+app.logger.setLevel(logging.INFO)
 
-
-@app.route("/")
+@app.get("/")
 def home():
     return render_template('home.html', log_files=get_log_files())
 
 
-@app.route("/api")
+@app.get("/api")
 def api():
+    return jsonify({
+        "app_urls": {
+            "home": "/",
+            "api": "/api",
+            "status": "/api/status",
+            "data": "/api/data",
+            "log_data": "/api/log_data",
+            "log_download": "/log/<filename>"
+        },
+        "log_files": get_log_files(attrs=('name', 'url')),
+    })
+
+
+@app.get("/api/status")
+def get_status():
     board = get_board()
     heater_enabled = board.is_heater_enabled()
     return jsonify({
-        "api_urls": {
-            "data": "/api/data",
-            "log_data": "/api/log_data",
-            "log_download": "/api/log/<filename>"
-        },
         "sensors": {sensor.id: sensor for sensor in board.sensors},
         "center_temp": board.read_center_temp(),
         "heater_enabled": heater_enabled,
         "heater_pwm_freq": board.get_heater_pwm() if heater_enabled else None,
         "heater_voltage": 0.0,
         "heater_current": 0.0,
-        "log_files": get_log_files(attrs=('name', 'url')),
     })
+
+
+@app.route("/api/status", methods=['POST'])
+def post_status():
+    board = get_board()
+    data = request.json
+    app.logger.info('Enabling heater' if data['heater_enabled'] else 'Disabling heater')
+    if 'heater_enabled' in data:
+        board.enable_heater() if data['heater_enabled'] else board.disable_heater()
+    return redirect('/api/status')
 
 
 def get_log_files(attrs=('name', 'url', 'file')):
@@ -48,29 +68,29 @@ def get_log_files(attrs=('name', 'url', 'file')):
 
 def get_board():
     # switch to stub implementation for local dev
-    return Hestia() if i2c.device_exists() else StubHestia()
+    return Hestia() if i2c.device_exists() else stub_instance
 
 
-@app.route("/api/data")
-def data():
+@app.get("/api/data")
+def get_data():
     board = get_board()
     timestamp = datetime.now().strftime("%Y-%m-%d %T.%f")
     return {sensor.id: [[timestamp, value]] if not math.isnan(value) else []
             for sensor, value in board.read_sensor_values().items()}
 
 
-@app.route("/api/log_data")
-def full_data():
+@app.get("/api/log_data")
+def get_log_data():
     board = get_board()
     sensors = board.sensors
-    log_data = get_data_from_logs()
+    log_data = read_recent_logs()
     return jsonify({s.id: list([ld['timestamp'], float(ld[s.id])]
                                for ld in log_data
                                if ld[s.id] != "")
                     for s in sensors})
 
 
-def get_data_from_logs() -> List[Dict[str, Any]]:
+def read_recent_logs() -> List[Dict[str, Any]]:
     try:
         file = logger.get_log_files()[0]
     except IndexError:
