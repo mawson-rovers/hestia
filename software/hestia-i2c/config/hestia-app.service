@@ -1,0 +1,12 @@
+[Unit]
+Description=Hestia app
+
+[Service]
+Environment=HESTIA_LOG_PATH=/mnt/data/hestia/logs
+Environment=TZ=Australia/Sydney
+Environment=FLASK_PORT=5000
+WorkingDirectory=/home/debian/src/hestia-i2c/src
+ExecStart=/home/debian/src/hestia-i2c/venv/bin/python -m hestia.app
+
+[Install]
+WantedBy=multi-user.target
