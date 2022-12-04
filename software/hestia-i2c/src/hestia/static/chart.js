@@ -36,9 +36,9 @@ fetch('/api/log_data')
             options: {
                 scales: {
                     x: {
-                        type: 'timeseries',
+                        type: 'time',
                         time: {
-                            // unit: 'minute',
+                            unit: 'minute',
                             displayFormats: {
                                 second: 'HH:mm:ss',
                                 minute: 'HH:mm:ss',
