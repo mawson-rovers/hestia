@@ -1,6 +1,5 @@
 const ctx = document.getElementById('temperature-chart');
 
-
 function getChartData(data) {
     let sensor_ids = Object.keys(data)
         .filter(id => data[id].length); // exclude empty sensors
@@ -12,7 +11,7 @@ function getChartData(data) {
                 borderWidth: 1
             }
         })
-    }
+    };
 }
 
 function updateChartData(chart, newData) {
@@ -22,7 +21,7 @@ function updateChartData(chart, newData) {
             dataset.data.push(...newData[dataset.label]);
         }
     });
-    chart.options.scales.x.min = new Date(new Date().getTime() - 300000);
+    chart.options.scales.x.min = new Date(new Date().getTime() - 1.8e6); // 30 min
     chart.options.scales.x.max = new Date();
     chart.update();
 }
@@ -44,7 +43,7 @@ fetch('/api/log_data')
                                 minute: 'HH:mm:ss',
                             },
                         },
-                        min: new Date(new Date().getTime() - 300000),
+                        min: new Date(new Date().getTime() - 1.8e6), // 30 min
                         max: new Date(),
                     },
                     y: {
@@ -54,6 +53,11 @@ fetch('/api/log_data')
                             display: true,
                             text: 'Temperature (°C)',
                         },
+                    }
+                },
+                elements: {
+                    point: {
+                        radius: 0,
                     }
                 },
                 plugins: {

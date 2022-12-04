@@ -100,7 +100,7 @@ def read_recent_logs() -> List[Dict[str, Any]]:
         return []
     with file.open('r') as fh:
         csv_reader = csv.DictReader(fh)
-        return list(deque(csv_reader, maxlen=100))
+        return list(deque(csv_reader, maxlen=500))  # last 40 mins of logs
 
 
 @app.route("/log/<filename>")
