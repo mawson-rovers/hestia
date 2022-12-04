@@ -18,13 +18,22 @@
 
 <h3>Status</h3>
 <div style="display: flex">
-    <div>Core temperature</div>
+    <div><label for="core-temperature">Core temperature</label></div>
     <div><input disabled id="core-temperature" size="10" value="n/a"></div>
 </div>
 <div style="display: flex">
-    <div>Heater mode</div>
+    <div><label for="heater-mode">Heater mode</label></div>
     <div><input disabled id="heater-mode" size="10" value="n/a"></div>
     <div><button id="heater-toggle">Toggle</button></div>
+</div>
+<div style="display: flex">
+    <div><label for="heater-power-level">Power level</label></div>
+    <div><input disabled id="heater-power-level" size="10" value="n/a"></div>
+    <div>
+        <button class="set-heater-power" data-power-level="50">Low</button>
+        <button class="set-heater-power" data-power-level="150">Medium</button>
+        <button class="set-heater-power" data-power-level="255">Full</button>
+    </div>
 </div>
 
 <h3>Temperature chart</h3>

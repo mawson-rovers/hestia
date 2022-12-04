@@ -14,6 +14,7 @@ from hestia import Hestia, logger, i2c, stub_instance
 app = Flask("hestia")
 app.logger.setLevel(logging.INFO)
 
+
 @app.get("/")
 def home():
     return render_template('home.html', log_files=get_log_files())
@@ -37,12 +38,11 @@ def api():
 @app.get("/api/status")
 def get_status():
     board = get_board()
-    heater_enabled = board.is_heater_enabled()
     return jsonify({
         "sensors": {sensor.id: sensor for sensor in board.sensors},
         "center_temp": board.read_center_temp(),
-        "heater_enabled": heater_enabled,
-        "heater_pwm_freq": board.get_heater_pwm() if heater_enabled else None,
+        "heater_enabled": board.is_heater_enabled(),
+        "heater_pwm_freq": board.get_heater_pwm(),
         "heater_voltage": 0.0,
         "heater_current": 0.0,
     })
@@ -52,9 +52,12 @@ def get_status():
 def post_status():
     board = get_board()
     data = request.json
-    app.logger.info('Enabling heater' if data['heater_enabled'] else 'Disabling heater')
     if 'heater_enabled' in data:
+        app.logger.info('Enabling heater' if data['heater_enabled'] else 'Disabling heater')
         board.enable_heater() if data['heater_enabled'] else board.disable_heater()
+    if 'heater_pwm_freq' in data:
+        app.logger.info('Setting heater power level to %d', data['heater_pwm_freq'])
+        board.set_heater_pwm(data['heater_pwm_freq'])
     return redirect('/api/status')
 
 

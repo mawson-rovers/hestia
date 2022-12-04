@@ -10,7 +10,7 @@ from enum import Enum
 from hestia.i2c import i2c_read_int
 
 logger = logging.getLogger(name='hestia.sensors')
-logger.setLevel(logging.DEBUG)
+# logger.setLevel(logging.DEBUG)
 
 MSP430_I2C_ADDR = 0x08
 MSP430_ADC_RESOLUTION = 1 << 12

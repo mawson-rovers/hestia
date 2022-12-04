@@ -52,7 +52,7 @@ fetch('/api/log_data')
                         suggestedMax: 80.0,
                         title: {
                             display: true,
-                            text: '°C',
+                            text: 'Temperature (°C)',
                         },
                     }
                 },
