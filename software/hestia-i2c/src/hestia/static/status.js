@@ -15,9 +15,14 @@
             data["heater_pwm_freq"] : "n/a"
     }
 
-    fetch('/api/status')
-        .then(response => response.json())
-        .then(data => updateStatus(data));
+    function fetchAndUpdateStatus() {
+        fetch('/api/status')
+            .then(response => response.json())
+            .then(data => updateStatus(data));
+    }
+
+    fetchAndUpdateStatus();
+    setInterval(fetchAndUpdateStatus, 5000);
 
     function postStatusUpdate(data) {
         fetch('/api/status', {
