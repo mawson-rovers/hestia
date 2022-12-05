@@ -8,10 +8,12 @@ from pathlib import Path
 from typing import List, Dict, Any
 
 from flask import Flask, jsonify, Response, render_template, request, redirect, send_from_directory
+from flask_compress import Compress
 
 from hestia import Hestia, logger, i2c, stub_instance
 
 app = Flask("hestia")
+Compress(app)
 app.logger.setLevel(logging.INFO)
 
 
