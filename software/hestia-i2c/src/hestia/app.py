@@ -7,7 +7,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Any
 
-from flask import Flask, jsonify, Response, render_template, request, redirect
+from flask import Flask, jsonify, Response, render_template, request, redirect, send_from_directory
 
 from hestia import Hestia, logger, i2c, stub_instance
 
@@ -116,6 +116,12 @@ def log(filename: str):
                 yield line
 
     return Response(generate(), mimetype='text/csv')
+
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                               'hestia-favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 
 if __name__ == "__main__":
