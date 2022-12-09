@@ -42,12 +42,12 @@ def api():
 def get_status():
     board = get_board()
     return jsonify({
-        "sensors": {sensor.id: sensor for sensor in board.sensors},
         "center_temp": board.read_center_temp(),
         "heater_enabled": board.is_heater_enabled(),
         "heater_pwm_freq": board.get_heater_pwm(),
         "heater_voltage": 0.0,
         "heater_current": 0.0,
+        "sensors": {sensor.id: sensor for sensor in board.sensors},
     })
 
 
