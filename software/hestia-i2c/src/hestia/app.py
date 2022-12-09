@@ -14,6 +14,7 @@ from hestia import Hestia, logger, i2c, stub_instance
 
 app = Flask("hestia")
 Compress(app)
+app.config['JSON_SORT_KEYS'] = False
 app.logger.setLevel(logging.INFO)
 
 
