@@ -3,15 +3,62 @@
     const initialDurationMins = location.hash && location.hash.match(/d\d+/) ?
         location.hash.match(/d(\d+)/)[1] : 30; // default to 30 mins
 
+    const colorPalette = [
+        "hsl(211, 36%, 47%)",
+        "hsl(204, 52%, 75%)",
+        "hsl(30, 82%, 55%)",
+        "hsl(30, 87%, 72%)",
+        "hsl(113, 34%, 46%)",
+        "hsl(109, 43%, 64%)",
+        "hsl(47, 58%, 44%)",
+        "hsl(45, 75%, 65%)",
+        "hsl(177, 35%, 43%)",
+        "hsl(172, 27%, 61%)",
+        "hsl(359, 64%, 60%)",
+        "hsl(1, 86%, 78%)",
+        "hsl(12, 4%, 44%)",
+        "hsl(18, 8%, 68%)",
+        "hsl(338, 47%, 62%)",
+        "hsl(341, 66%, 84%)",
+        "hsl(315, 23%, 57%)",
+        "hsl(315, 31%, 72%)",
+        "hsl(21, 23%, 48%)",
+        "hsl(18, 33%, 72%)",
+    ];
+    const heaterColors = {
+        borderColor: 'hsl(347, 100%, 69%)',
+        backgroundColor: 'hsla(347, 100%, 69%, 0.5)',
+    };
+    const savedColors = {};
+
+    window.colorsForSensor = function (sensor_id) {
+        if (sensor_id === 'heater') {
+            return heaterColors;
+        }
+        if (!savedColors[sensor_id]) {
+            const counter = Object.keys(savedColors).length;
+            const color = colorPalette[counter % colorPalette.length];
+            savedColors[sensor_id] = {
+                borderColor: color,
+                backgroundColor: color.replace(/^hsl/, "hsla").replace(/\)$/, ", 0.5)"),
+            };
+        }
+        return savedColors[sensor_id];
+    };
+
     function getChartData(data) {
         let sensor_ids = Object.keys(data)
             .filter(id => data[id].length); // exclude empty sensors
         return {
             datasets: sensor_ids.map(function (id) {
+                const colors = colorsForSensor(id);
                 return {
                     label: id,
                     data: data[id],
                     borderWidth: 1,
+                    borderColor: colors.borderColor,
+                    backgroundColor: colors.backgroundColor,
+                    fill: id === 'heater',
                     xAxisID: 'x',
                     yAxisID: id === 'heater' ? 'y2' : 'y1',
                 };
@@ -123,14 +170,6 @@
                     }
                 },
             });
-
-            // set heater series to red
-            const heaterDataset = chart.data.datasets.find(d => d.label === 'heater')
-            if (heaterDataset) {
-                heaterDataset.fill = true;
-                heaterDataset.borderColor = 'rgb(255, 99, 132)';
-                heaterDataset.backgroundColor = 'rgb(255, 99, 132, 0.5)';
-            }
 
             // load new data at regular intervals
             window.setInterval(() => {

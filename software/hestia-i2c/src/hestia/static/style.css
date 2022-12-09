@@ -73,4 +73,27 @@ ul li {
 #board-chart-container.flip::before {
     background-image: url('/static/hestia-board-bottom.png');
     transform: scaleX(-1);
+
 }
+
+/* Color palette also here in case needed */
+.sensor0  { color: hsl(211, 36%, 47%); }
+.sensor1  { color: hsl(204, 52%, 75%); }
+.sensor2  { color: hsl(30, 82%, 55%);  }
+.sensor3  { color: hsl(30, 87%, 72%);  }
+.sensor4  { color: hsl(113, 34%, 46%); }
+.sensor5  { color: hsl(109, 43%, 64%); }
+.sensor6  { color: hsl(47, 58%, 44%);  }
+.sensor7  { color: hsl(45, 75%, 65%);  }
+.sensor8  { color: hsl(177, 35%, 43%); }
+.sensor9  { color: hsl(172, 27%, 61%); }
+.sensor10 { color: hsl(359, 64%, 60%); }
+.sensor11 { color: hsl(1, 86%, 78%);   }
+.sensor12 { color: hsl(12, 4%, 44%);   }
+.sensor13 { color: hsl(18, 8%, 68%);   }
+.sensor14 { color: hsl(338, 47%, 62%); }
+.sensor15 { color: hsl(341, 66%, 84%); }
+.sensor16 { color: hsl(315, 23%, 57%); }
+.sensor17 { color: hsl(315, 31%, 72%); }
+.sensor18 { color: hsl(21, 23%, 48%);  }
+.sensor19 { color: hsl(18, 33%, 72%);  }

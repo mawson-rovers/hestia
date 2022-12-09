@@ -30,18 +30,21 @@
         return new Chart(ctx, {
             type: 'scatter',
             data: {
-                datasets: Object.keys(data).map(k => {
-                    let x = Math.abs(data[k]['pos_x']);
-                    let y = Math.abs(data[k]['pos_y']);
+                datasets: Object.keys(data).map(id => {
+                    let x = Math.abs(data[id]['pos_x']);
+                    let y = Math.abs(data[id]['pos_y']);
                     if (x === 0.0 && y === 0.0) {
                         mounted += 1;
                         x = 96;
                         y = 92 - mounted * 5;
                     }
+                    let colors = window.colorsForSensor(id);
                     return {
-                        label: k,
+                        label: id,
                         data: [{x: x, y: y, temp: null}],
                         borderWidth: 1,
+                        borderColor: colors.borderColor,
+                        backgroundColor: colors.backgroundColor,
                     };
                 })
             },
