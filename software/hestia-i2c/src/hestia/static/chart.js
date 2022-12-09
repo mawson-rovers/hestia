@@ -30,15 +30,39 @@
         chart.options.scales.x.max = now;
     }
 
-    function updateChartData(chart, newData) {
-        chart.data.datasets.forEach(dataset => {
-            if (dataset.label in newData && newData[dataset.label].length) {
-                console.log("before: " + dataset.data.length);
-                newData[dataset.label].forEach(item => {
+    function updateChartData(chart, newDatasets) {
+        Object.keys(newDatasets).forEach(function (label) {
+            let newData = newDatasets[label];
+
+            let dataset = chart.data.datasets.find(ds => ds.label === label);
+            if (dataset) {
+                // add all new data items (API can return multiple points)
+                dataset.data.push(...newData);
+
+                // limit samples to maximum visible (30 min * 12 per min)
+                while (dataset.data.length > 360) {
                     dataset.data.shift();
-                    dataset.data.push(item);
-                });
-                console.log("after: " + dataset.data.length);
+                }
+            } else {
+                // new sensor has appeared - add as new dataset
+                let newChartData = getChartData({label: newData});
+                chart.data.datasets.push(...newChartData.datasets);
+            }
+
+            // set latest temp on board status chart
+            if (window.boardChart) {
+                let boardDatasets = window.boardChart.data.datasets;
+                let boardDataset = boardDatasets.find(ds => ds.label === label);
+                if (boardDataset) {
+                    if (newData.length) {
+                        boardDataset.data[0]['temp'] = newData[newData.length - 1][1];
+                        boardDataset.hidden = false;
+                    } else {
+                        boardDataset.data[0]['temp'] = null;
+                        boardDataset.hidden = true;
+                    }
+                    window.boardChart.update();
+                }
             }
         });
     }
@@ -58,10 +82,10 @@
                             type: 'time',
                             time: {
                                 unit: 'minute',
-                                // displayFormats: {
-                                //     second: 'HH:mm:ss',
-                                //     minute: 'HH:mm:ss',
-                                // },
+                                displayFormats: {
+                                    second: 'HH:mm:ss',
+                                    minute: 'HH:mm:ss',
+                                },
                             },
                             min: new Date(new Date().getTime() - minsToMillis(initialDurationMins)),
                             max: new Date(),
@@ -89,7 +113,7 @@
                     },
                     elements: {
                         point: {
-                            radius: 0.5,
+                            radius: 1,
                         }
                     },
                     plugins: {

@@ -12,11 +12,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.css">
     <link rel="stylesheet" href="/static/style.css">
 
-    <script defer src="/static/status.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.0.1/dist/chart.umd.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
     <script defer
             src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@2.0.1/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script defer src="/static/status.js"></script>
     <script defer src="/static/chart.js"></script>
 </head>
 <body>
@@ -62,6 +62,16 @@
 
         <div style="height: 400px; width: 800px">
             <canvas id="temperature-chart"></canvas>
+        </div>
+    </section>
+
+    <section id="board-section">
+        <div style="display: flex; justify-content: space-between; width: 480px">
+            <h3>Board status</h3>
+            <a href="#" id="board-flip">Flip</a>
+        </div>
+        <div id="board-chart-container">
+            <canvas id="board-chart"></canvas>
         </div>
     </section>
 

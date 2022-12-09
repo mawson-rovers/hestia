@@ -1,45 +1,76 @@
 header {
-  padding: 40px 0;
-  background: #f6f5f4;
-  border-bottom: .1rem solid #ccc;
+    padding: 40px 0;
+    background: #f6f5f4;
+    border-bottom: .1rem solid #ccc;
 }
+
 h1.title {
-  font-size: 36px;
-  line-height: 60px;
-  height: 60px;
-  padding-left: 60px;
-  background-image: url('/static/hestia-logo.png');
-  background-repeat: no-repeat;
-  background-size: contain;
-  background-position: left 50%;
-  margin-bottom: 0;
+    font-size: 36px;
+    line-height: 60px;
+    height: 60px;
+    padding-left: 60px;
+    background-image: url('/static/hestia-logo.png');
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: left 50%;
+    margin-bottom: 0;
 }
 
 section {
-  margin-top: 40px;
+    margin-top: 40px;
 }
 
 /* Custom color for links and buttons */
 a {
-  color: #FF9041;
-  text-decoration: underline;
+    color: #FF9041;
+    text-decoration: underline;
 }
+
 a:visited {
-  color: #9041FF;
+    color: #9041FF;
 }
+
 button {
-  background-color: #FF9041;
-  border-color: #FF9041;
+    background-color: #FF9041;
+    border-color: #FF9041;
 }
+
 button.button-clear,
 button.button-outline {
-  background-color: transparent;
-  color: #FF9041;
+    background-color: transparent;
+    color: #FF9041;
 }
+
 button.button-clear {
-  border-color: transparent;
+    border-color: transparent;
 }
 
 ul li {
-  margin-bottom: 0; /* don't space out list items */
+    margin-bottom: 0; /* don't space out list items */
+}
+
+#board-chart-container {
+    position: relative;
+    height: 400px;
+    width: 480px; /* leave space on RHS for mounted sensors */
+}
+
+#board-chart-container::before { /* use ::before element so we can set opacity without affecting chart */
+    background-image: url('/static/hestia-board-top.png');
+    background-size: contain;
+    background-position: left center;
+    background-repeat: no-repeat;
+    position: absolute;
+    content: '';
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 376px; /* calculated: image width / height * 400px */
+    opacity: 0.75;
+    z-index: -1; /* ensure background is behind chart */
+}
+
+#board-chart-container.flip::before {
+    background-image: url('/static/hestia-board-bottom.png');
+    transform: scaleX(-1);
 }
