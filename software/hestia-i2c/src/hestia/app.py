@@ -80,19 +80,21 @@ def get_board():
 def get_data():
     board = get_board()
     timestamp = datetime.now().strftime("%Y-%m-%d %T.%f")
-    return {sensor.id: [[timestamp, value]] if not math.isnan(value) else []
-            for sensor, value in board.read_sensor_values().items()}
+    heater_level = board.get_heater_pwm() if board.is_heater_enabled() else 0
+    sensor_readings = {sensor.id: [[timestamp, value]] if not math.isnan(value) else []
+                       for sensor, value in board.read_sensor_values().items()}
+    return {**sensor_readings, 'heater': [[timestamp, heater_level]]}
 
 
 @app.get("/api/log_data")
 def get_log_data():
     board = get_board()
-    sensors = board.sensors
+    sensor_ids = map(lambda s: s.id, board.sensors)
     log_data = read_recent_logs()
-    return jsonify({s.id: list([ld['timestamp'], float(ld[s.id])]
-                               for ld in log_data
-                               if ld[s.id] != "")
-                    for s in sensors})
+    return jsonify({id: list([ld['timestamp'], float(ld[id])]
+                             for ld in log_data
+                             if ld[id] != "")
+                    for id in (*sensor_ids, 'heater')})
 
 
 def read_recent_logs() -> List[Dict[str, Any]]:

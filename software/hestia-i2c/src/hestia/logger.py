@@ -6,7 +6,7 @@ from pathlib import Path
 from time import sleep
 from typing import List
 
-from hestia import Hestia
+from hestia import Hestia, i2c, stub_instance
 
 LOG_PATH_ENV_VAR = 'HESTIA_LOG_PATH'
 
@@ -50,7 +50,7 @@ def main():
     file = log_path / ("hestia-data-%s.csv" % start_date.strftime('%Y-%m-%d'))
     write_header = not file.exists()
 
-    board = Hestia()
+    board = Hestia() if i2c.device_exists() else stub_instance
     sensors = board.sensors
 
     with file.open(mode='a', newline='\r\n') as f:
@@ -59,6 +59,7 @@ def main():
         if write_header:
             print('"timestamp"',
                   *['"%s"' % s.id for s in sensors],
+                  '"heater"',
                   file=f,
                   sep=",",
                   flush=True)
@@ -66,9 +67,11 @@ def main():
         while True:
             timestamp = datetime.now().strftime("%Y-%m-%d %T.%f")
             values = board.read_sensor_values()
+            heater_level = board.get_heater_pwm() if board.is_heater_enabled() else 0
             if not all(map(math.isnan, values.values())):
                 print(timestamp,
                       *['%.4f' % values[s] if not math.isnan(values[s]) else '' for s in sensors],
+                      heater_level,
                       file=f,
                       sep=",",
                       flush=True)
