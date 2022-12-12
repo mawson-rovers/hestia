@@ -2,6 +2,8 @@
 Description=Hestia logger
 
 [Service]
+User=debian
+Group=debian
 Environment=HESTIA_LOG_PATH=/mnt/data/hestia/logs
 Environment=TZ=Australia/Sydney
 WorkingDirectory=/home/debian/src/hestia-i2c/src

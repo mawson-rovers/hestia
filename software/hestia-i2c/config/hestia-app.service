@@ -2,6 +2,8 @@
 Description=Hestia app
 
 [Service]
+User=debian
+Group=debian
 Environment=HESTIA_LOG_PATH=/mnt/data/hestia/logs
 Environment=TZ=Australia/Sydney
 Environment=FLASK_PORT=5000
