@@ -94,7 +94,7 @@ def get_log_data():
     log_data = read_recent_logs()
     return jsonify({id: list([ld['timestamp'], float(ld[id])]
                              for ld in log_data
-                             if ld[id] != "")
+                             if id in ld and ld[id] is not None and ld[id] != "")
                     for id in (*sensor_ids, 'heater')})
 
 
