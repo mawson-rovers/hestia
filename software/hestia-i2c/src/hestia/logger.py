@@ -66,15 +66,18 @@ def main():
 
         while True:
             timestamp = datetime.now().strftime("%Y-%m-%d %T.%f")
-            values = board.read_sensor_values()
-            heater_level = board.get_heater_pwm() if board.is_heater_enabled() else 0
-            if not all(map(math.isnan, values.values())):
-                print(timestamp,
-                      *['%.4f' % values[s] if not math.isnan(values[s]) else '' for s in sensors],
-                      heater_level,
-                      file=f,
-                      sep=",",
-                      flush=True)
+            try:
+                values = board.read_sensor_values()
+                heater_level = board.get_heater_pwm() if board.is_heater_enabled() else 0
+                if not all(map(math.isnan, values.values())):
+                    print(timestamp,
+                          *['%.4f' % values[s] if not math.isnan(values[s]) else '' for s in sensors],
+                          heater_level,
+                          file=f,
+                          sep=",",
+                          flush=True)
+            except OSError as error:
+                print("Failed to read board status: %s" % error, file=sys.stderr)
             sleep(5)
             if datetime.now().day != start_date.day:
                 return  # start a new file if day ticks over
