@@ -6,13 +6,12 @@
 
 uint8_t TransmitBuffer[MAX_BUFFER_SIZE] = {0};
 uint8_t TransmitIndex = 0;
-volatile int tmp = 0;
 
 unsigned char *PRxData;                     // Pointer to RX data
 unsigned char RXByteCtr;
-volatile unsigned char RxBuffer[128];       // Allocate 128 byte of RAMk
+volatile unsigned char RxBuffer[128];
 
-void CopyArray(uint8_t *source) {
+void CopyArray(const uint8_t *source) {
     // copy data into transmitt buffer
     //TODO disable interupt
     //TODO take sensor message
@@ -75,7 +74,7 @@ void __attribute__ ((interrupt(USCIAB0TX_VECTOR))) USCIAB0TX_ISR(void)
 //      P5OUT &= ~LED_GREEN;                         // LED_1 off
         //Must write to UCB0TXBUF
         TransmitLen = 2;
-        if ((TransmitIndex < TransmitLen) & TransmitIndex < MAX_BUFFER_SIZE) {
+        if ((TransmitIndex < TransmitLen) && TransmitIndex < MAX_BUFFER_SIZE) {
             UCB0TXBUF = TransmitBuffer[TransmitIndex++];
         } else {
             UCB0TXBUF = 0; // Out of range
