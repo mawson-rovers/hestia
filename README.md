@@ -38,6 +38,8 @@ $ sudo connmanctl
 #connmanctl> quit
 ```
 
+(For the TP-Link AC600 Wi-Fi dongle - the one with the antenna - install the [rtl8812au](https://github.com/aircrack-ng/rtl8812au.git) driver instead.)
+
 * Install OS dependencies and check out the `hestia` source code from GitHub:
 
 ```sh
