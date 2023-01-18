@@ -15,11 +15,13 @@ logger = logging.getLogger(name='hestia.sensors')
 MSP430_I2C_ADDR = 0x08
 MSP430_ADC_RESOLUTION = 1 << 12
 
+ADC_MIN_VALUE = 0x10  # disconnected ADC input fluctuates in low values close to zero
+
 NB21K00103_THERMISTOR_B_VALUE = 3630
 ZERO_CELSIUS_IN_KELVIN = 273.15
 NB21K00103_THERMISTOR_REF_TEMP_K = 25.0 + ZERO_CELSIUS_IN_KELVIN
 
-ADS7828_I2C_ADDR = 0x4a
+ADS7828_I2C_ADDR = 0x48  # switch to 0x4a for board v2
 ADS7828_ADC_RESOLUTION = 1 << 12
 
 MAX31725_REG_TEMP = 0x00
@@ -79,6 +81,9 @@ def read_msp430_temp(addr: int) -> float:
 
 
 def adc_val_to_temp(adc_val: int, adc_resolution: int) -> float:
+    if adc_val < ADC_MIN_VALUE:
+        # return NaN if value too low (indicates no reading on ADC)
+        return math.nan
     try:
         return (1 / (1 / NB21K00103_THERMISTOR_REF_TEMP_K +
                      1 / NB21K00103_THERMISTOR_B_VALUE *
@@ -103,7 +108,7 @@ def read_ads7828_temp(addr: int) -> float:
     try:
         adc_cmd = ads7828_command(addr)
         logger.debug('Converted addr 0x%02x to ADS7828 command: %s', addr, '{0:b}'.format(adc_cmd))
-        adc_val = i2c_read_int(0x48, adc_cmd, byteorder="big", signed=False)
+        adc_val = i2c_read_int(ADS7828_I2C_ADDR, adc_cmd, byteorder="big", signed=False)
         logger.debug('Read value <%d> from ADC addr 0x%02x', adc_val, addr)
         return adc_val_to_temp(adc_val, ADS7828_ADC_RESOLUTION)
     except OSError as error:
