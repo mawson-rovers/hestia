@@ -4018,9 +4018,23 @@
     (uuid ff1d4f8b-68dd-487b-940a-20f1f347fc21)
   )
 
+  (text "Not sure exactly what values should be\n used for the voltage divider"
+    (at 153.67 2.54 0)
+    (effects (font (size 1.27 1.27)) (justify left bottom))
+    (uuid 120484af-4d04-4b5c-9017-d43b468464d3)
+  )
   (text "Heater Trace" (at 170.18 58.42 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 1b2ba0e9-c2b6-4c18-acc8-e9b584b26642)
+  )
+  (text "#TODO check crystal footprints" (at 26.67 116.84 0)
+    (effects (font (size 1.27 1.27)) (justify left bottom))
+    (uuid 7e93f9fc-a8c0-4599-bbc1-66ba11393306)
+  )
+  (text "Clamp diodes would be good to protect the\n micro but think we reasonably safe"
+    (at 153.67 -6.35 0)
+    (effects (font (size 1.27 1.27)) (justify left bottom))
+    (uuid a8873acf-6a9a-461b-813d-1684ab5e76ec)
   )
   (text "Using as referance\nhttps://www.olimex.com/Products/MSP430/Proto/_resources/MSP430-Pxxx-sch.pdf\n"
     (at 60.325 196.215 0)
