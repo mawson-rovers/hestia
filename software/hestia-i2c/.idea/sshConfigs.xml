@@ -2,7 +2,7 @@
 <project version="4">
   <component name="SshConfigs">
     <configs>
-      <sshConfig host="beaglebone.local" id="e37e3eb3-f84b-4fa7-955c-3748566fc3ab" keyPath="$USER_HOME$/.ssh/id_rsa" port="22" customName="beagle" nameFormat="CUSTOM" username="debian" useOpenSSHConfig="true">
+      <sshConfig connectionConfig="{&quot;hostKeyVerifier&quot;:{&quot;stringHostKeyChecking&quot;:&quot;NO&quot;}}" host="beagle" id="e37e3eb3-f84b-4fa7-955c-3748566fc3ab" keyPath="$USER_HOME$/.ssh/id_rsa" port="22" customName="beagle" nameFormat="CUSTOM" username="debian" useOpenSSHConfig="true">
         <option name="customName" value="beagle" />
       </sshConfig>
     </configs>
