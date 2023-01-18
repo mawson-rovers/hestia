@@ -3,9 +3,17 @@ import math
 
 from pytest import approx
 
-from hestia import sensors
+from hestia import Hestia, sensors
 
 log = logging.getLogger(__name__)
+
+hestia = Hestia()
+
+
+def test_sensors():
+    for sensor, temp in hestia.read_sensor_values().items():
+        log.info('%s (0x%02x, %s) => %.2f', sensor.id, sensor.addr, sensor.label, temp)
+        assert 10.0 <= temp <= 80.0 or math.isnan(temp)
 
 
 def test_ads7828_channel_select():

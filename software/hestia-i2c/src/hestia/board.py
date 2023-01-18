@@ -1,5 +1,6 @@
 import contextlib
 import logging
+import os
 from collections import OrderedDict
 from time import sleep
 from typing import Dict
@@ -10,6 +11,7 @@ from hestia.sensors import Sensor, SensorInterface
 
 logger = logging.getLogger('hestia.board')
 
+SENSOR_DISABLE_ENV_VAR = 'HESTIA_SENSOR_DISABLE'
 
 MSP430_I2C_ADDR = 0x08
 MSP430_COMMAND_RESET = 0x50
@@ -47,6 +49,10 @@ class Hestia:
     def __init__(self) -> None:
         super().__init__()
         self.sensors = _sensors
+        if SENSOR_DISABLE_ENV_VAR in os.environ:
+            disabled_sensors = os.environ[SENSOR_DISABLE_ENV_VAR].casefold().split(',')
+            logger.info('Disabling sensors per configuration: %s' % disabled_sensors)
+            self.sensors = [s for s in self.sensors if s.id.casefold() not in disabled_sensors]
         self.center_sensor = self.sensors[0]
 
     def read_center_temp(self) -> float:
