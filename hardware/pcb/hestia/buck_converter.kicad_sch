@@ -963,7 +963,7 @@
     (uuid fe2801d6-2b42-482e-ad4b-b8421fbeee9c)
   )
 
-  (text "The Inductor and Resistor footprint are likely to large"
+  (text "The Inductor and Resistor footprint are likely too large"
     (at 155.575 67.945 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 37f489f9-2e17-451a-bc15-a490e76af58a)
