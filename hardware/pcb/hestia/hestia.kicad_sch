@@ -4217,8 +4217,8 @@
     (uuid ff1d4f8b-68dd-487b-940a-20f1f347fc21)
   )
 
-  (text "Not sure exactly what values should be\n used for the voltage divider"
-    (at 153.67 2.54 0)
+  (text "Still Not sure exactly what values should be\nused for the voltage divider \nInput MUX ON  R is 2k if that means anything"
+    (at 208.28 -6.35 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 120484af-4d04-4b5c-9017-d43b468464d3)
   )
@@ -4226,14 +4226,13 @@
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 1b2ba0e9-c2b6-4c18-acc8-e9b584b26642)
   )
+  (text "#TODO pick diode\n" (at 181.61 -3.81 0)
+    (effects (font (size 1.27 1.27)) (justify left bottom))
+    (uuid 40f01994-a04e-4431-8087-527bb4ee2b4d)
+  )
   (text "#TODO check crystal footprints" (at 26.67 116.84 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 7e93f9fc-a8c0-4599-bbc1-66ba11393306)
-  )
-  (text "Clamp diodes would be good to protect the\n micro but think we reasonably safe"
-    (at 153.67 -6.35 0)
-    (effects (font (size 1.27 1.27)) (justify left bottom))
-    (uuid a8873acf-6a9a-461b-813d-1684ab5e76ec)
   )
   (text "Using as referance\nhttps://www.olimex.com/Products/MSP430/Proto/_resources/MSP430-Pxxx-sch.pdf\n"
     (at 60.325 196.215 0)
@@ -4243,10 +4242,6 @@
   (text "Using Digilent jtag pinout" (at 12.7 166.37 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid df436ab8-703a-43fe-ad25-7fd76d11b875)
-  )
-  (text "ADC resistance is 2k?" (at 153.67 7.62 0)
-    (effects (font (size 1.27 1.27)) (justify left bottom))
-    (uuid f722a485-ddd3-4d81-8b36-2a23a887f9e0)
   )
 
   (label "SCL_3.3V" (at 248.92 28.575 0)
@@ -5431,13 +5426,13 @@
   (symbol (lib_id "Switch:SW_Push_Open") (at 167.64 50.8 90) (unit 1)
     (in_bom yes) (on_board yes) (fields_autoplaced)
     (uuid 4b2b50d0-37e8-4c88-aa4f-c5481d0137a3)
-    (property "Reference" "SW?" (id 0) (at 168.91 49.5299 90)
+    (property "Reference" "SW2" (id 0) (at 168.91 49.5299 90)
       (effects (font (size 1.27 1.27)) (justify right))
     )
     (property "Value" "SW_Push_Open" (id 1) (at 168.91 52.0699 90)
       (effects (font (size 1.27 1.27)) (justify right))
     )
-    (property "Footprint" "" (id 2) (at 162.56 50.8 0)
+    (property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" (id 2) (at 162.56 50.8 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "~" (id 3) (at 162.56 50.8 0)
@@ -6721,7 +6716,7 @@
   (symbol (lib_id "power:GND") (at 212.09 162.56 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid b9f21e1c-9587-42e8-8af8-81ac614b8c5d)
-    (property "Reference" "#PWR?" (id 0) (at 212.09 168.91 0)
+    (property "Reference" "#PWR0173" (id 0) (at 212.09 168.91 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (id 1) (at 366.395 253.365 90))
@@ -7764,6 +7759,9 @@
     (path "/8c9d04ed-0354-4484-899e-ee180a9478a1"
       (reference "#PWR0172") (unit 1) (value "+3.3V") (footprint "")
     )
+    (path "/b9f21e1c-9587-42e8-8af8-81ac614b8c5d"
+      (reference "#PWR0173") (unit 1) (value "GND") (footprint "")
+    )
     (path "/4d4fb9ef-899b-473f-9af8-b8dfeb3d2520"
       (reference "#PWR0174") (unit 1) (value "GND") (footprint "")
     )
@@ -7811,9 +7809,6 @@
     )
     (path "/366ad368-cdfb-4903-9150-28662a172f10"
       (reference "#PWR0191") (unit 1) (value "GND") (footprint "")
-    )
-    (path "/b9f21e1c-9587-42e8-8af8-81ac614b8c5d"
-      (reference "#PWR?") (unit 1) (value "GND") (footprint "")
     )
     (path "/a735371e-e30b-43a5-a892-13a5329e8971/f1399db2-0c9f-412f-8e24-f669802a6e5a"
       (reference "C1") (unit 1) (value "47uF 10V") (footprint "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder")
@@ -8275,7 +8270,7 @@
       (reference "SW1") (unit 1) (value "SW_Push") (footprint "Button_Switch_SMD:SW_SPST_PTS810")
     )
     (path "/4b2b50d0-37e8-4c88-aa4f-c5481d0137a3"
-      (reference "SW?") (unit 1) (value "SW_Push_Open") (footprint "")
+      (reference "SW2") (unit 1) (value "SW_Push_Open") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/70cdfe32-a909-4e4a-b84a-023dca519f66"
       (reference "TH1") (unit 1) (value "Thermistor") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
