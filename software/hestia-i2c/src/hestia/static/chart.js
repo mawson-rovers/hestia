@@ -1,6 +1,6 @@
 (function () { // prevent leaking into global scope
     const ctx = document.getElementById('temperature-chart');
-    const initialDurationMins = location.hash && location.hash.match(/d\d+/) ?
+    let durationMins = location.hash && location.hash.match(/d\d+/) ?
         location.hash.match(/d(\d+)/)[1] : 30; // default to 30 mins
 
     const colorPalette = [
@@ -66,13 +66,13 @@
         };
     }
 
-    function minsToMillis(durationMins) {
-        return durationMins * 60000;
+    function minsToMillis(minutes) {
+        return minutes * 60000;
     }
 
     function updateChartDuration(chart) {
         const now = new Date();
-        const durationMillis = minsToMillis(chart.options.durationMins);
+        const durationMillis = minsToMillis(durationMins);
         chart.options.scales.x.min = new Date(now.getTime() - durationMillis);
         chart.options.scales.x.max = now;
     }
@@ -122,7 +122,6 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 data: getChartData(data),
-                durationMins: initialDurationMins,
                 options: {
                     scales: {
                         x: {
@@ -134,7 +133,7 @@
                                     minute: 'HH:mm:ss',
                                 },
                             },
-                            min: new Date(new Date().getTime() - minsToMillis(initialDurationMins)),
+                            min: new Date(new Date().getTime() - minsToMillis(durationMins)),
                             max: new Date(),
                         },
                         y1: {
@@ -179,14 +178,14 @@
                         updateChartData(chart, newData);
                         updateChartDuration(chart);
                         chart.update();
-                    })
+                    });
             }, 5000);
 
             // click handlers for chart duration
             document.querySelectorAll(".duration-selector a").forEach(function (el) {
-                let durationMins = el.getAttribute("data-duration-mins")
+                let newDurationMins = el.getAttribute("data-duration-mins")
                 el.addEventListener('click', (ev) => {
-                    chart.options.durationMins = durationMins;
+                    durationMins = newDurationMins;
                     updateChartDuration(chart);
                     chart.update();
 
