@@ -10,7 +10,7 @@ from typing import List, Dict, Any
 from flask import Flask, jsonify, Response, render_template, request, redirect, send_from_directory
 from flask_compress import Compress
 
-from hestia import Hestia, logger, i2c, stub_instance
+from hestia import Hestia, logger, i2c, stub_instance, stub_board
 
 app = Flask("hestia")
 Compress(app)
@@ -99,6 +99,8 @@ def get_log_data():
 
 
 def read_recent_logs() -> List[Dict[str, Any]]:
+    if not i2c.device_exists():
+        return stub_board.get_stub_logs()
     try:
         file = logger.get_log_files()[0]
     except IndexError:

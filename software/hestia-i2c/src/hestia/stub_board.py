@@ -1,7 +1,8 @@
 import math
+import re
 from datetime import datetime, timedelta
 from random import random
-from typing import Dict, Optional
+from typing import Dict, Optional, List, Any
 
 from hestia import Hestia
 from hestia.board import Sensor
@@ -10,7 +11,7 @@ _stub_values = {
     "TH1": 24.64,
     "TH2": 23.62,
     "TH3": 23.86,
-    "J7": math.nan,
+    "J7": 24.35,
     "J8": math.nan,
     "J9": math.nan,
     "J10": math.nan,
@@ -29,6 +30,26 @@ _stub_values = {
     "U6": 24.75,
     "U7": 26.32,
 }
+
+
+def get_stub_logs() -> List[Dict[str, Any]]:
+    data = []
+    end_date = datetime.now()
+    d = end_date - timedelta(minutes=120)
+    while d <= end_date:
+        entry = {
+            "timestamp": d.strftime("%Y-%m-%d %T.%f"),
+            "heater": int(d.timestamp()) % 256,
+        }
+        ts = d.timestamp()
+        for sensor_id, value in _stub_values.items():
+            if not math.isnan(value):
+                int_id = int(re.sub('[A-Z]', '', sensor_id))
+                ts_offset = ts / 80
+                entry[sensor_id] = value + (math.sin(ts_offset * int_id) + math.cos(ts_offset * 7)) * 5
+        data.append(entry)
+        d += timedelta(seconds=5)
+    return data
 
 
 class StubHestia(Hestia):
