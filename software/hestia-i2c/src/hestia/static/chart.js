@@ -87,7 +87,7 @@
                 dataset.data.push(...newData);
 
                 // limit samples to maximum visible (30 min * 12 per min)
-                while (dataset.data.length > 360) {
+                while (dataset.data.length > 1500) {
                     dataset.data.shift();
                 }
             } else {
