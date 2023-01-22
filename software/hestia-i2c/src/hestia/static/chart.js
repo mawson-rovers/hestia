@@ -46,6 +46,10 @@
         return savedColors[sensor_id];
     };
 
+    // convert our timestamps to ISO8601 format to make Luxon happy
+    const adaptTimestamps = seriesData =>
+        seriesData.map(([timestamp, value]) => [timestamp.replace(' ', 'T'), value]);
+
     function getChartData(data) {
         let sensor_ids = Object.keys(data)
             .filter(id => data[id].length); // exclude empty sensors
@@ -54,7 +58,7 @@
                 const colors = colorsForSensor(id);
                 return {
                     label: id,
-                    data: data[id],
+                    data: adaptTimestamps(data[id]),
                     borderWidth: 1,
                     borderColor: colors.borderColor,
                     backgroundColor: colors.backgroundColor,
@@ -79,7 +83,7 @@
 
     function updateChartData(chart, newDatasets) {
         Object.keys(newDatasets).forEach(function (label) {
-            let newData = newDatasets[label];
+            let newData = adaptTimestamps(newDatasets[label]);
 
             let dataset = chart.data.datasets.find(ds => ds.label === label);
             if (dataset) {
