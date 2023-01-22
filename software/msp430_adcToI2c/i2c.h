@@ -11,14 +11,6 @@ union I2C_Packet_t{
 
 static uint8_t TransmitLen = 0;
 
-/* The transaction between the slave and master is completed. Uses cmd
- * to do post transaction operations. (Place data from ReceiveBuffer
- * to the corresponding buffer based in the last received cmd)
- *
- * cmd: The command/register address corresponding to the completed
- * transaction
- */
-void I2C_Slave_TransactionDone(uint8_t cmd);
-void CopyArray(uint8_t *source);
+void CopyArray(const uint8_t *source);
 void initI2C();
 #endif

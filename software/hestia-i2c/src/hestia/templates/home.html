@@ -12,10 +12,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.css">
     <link rel="stylesheet" href="/static/style.css">
 
-    <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.0.1/dist/chart.umd.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.2.0/dist/chart.umd.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/luxon@3.2.1/build/global/luxon.min.js"></script>
     <script defer
-            src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@2.0.1/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+            src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.0/dist/chartjs-adapter-luxon.umd.min.js"></script>
     <script defer src="/static/status.js"></script>
     <script defer src="/static/chart.js"></script>
 </head>
@@ -54,9 +54,9 @@
         <div style="display: flex; justify-content: space-between; width: 800px">
             <h3>Temperature chart</h3>
             <div class="duration-selector" style="font-size: 14px">
-                <a href="#d5" data-duration-mins="5">5 mins</a> •
                 <a href="#d10" data-duration-mins="10">10 mins</a> •
-                <a href="#d30" data-duration-mins="30">30 mins</a>
+                <a href="#d30" data-duration-mins="30">30 mins</a> •
+                <a href="#d120" data-duration-mins="120">120 mins</a>
             </div>
         </div>
 

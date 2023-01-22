@@ -137,12 +137,12 @@ void initClockTo16MHz() {
 
 void initGPIO() {
     //I2C Pins
-    P3SEL |= BIT1 | BIT2;                     // P3.1,2 option select
-    P5DIR |= 0x0F;                            // Set P1.0 to output direction
-    P5OUT &= ~(LED_YELLOW | LED_GREEN);       // Turn off red led
-    P1DIR |= HEATER_PIN;                      // P1.7 output
+    P3SEL |= BIT1 | BIT2;                     // P3.1,2 for I2C
+    P5DIR |= 0x0F;                            // P5.0-3 output -> status LEDs
+    P5OUT &= ~(LED_YELLOW | LED_GREEN);       // Turn off status LEDs
+    P1DIR |= HEATER_PIN;                      // P1.7 output -> heater
 //    P1SEL |= HEATER_PIN;                      // P1.7 TA2 options
-    P1OUT &= ~HEATER_PIN;                    // Turn off the heater
+    P1OUT &= ~HEATER_PIN;                     // Turn off the heater
 //    CCR0 = 512-1;                             // PWM Period
 //    CCTL2 = OUTMOD_7;                         // CCR2 reset/set
 //    CCR2 = 100;                                 // CCR2 PWM duty cycle 0%

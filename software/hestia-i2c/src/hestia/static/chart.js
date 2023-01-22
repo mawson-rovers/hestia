@@ -1,6 +1,6 @@
 (function () { // prevent leaking into global scope
     const ctx = document.getElementById('temperature-chart');
-    const initialDurationMins = location.hash && location.hash.match(/d\d+/) ?
+    let durationMins = location.hash && location.hash.match(/d\d+/) ?
         location.hash.match(/d(\d+)/)[1] : 30; // default to 30 mins
 
     const colorPalette = [
@@ -46,6 +46,10 @@
         return savedColors[sensor_id];
     };
 
+    // convert our timestamps to ISO8601 format to make Luxon happy
+    const adaptTimestamps = seriesData =>
+        seriesData.map(([timestamp, value]) => [timestamp.replace(' ', 'T'), value]);
+
     function getChartData(data) {
         let sensor_ids = Object.keys(data)
             .filter(id => data[id].length); // exclude empty sensors
@@ -54,7 +58,7 @@
                 const colors = colorsForSensor(id);
                 return {
                     label: id,
-                    data: data[id],
+                    data: adaptTimestamps(data[id]),
                     borderWidth: 1,
                     borderColor: colors.borderColor,
                     backgroundColor: colors.backgroundColor,
@@ -66,20 +70,20 @@
         };
     }
 
-    function minsToMillis(durationMins) {
-        return durationMins * 60000;
+    function minsToMillis(minutes) {
+        return minutes * 60000;
     }
 
     function updateChartDuration(chart) {
         const now = new Date();
-        const durationMillis = minsToMillis(chart.options.durationMins);
+        const durationMillis = minsToMillis(durationMins);
         chart.options.scales.x.min = new Date(now.getTime() - durationMillis);
         chart.options.scales.x.max = now;
     }
 
     function updateChartData(chart, newDatasets) {
         Object.keys(newDatasets).forEach(function (label) {
-            let newData = newDatasets[label];
+            let newData = adaptTimestamps(newDatasets[label]);
 
             let dataset = chart.data.datasets.find(ds => ds.label === label);
             if (dataset) {
@@ -87,7 +91,7 @@
                 dataset.data.push(...newData);
 
                 // limit samples to maximum visible (30 min * 12 per min)
-                while (dataset.data.length > 360) {
+                while (dataset.data.length > 1500) {
                     dataset.data.shift();
                 }
             } else {
@@ -122,7 +126,6 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 data: getChartData(data),
-                durationMins: initialDurationMins,
                 options: {
                     scales: {
                         x: {
@@ -134,7 +137,7 @@
                                     minute: 'HH:mm:ss',
                                 },
                             },
-                            min: new Date(new Date().getTime() - minsToMillis(initialDurationMins)),
+                            min: new Date(new Date().getTime() - minsToMillis(durationMins)),
                             max: new Date(),
                         },
                         y1: {
@@ -179,14 +182,14 @@
                         updateChartData(chart, newData);
                         updateChartDuration(chart);
                         chart.update();
-                    })
+                    });
             }, 5000);
 
             // click handlers for chart duration
             document.querySelectorAll(".duration-selector a").forEach(function (el) {
-                let durationMins = el.getAttribute("data-duration-mins")
+                let newDurationMins = el.getAttribute("data-duration-mins")
                 el.addEventListener('click', (ev) => {
-                    chart.options.durationMins = durationMins;
+                    durationMins = newDurationMins;
                     updateChartDuration(chart);
                     chart.update();
 
