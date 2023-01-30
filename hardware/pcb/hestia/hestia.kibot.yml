@@ -86,6 +86,12 @@ outputs:
       - layer: Edge.Cuts
       - layer: User.Comments
       - layer: User.2
+    - sheet: Inner 1 copper
+      layers:
+      - layer: In1.Cu
+    - sheet: Inner 2 copper
+      layers:
+      - layer: In2.Cu
     - sheet: Bottom copper
       mirror: true
       layers:
@@ -132,53 +138,6 @@ outputs:
   dir: render
   run_by_default: false  # output is too big to include by default (>10 MB)
 
-# Renders
-- name: render_top
-  comment: Top render
-  type: render_3d
-  dir: render
-  output_id: render-top
-  options:
-    output: '%f-%I-%D.%x'  # don't include '3D_' in name
-    view: top
-    width: 1200
-    height: 1200
-    zoom: 3
-    ray_tracing: true
-- name: render_bottom
-  comment: Bottom render
-  type: render_3d
-  dir: render
-  output_id: render-bottom
-  extends: render_top
-  options:
-    view: bottom
-- name: render_top_angle
-  comment: Top angle render
-  type: render_3d
-  dir: render
-  output_id: render-top-angle
-  options:
-    output: '%f-%I-%D.%x'  # don't include '3D_' in name
-    view: top
-    width: 1600
-    height: 1200
-    rotate_x: 4
-    rotate_z: -2
-    move_y: 1
-    zoom: 3
-    ray_tracing: true
-- name: render_bottom_angle
-  comment: Bottom angle render
-  type: render_3d
-  dir: render
-  output_id: render-bottom-angle
-  extends: render_top_angle
-  options:
-    view: bottom
-    rotate_x: 3
-    rotate_z: 7
-
 # PCBWay gerbers & drill files
 - name: pcbway_gerbers
   comment: Gerbers compatible with PCBWay
@@ -206,6 +165,12 @@ outputs:
   - layer: F.Cu
     suffix: F_Cu
     description: Front copper
+  - layer: In1.Cu
+    suffix: In1_Cu
+    description: Inner 1 copper
+  - layer: In2.Cu
+    suffix: In2_Cu
+    description: Inner 2 copper
   - layer: B.Cu
     suffix: B_Cu
     description: Bottom copper
@@ -244,6 +209,37 @@ outputs:
     pth_id: ''
     npth_id: -NPTH
     output: '%f%i.drl'
+- name: pcbway_bom
+  comment: BOM for PCBWay
+  type: bom
+  dir: manufacturers/pcbway
+  options:
+    output: '%f_%i_pcbway.%x'
+    ref_separator: ','
+    columns:
+    - field: Row
+      name: 'Item #'
+    - field: References
+      name: Designator
+    - field: Quantity Per PCB
+      name: Qty
+    - name: 'Manufacturer'
+      field: Manufacturer
+    - field: Part
+      name: 'Mfg Part #'
+    - field: Value
+      name: 'Description / Value'
+    - field: Footprint
+      name: 'Package/Footprint'
+    - name: Type
+      field: Type
+    - field: Description
+      name: 'Your Instructions / Notes'
+    csv:
+      hide_pcb_info: true
+      hide_stats_info: true
+      quote_all: true
+      ref_separator: ','
 - name: pcbway
   comment: ZIP file for PCBWay
   type: compress
@@ -350,3 +346,52 @@ outputs:
     - from_output: jlcpcb_bom
       dest: /
     move_files: true
+
+# 2D renders
+- name: render_top
+  comment: Top render
+  type: render_3d
+  dir: render
+  output_id: render-top
+  options:
+    output: '%f-%I-%D.%x'  # don't include '3D_' in name
+    view: top
+    width: 1200
+    height: 1200
+    zoom: 3
+    ray_tracing: true
+- name: render_bottom
+  comment: Bottom render
+  type: render_3d
+  dir: render
+  output_id: render-bottom
+  extends: render_top
+  options:
+    view: bottom
+
+# 3D renders
+- name: render_top_angle
+  comment: Top angle render
+  type: render_3d
+  dir: render
+  output_id: render-top-angle
+  options:
+    output: '%f-%I-%D.%x'  # don't include '3D_' in name
+    view: top
+    width: 1600
+    height: 1200
+    rotate_x: 4
+    rotate_z: -2
+    move_y: 1
+    zoom: 3
+    ray_tracing: true
+- name: render_bottom_angle
+  comment: Bottom angle render
+  type: render_3d
+  dir: render
+  output_id: render-bottom-angle
+  extends: render_top_angle
+  options:
+    view: bottom
+    rotate_x: 3
+    rotate_z: 7

@@ -14,14 +14,14 @@ jobs:
     container: setsoft/kicad_auto:ki6.0.5_Debian
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: kibot-build.sh
       run: |
         ./scripts/kibot-build.sh
 
     - name: Save build output
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: build
         path: build

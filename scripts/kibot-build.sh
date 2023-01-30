@@ -22,8 +22,9 @@ echo "[INFO] Deleting old build files"
 export KICAD6_3DMODEL_DIR=${KICAD6_3DMODEL_DIR:-'/usr/share/kicad/3dmodels'}
 echo "[INFO] KICAD6_3DMODEL_DIR set to $KICAD6_3DMODEL_DIR"
 
-echo "[INFO] Starting kibot with config: hestia.kibot.yml"
-kibot -c hestia.kibot.yml -b hestia.kicad_pcb -e hestia.kicad_sch \
+CONFIG=hestia.kibot.yml
+echo "[INFO] Starting kibot with config: $CONFIG"
+kibot -c "$CONFIG" -b hestia.kicad_pcb -e hestia.kicad_sch \
         -d "$BUILD_PATH"
 popd
 
