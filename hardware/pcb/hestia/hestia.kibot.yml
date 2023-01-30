@@ -223,23 +223,23 @@ outputs:
       name: Designator
     - field: Quantity Per PCB
       name: Qty
-    - field: ''
-      name: 'Manufacturer'
+    - name: 'Manufacturer'
+      field: Manufacturer
     - field: Part
       name: 'Mfg Part #'
     - field: Value
       name: 'Description / Value'
     - field: Footprint
       name: 'Package/Footprint'
-    - field: Type
-      join:
-        text: 'SMD'
+    - name: Type
+      field: Type
     - field: Description
       name: 'Your Instructions / Notes'
     csv:
       hide_pcb_info: true
       hide_stats_info: true
       quote_all: true
+      ref_separator: ','
 - name: pcbway
   comment: ZIP file for PCBWay
   type: compress
@@ -250,8 +250,6 @@ outputs:
     - from_output: pcbway_gerbers
       dest: /
     - from_output: pcbway_drill
-      dest: /
-    - from_output: pcbway_bom
       dest: /
     move_files: true
 
