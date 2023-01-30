@@ -86,6 +86,12 @@ outputs:
       - layer: Edge.Cuts
       - layer: User.Comments
       - layer: User.2
+    - sheet: Inner 1 copper
+      layers:
+      - layer: In1.Cu
+    - sheet: Inner 2 copper
+      layers:
+      - layer: In2.Cu
     - sheet: Bottom copper
       mirror: true
       layers:
@@ -206,6 +212,12 @@ outputs:
   - layer: F.Cu
     suffix: F_Cu
     description: Front copper
+  - layer: In1.Cu
+    suffix: In1_Cu
+    description: Inner 1 copper
+  - layer: In2.Cu
+    suffix: In2_Cu
+    description: Inner 2 copper
   - layer: B.Cu
     suffix: B_Cu
     description: Bottom copper
