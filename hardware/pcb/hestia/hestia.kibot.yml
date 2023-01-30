@@ -138,7 +138,7 @@ outputs:
   dir: render
   run_by_default: false  # output is too big to include by default (>10 MB)
 
-# Renders
+# 2D renders (fast)
 - name: render_top
   comment: Top render
   type: render_3d
@@ -159,31 +159,6 @@ outputs:
   extends: render_top
   options:
     view: bottom
-- name: render_top_angle
-  comment: Top angle render
-  type: render_3d
-  dir: render
-  output_id: render-top-angle
-  options:
-    output: '%f-%I-%D.%x'  # don't include '3D_' in name
-    view: top
-    width: 1600
-    height: 1200
-    rotate_x: 4
-    rotate_z: -2
-    move_y: 1
-    zoom: 3
-    ray_tracing: true
-- name: render_bottom_angle
-  comment: Bottom angle render
-  type: render_3d
-  dir: render
-  output_id: render-bottom-angle
-  extends: render_top_angle
-  options:
-    view: bottom
-    rotate_x: 3
-    rotate_z: 7
 
 # PCBWay gerbers & drill files
 - name: pcbway_gerbers
@@ -362,3 +337,30 @@ outputs:
     - from_output: jlcpcb_bom
       dest: /
     move_files: true
+
+# 3D renders (slow - do these last)
+- name: render_top_angle
+  comment: Top angle render
+  type: render_3d
+  dir: render
+  output_id: render-top-angle
+  options:
+    output: '%f-%I-%D.%x'  # don't include '3D_' in name
+    view: top
+    width: 1600
+    height: 1200
+    rotate_x: 4
+    rotate_z: -2
+    move_y: 1
+    zoom: 3
+    ray_tracing: true
+- name: render_bottom_angle
+  comment: Bottom angle render
+  type: render_3d
+  dir: render
+  output_id: render-bottom-angle
+  extends: render_top_angle
+  options:
+    view: bottom
+    rotate_x: 3
+    rotate_z: 7
