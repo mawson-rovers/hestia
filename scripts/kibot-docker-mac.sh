@@ -5,7 +5,7 @@ if [[ "$1" == "-d" || "$1" == "--debug" ]]; then
     COMMAND="/bin/bash"
 fi
 
-docker run -i \
+docker run --platform=linux/amd64 -i \
     -v $HOME/src/mawson/hestia:/local/src \
     -v /Applications/KiCad/KiCad.app/Contents/SharedSupport:/local/kicad \
     -v $HOME/Library/Preferences/kicad:/root/.config/kicad \
