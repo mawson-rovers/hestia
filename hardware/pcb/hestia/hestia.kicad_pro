@@ -443,6 +443,10 @@
     [
       "a735371e-e30b-43a5-a892-13a5329e8971",
       "buck_converter"
+    ],
+    [
+      "20d49a9a-db00-4709-a347-46ba1cabd595",
+      "heater"
     ]
   ],
   "text_variables": {}
