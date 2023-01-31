@@ -1582,7 +1582,7 @@
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid a954158c-8a6e-4b4c-8106-cf193b42e1c5)
   )
-  (label "Heater low" (at 135.89 103.505 0)
+  (label "Heater low" (at 136.525 103.505 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid bf2aa82a-4345-42f7-8f06-7c544ba0702c)
   )
