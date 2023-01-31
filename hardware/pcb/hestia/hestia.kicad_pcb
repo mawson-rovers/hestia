@@ -4015,7 +4015,7 @@
     (property "Sheetname" "")
     (path "/9f29865a-3ea2-4632-a009-c30da4dcbe84")
     (attr through_hole)
-    (fp_text reference "H17" (at 0 -2.1 180 unlocked) (layer "F.SilkS")
+    (fp_text reference "H17" (at 0.01 -2.12 180 unlocked) (layer "F.SilkS")
       (effects (font (size 1 1) (thickness 0.15)))
       (tstamp 2fc26da3-b4de-4fd9-8937-e21f151b127c)
     )
