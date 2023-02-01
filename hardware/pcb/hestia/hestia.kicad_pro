@@ -34,8 +34,8 @@
         "other_text_upright": false,
         "pads": {
           "drill": 0.0,
-          "height": 2.0,
-          "width": 2.0
+          "height": 1.8,
+          "width": 1.25
         },
         "silk_line_width": 0.15,
         "silk_text_italic": false,
@@ -55,10 +55,7 @@
           "width": 0.0
         }
       ],
-      "drc_exclusions": [
-        "via_dangling|127215900|119900000|8cbae669-accf-4bf1-a383-7090664d08dd|00000000-0000-0000-0000-000000000000",
-        "via_dangling|128270000|119900000|15684a2a-cce7-41da-b52b-b6902ec5eec0|00000000-0000-0000-0000-000000000000"
-      ],
+      "drc_exclusions": [],
       "meta": {
         "version": 2
       },
@@ -123,7 +120,10 @@
       },
       "track_widths": [
         0.0,
-        0.5
+        0.5,
+        0.75,
+        1.0,
+        1.5
       ],
       "via_dimensions": [
         {
@@ -336,7 +336,7 @@
       "no_connect_dangling": "warning",
       "pin_not_connected": "error",
       "pin_not_driven": "error",
-      "pin_to_pin": "warning",
+      "pin_to_pin": "error",
       "power_pin_not_driven": "error",
       "similar_labels": "warning",
       "unannotated": "error",

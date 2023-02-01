@@ -4810,7 +4810,7 @@
   (symbol (lib_id "Device:LED") (at 219.71 100.965 90) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid a7f63f9b-8e92-4dcc-ad7d-0a89e6ad6091)
-    (property "Reference" "Power1" (id 0) (at 220.345 98.425 90)
+    (property "Reference" "D1" (id 0) (at 220.345 98.425 90)
       (effects (font (size 1.27 1.27)) (justify right))
     )
     (property "Value" "LED" (id 1) (at 221.615 100.33 90)
@@ -6187,6 +6187,9 @@
     (path "/20d49a9a-db00-4709-a347-46ba1cabd595/3db160b8-87a5-4081-b918-8c71d589b879"
       (reference "C57") (unit 1) (value "0.1uF") (footprint "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder")
     )
+    (path "/a7f63f9b-8e92-4dcc-ad7d-0a89e6ad6091"
+      (reference "D1") (unit 1) (value "LED") (footprint "LED_SMD:LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder")
+    )
     (path "/a341b4a9-79c7-402b-b430-d7acf0f11cbe"
       (reference "D2") (unit 1) (value "LED") (footprint "LED_SMD:LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder")
     )
@@ -6340,9 +6343,6 @@
     (path "/a735371e-e30b-43a5-a892-13a5329e8971/0a1a5e41-8f3a-41ed-8820-31f6386247f5"
       (reference "L2") (unit 1) (value "10uH") (footprint "Inductor_SMD:L_Coilcraft_LPS5030")
     )
-    (path "/a7f63f9b-8e92-4dcc-ad7d-0a89e6ad6091"
-      (reference "Power1") (unit 1) (value "LED") (footprint "LED_SMD:LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder")
-    )
     (path "/20d49a9a-db00-4709-a347-46ba1cabd595/cd81cec8-2c89-4666-8996-a908a3af4f44"
       (reference "Q1") (unit 1) (value "FDS8876") (footprint "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm")
     )
@@ -6422,7 +6422,7 @@
       (reference "R25") (unit 1) (value "10K") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
     )
     (path "/20d49a9a-db00-4709-a347-46ba1cabd595/04cb94e1-9b32-495e-ad3b-edc984d59d8d"
-      (reference "R26") (unit 1) (value "Heater") (footprint "")
+      (reference "R26") (unit 1) (value "Heater") (footprint "NetTie:NetTie-2_SMD_Pad0.5mm")
     )
     (path "/263c7694-95df-4560-a0c0-06c10983110b"
       (reference "R28") (unit 1) (value "2K7 5%") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
