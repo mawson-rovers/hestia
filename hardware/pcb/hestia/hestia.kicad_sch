@@ -3844,10 +3844,10 @@
     (property "Reference" "J2" (id 0) (at 242.57 17.145 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
-    (property "Value" "" (id 1) (at 243.84 34.925 90)
+    (property "Value" "i2c connector" (id 1) (at 243.84 34.925 90)
       (effects (font (size 1.27 1.27)) (justify left))
     )
-    (property "Footprint" "" (id 2) (at 241.935 27.94 0)
+    (property "Footprint" "Hestia:MolexPicoLock_6Way_2MP" (id 2) (at 241.935 27.94 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "~" (id 3) (at 241.935 27.94 0)
@@ -4298,10 +4298,10 @@
     (property "Reference" "J1" (id 0) (at 242.57 44.45 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
-    (property "Value" "" (id 1) (at 244.475 64.77 90)
+    (property "Value" "Serial Connector" (id 1) (at 244.475 64.77 90)
       (effects (font (size 1.27 1.27)) (justify left))
     )
-    (property "Footprint" "" (id 2) (at 241.935 55.245 0)
+    (property "Footprint" "Hestia:MolexPicoLock_6Way_2MP" (id 2) (at 241.935 55.245 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "~" (id 3) (at 241.935 55.245 0)
@@ -5782,10 +5782,7 @@
     (path "/a735371e-e30b-43a5-a892-13a5329e8971/fc54c46a-fed9-4ab4-8eb1-4964a51ac883"
       (reference "#PWR06") (unit 1) (value "+3.3V") (footprint "")
     )
-    (path "/20d49a9a-db00-4709-a347-46ba1cabd595/1409f9ba-5819-4891-8e51-2d12a17e0da8"
-      (reference "#PWR07") (unit 1) (value "VCC") (footprint "")
-    )
-    (path "/20d49a9a-db00-4709-a347-46ba1cabd595/ec19dc5c-56b3-4c6d-9c5d-9a011f2c4276"
+    (path "/a735371e-e30b-43a5-a892-13a5329e8971/c5a12079-d1ab-4fbd-8cbb-7ce919370839"
       (reference "#PWR08") (unit 1) (value "GND") (footprint "")
     )
     (path "/20d49a9a-db00-4709-a347-46ba1cabd595/ce5a7b6e-38f4-4335-9734-2a89485a8961"
@@ -6100,7 +6097,7 @@
     (path "/20d49a9a-db00-4709-a347-46ba1cabd595/cce6d25d-33bb-44b9-8135-aacbadbb5590"
       (reference "C7") (unit 1) (value "22uF 16V") (footprint "Capacitor_SMD:C_1206_3216Metric")
     )
-    (path "/20d49a9a-db00-4709-a347-46ba1cabd595/35538931-888c-42b9-9193-6b3951af299b"
+    (path "/a735371e-e30b-43a5-a892-13a5329e8971/0c255dd5-2349-4514-9af8-ce2afeef5861"
       (reference "C8") (unit 1) (value "22uF 16V") (footprint "Capacitor_SMD:C_1206_3216Metric")
     )
     (path "/0844e593-5c8d-4054-81b3-6300e745e530"
