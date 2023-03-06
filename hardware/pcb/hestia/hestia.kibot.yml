@@ -13,7 +13,6 @@ preflight:
   filters:
     # DRC has no errors (6 Mar 2023)
     # ERC known errors (6 Mar 2023)
-    - error: pin_not_connected
     - error: power_pin_not_driven
     - error: pin_to_pin
     # do not add more items to this list - fix them!
