@@ -3588,7 +3588,7 @@
   )
 
   (symbol (lib_id "Hestia:Wire_Restraint_Hole") (at 153.035 172.72 0) (unit 1)
-    (in_bom yes) (on_board yes)
+    (in_bom no) (on_board yes)
     (uuid 02b2bc54-b2f2-4f23-a5e6-b371379ec2fe)
     (property "Reference" "H9" (id 0) (at 151.765 169.545 0)
       (effects (font (size 1.27 1.27)) (justify left))
@@ -3621,7 +3621,7 @@
   )
 
   (symbol (lib_id "Mechanical:MountingHole") (at 153.67 189.23 0) (unit 1)
-    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (in_bom no) (on_board yes) (fields_autoplaced)
     (uuid 06f524bf-dda2-43a6-9fd6-0d6127b24a95)
     (property "Reference" "H4" (id 0) (at 156.21 189.2299 0)
       (effects (font (size 1.27 1.27)) (justify left))
@@ -4072,7 +4072,7 @@
   )
 
   (symbol (lib_id "Mechanical:MountingHole") (at 153.67 182.88 0) (unit 1)
-    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (in_bom no) (on_board yes) (fields_autoplaced)
     (uuid 3599987d-dd58-415c-81c6-0f3c5336daee)
     (property "Reference" "H8" (id 0) (at 156.21 181.6099 0)
       (effects (font (size 1.27 1.27)) (justify left))
@@ -4107,7 +4107,7 @@
   )
 
   (symbol (lib_id "Mechanical:MountingHole") (at 138.43 182.88 0) (unit 1)
-    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (in_bom no) (on_board yes) (fields_autoplaced)
     (uuid 3cd0986d-acd8-46a2-8935-3cf3c5ba6b39)
     (property "Reference" "H6" (id 0) (at 140.97 181.6099 0)
       (effects (font (size 1.27 1.27)) (justify left))
@@ -4210,7 +4210,7 @@
   )
 
   (symbol (lib_id "Hestia:Wire_Restraint_Hole") (at 153.035 165.735 0) (unit 1)
-    (in_bom yes) (on_board yes)
+    (in_bom no) (on_board yes)
     (uuid 43eea08a-6b04-4664-907f-2ba2c658d470)
     (property "Reference" "H13" (id 0) (at 151.765 162.56 0)
       (effects (font (size 1.27 1.27)) (justify left))
@@ -4243,7 +4243,7 @@
   )
 
   (symbol (lib_id "Hestia:Wire_Restraint_Hole") (at 167.005 172.72 0) (unit 1)
-    (in_bom yes) (on_board yes)
+    (in_bom no) (on_board yes)
     (uuid 4b93b49c-0642-4bed-abdd-f0215e4b9424)
     (property "Reference" "H12" (id 0) (at 165.1 169.545 0)
       (effects (font (size 1.27 1.27)) (justify left))
@@ -4341,7 +4341,7 @@
   )
 
   (symbol (lib_id "Mechanical:MountingHole") (at 130.81 182.88 0) (unit 1)
-    (in_bom yes) (on_board yes)
+    (in_bom no) (on_board yes)
     (uuid 5da505b2-3739-4482-8e26-57fbd1d0117e)
     (property "Reference" "H5" (id 0) (at 133.35 181.61 0)
       (effects (font (size 1.27 1.27)) (justify left))
@@ -4422,7 +4422,7 @@
   )
 
   (symbol (lib_id "Mechanical:MountingHole") (at 146.05 189.23 0) (unit 1)
-    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (in_bom no) (on_board yes) (fields_autoplaced)
     (uuid 70223afa-eef4-4cab-9a9b-7bb8638f5c02)
     (property "Reference" "H3" (id 0) (at 148.59 189.2299 0)
       (effects (font (size 1.27 1.27)) (justify left))
@@ -4489,7 +4489,7 @@
   )
 
   (symbol (lib_id "Hestia:Wire_Restraint_Hole") (at 162.56 172.72 0) (unit 1)
-    (in_bom yes) (on_board yes)
+    (in_bom no) (on_board yes)
     (uuid 7a3cc96b-2d70-460d-b577-c4fe8900bded)
     (property "Reference" "H11" (id 0) (at 160.655 169.545 0)
       (effects (font (size 1.27 1.27)) (justify left))
@@ -4618,7 +4618,7 @@
   )
 
   (symbol (lib_id "Hestia:Wire_Restraint_Hole") (at 162.56 165.735 0) (unit 1)
-    (in_bom yes) (on_board yes)
+    (in_bom no) (on_board yes)
     (uuid 88747afb-3e37-4fb3-9c46-f7475d5129cb)
     (property "Reference" "H15" (id 0) (at 161.29 162.56 0)
       (effects (font (size 1.27 1.27)) (justify left))
@@ -4852,7 +4852,7 @@
   )
 
   (symbol (lib_id "Mechanical:MountingHole") (at 138.43 189.23 0) (unit 1)
-    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (in_bom no) (on_board yes) (fields_autoplaced)
     (uuid 9ea8fbda-e9f5-48b1-a720-55a11fce0a65)
     (property "Reference" "H2" (id 0) (at 140.97 189.2299 0)
       (effects (font (size 1.27 1.27)) (justify left))
@@ -4869,7 +4869,7 @@
   )
 
   (symbol (lib_id "Hestia:Wire_Restraint_Hole") (at 171.45 165.735 0) (unit 1)
-    (in_bom yes) (on_board yes)
+    (in_bom no) (on_board yes)
     (uuid 9f29865a-3ea2-4632-a009-c30da4dcbe84)
     (property "Reference" "H17" (id 0) (at 170.18 162.56 0)
       (effects (font (size 1.27 1.27)) (justify left))
@@ -5117,7 +5117,7 @@
   )
 
   (symbol (lib_id "Hestia:Wire_Restraint_Hole") (at 157.48 172.72 0) (unit 1)
-    (in_bom yes) (on_board yes)
+    (in_bom no) (on_board yes)
     (uuid aafb8d7a-0e4d-4d64-b22d-7a96d611bb3d)
     (property "Reference" "H10" (id 0) (at 156.21 169.545 0)
       (effects (font (size 1.27 1.27)) (justify left))
@@ -5222,7 +5222,7 @@
   )
 
   (symbol (lib_id "Hestia:Wire_Restraint_Hole") (at 157.48 165.735 0) (unit 1)
-    (in_bom yes) (on_board yes)
+    (in_bom no) (on_board yes)
     (uuid b42c5ba2-f179-454b-83cf-711cdb6b238a)
     (property "Reference" "H14" (id 0) (at 156.21 162.56 0)
       (effects (font (size 1.27 1.27)) (justify left))
@@ -5274,7 +5274,7 @@
   )
 
   (symbol (lib_id "Hestia:Wire_Restraint_Hole") (at 167.005 165.735 0) (unit 1)
-    (in_bom yes) (on_board yes)
+    (in_bom no) (on_board yes)
     (uuid b865730d-b733-4847-a5a4-13b1ad6e97e9)
     (property "Reference" "H16" (id 0) (at 165.735 162.56 0)
       (effects (font (size 1.27 1.27)) (justify left))
@@ -5325,7 +5325,7 @@
   )
 
   (symbol (lib_id "Mechanical:MountingHole") (at 146.05 182.88 0) (unit 1)
-    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (in_bom no) (on_board yes) (fields_autoplaced)
     (uuid bdb4f8f3-4ca6-4cca-bd70-99712e9cd49f)
     (property "Reference" "H7" (id 0) (at 148.59 181.6099 0)
       (effects (font (size 1.27 1.27)) (justify left))
@@ -5342,7 +5342,7 @@
   )
 
   (symbol (lib_id "Mechanical:MountingHole") (at 130.81 189.23 0) (unit 1)
-    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (in_bom no) (on_board yes) (fields_autoplaced)
     (uuid c119f42d-4ef0-46e9-b66a-ff371df73063)
     (property "Reference" "H1" (id 0) (at 133.35 189.2299 0)
       (effects (font (size 1.27 1.27)) (justify left))
