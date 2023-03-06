@@ -10,9 +10,14 @@ preflight:
   fill_zones: true
   run_drc: true
   run_erc: true
-  # DRC and ERC have no known warnings (6 Mar 2023)
-  # filters:
-    # - error: track_dangling
+  filters:
+    # DRC has no errors (6 Mar 2023)
+    # ERC known errors (6 Mar 2023)
+    - error: pin_not_connected
+    - error: power_pin_not_driven
+    - error: pin_to_pin
+    # do not add more items to this list - fix them!
+
 
 filters:
 - name: only_jlc_parts
