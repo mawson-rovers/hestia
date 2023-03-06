@@ -2130,7 +2130,6 @@
     )
   )
 
-
   (junction (at 261.62 143.51) (diameter 0) (color 0 0 0 0)
     (uuid 031ba06b-a0a2-4014-939b-2d1cb75a9c69)
   )
@@ -2337,7 +2336,7 @@
   (no_connect (at 109.855 21.59) (uuid eab68e7f-e428-4f36-8f62-b553e2b83a50))
   (no_connect (at 109.855 54.61) (uuid f0068720-daeb-4bd4-9347-a9618affa7cd))
   (no_connect (at 182.88 62.865) (uuid f52237c7-f384-4c75-a0b0-59692a0e122d))
-  (no_connect (at 182.88 57.785) (uuid f52237c7-f384-4c75-a0b0-59692a0e122d))
+  (no_connect (at 182.88 57.785) (uuid f52237c7-f384-4c75-a0b0-59692a0e122e))
 
   (wire (pts (xy 248.92 135.89) (xy 251.46 135.89))
     (stroke (width 0) (type default) (color 0 0 0 0))
@@ -4374,7 +4373,7 @@
   )
 
   (symbol (lib_id "Connector_Generic:Conn_02x07_Odd_Even") (at 32.385 181.61 0) (unit 1)
-    (in_bom yes) (on_board yes)
+    (in_bom no) (on_board yes)
     (uuid 625ae97f-78a2-4e06-8434-7fcc7304d994)
     (property "Reference" "J6" (id 0) (at 31.75 171.45 0))
     (property "Value" "Conn_02x07_Odd_Even" (id 1) (at 31.75 193.04 0))

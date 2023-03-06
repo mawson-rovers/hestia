@@ -1276,7 +1276,6 @@
     )
   )
 
-
   (junction (at 103.505 56.515) (diameter 0) (color 0 0 0 0)
     (uuid 102daaf7-d124-4544-9fd5-2b6ed2605c89)
   )
@@ -1846,7 +1845,7 @@
   )
 
   (symbol (lib_id "Switch:SW_Push_Open") (at 129.54 78.74 90) (unit 1)
-    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (in_bom no) (on_board yes) (fields_autoplaced)
     (uuid 418ed0c4-ad4b-44cf-8bbc-a24073fb2f0e)
     (property "Reference" "SW2" (id 0) (at 130.81 77.4699 90)
       (effects (font (size 1.27 1.27)) (justify right))

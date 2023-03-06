@@ -638,7 +638,7 @@
     (tedit 0) (tstamp 172cb82b-0187-4ffe-833d-b108886ab78b)
     (at 147.0914 81.9811)
     (attr board_only exclude_from_pos_files exclude_from_bom)
-    (fp_text reference "G***" (at -5.588 -38.608) (layer "F.SilkS")
+    (fp_text reference "G***" (at -5.588 -38.608) (layer "F.SilkS") hide
       (effects (font (size 1.524 1.524) (thickness 0.3)))
       (tstamp 061da3bb-e16e-4fa4-9d1d-7a2bb2ae700c)
     )
@@ -3192,7 +3192,7 @@
     (tedit 0) (tstamp 2e0f6023-33f5-419d-8578-5365caf55863)
     (at 145.0594 140.9091)
     (attr board_only exclude_from_pos_files exclude_from_bom)
-    (fp_text reference "G***" (at 3.048 -24.892) (layer "F.SilkS")
+    (fp_text reference "G***" (at 3.048 -24.892) (layer "F.SilkS") hide
       (effects (font (size 1.524 1.524) (thickness 0.3)))
       (tstamp b4cb8451-886d-42c1-b657-89840ef2b247)
     )
@@ -4157,7 +4157,7 @@
     (tedit 0) (tstamp 4c5be0ce-2a6d-474d-b03c-746a11b08c04)
     (at 147.3454 88.3311)
     (attr board_only exclude_from_pos_files exclude_from_bom)
-    (fp_text reference "G***" (at 0 10.668) (layer "F.SilkS")
+    (fp_text reference "G***" (at 0 10.668) (layer "F.SilkS") hide
       (effects (font (size 1.524 1.524) (thickness 0.3)))
       (tstamp a8991477-b0ec-4031-ac9e-32fd62ad63ef)
     )
@@ -7089,7 +7089,7 @@
     (tedit 0) (tstamp f02535cf-1c6d-4d54-b5b6-6a60a9101539)
     (at 146.972851 148.782205)
     (attr board_only exclude_from_pos_files exclude_from_bom)
-    (fp_text reference "G***" (at -5.08 17.78) (layer "F.SilkS")
+    (fp_text reference "G***" (at -5.08 17.78) (layer "F.SilkS") hide
       (effects (font (size 1.524 1.524) (thickness 0.3)))
       (tstamp 71ed2b2d-7707-4ff3-ae9d-731148caf2c6)
     )
