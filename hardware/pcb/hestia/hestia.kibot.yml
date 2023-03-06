@@ -8,20 +8,11 @@ global:
 
 preflight:
   fill_zones: true
-  run_drc: false # disabled during v2 board development - MR 2022-10-31
-  run_erc: false # disabled during v2 board development - MR 2022-10-31
-  # TODO: make these exclusions more specific or fix them
+  run_drc: true
+  run_erc: true
   filters:
-    # DRC known warnings (as of 30 May 2022)
-    - error: track_dangling
-    - error: via_dangling
-    - error: silk_overlap
-    - error: silk_over_copper
-    # ERC known errors (30 May 2022)
-    - error: pin_not_connected
-    - error: power_pin_not_driven
-    - error: pin_to_pin
-    # do not add more items to this list - fix them!
+    # DRC and ERC have no known warnings (6 Mar 2023)
+    # - error: track_dangling
 
 filters:
 - name: only_jlc_parts
