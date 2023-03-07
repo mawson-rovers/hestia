@@ -6815,13 +6815,13 @@
       (reference "C4") (unit 1) (value "47uF 10V") (footprint "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder")
     )
     (path "/20d49a9a-db00-4709-a347-46ba1cabd595/c52ded6b-41b9-4a9c-93fe-658164dd4511"
-      (reference "C5") (unit 1) (value "22uF 16V") (footprint "Capacitor_SMD:C_1206_3216Metric")
+      (reference "C5") (unit 1) (value "22uF 16V") (footprint "")
     )
     (path "/20d49a9a-db00-4709-a347-46ba1cabd595/b83a7638-6df2-4baa-827c-523ff1776f75"
-      (reference "C6") (unit 1) (value "22uF 16V") (footprint "Capacitor_SMD:C_1206_3216Metric")
+      (reference "C6") (unit 1) (value "22uF 16V") (footprint "")
     )
     (path "/20d49a9a-db00-4709-a347-46ba1cabd595/cce6d25d-33bb-44b9-8135-aacbadbb5590"
-      (reference "C7") (unit 1) (value "22uF 16V") (footprint "Capacitor_SMD:C_1206_3216Metric")
+      (reference "C7") (unit 1) (value "22uF 16V") (footprint "")
     )
     (path "/a735371e-e30b-43a5-a892-13a5329e8971/0c255dd5-2349-4514-9af8-ce2afeef5861"
       (reference "C8") (unit 1) (value "22uF 16V") (footprint "Capacitor_SMD:C_1206_3216Metric")
@@ -6866,7 +6866,7 @@
       (reference "C21") (unit 1) (value "0.1uF") (footprint "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/ab4f2daa-ad85-4fce-a223-7dcf8db1ff88"
-      (reference "C22") (unit 1) (value "0.1uF") (footprint "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder")
+      (reference "C22") (unit 1) (value "0.1uF") (footprint "")
     )
     (path "/a735371e-e30b-43a5-a892-13a5329e8971/d0044ef3-34f6-4dbe-97b0-6f73dc653318"
       (reference "C23") (unit 1) (value "47uF 10V") (footprint "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder")
@@ -6875,28 +6875,28 @@
       (reference "C24") (unit 1) (value "10uF 16V") (footprint "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/29e01dd7-2d5a-461f-aad3-b826dc85d8cf"
-      (reference "C25") (unit 1) (value "10uF 16V") (footprint "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder")
+      (reference "C25") (unit 1) (value "10uF 16V") (footprint "")
     )
     (path "/a735371e-e30b-43a5-a892-13a5329e8971/4624f9ee-adb5-4880-a3ec-66dda8e5952c"
       (reference "C26") (unit 1) (value "47uF 10V") (footprint "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/df80bc31-4c38-4c12-a380-da9d0f69aa90"
-      (reference "C27") (unit 1) (value "0.1uF") (footprint "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder")
+      (reference "C27") (unit 1) (value "0.1uF") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/6ded5008-77b6-48b8-8a7a-67a4b0087418"
-      (reference "C28") (unit 1) (value "10uF 16V") (footprint "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder")
+      (reference "C28") (unit 1) (value "10uF 16V") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/e808c7a5-878d-4e2c-8a01-262906d7a17b"
-      (reference "C29") (unit 1) (value "0.1uF") (footprint "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder")
+      (reference "C29") (unit 1) (value "0.1uF") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/22ddcb1e-1ac8-402a-8b6a-e08f8c94117a"
-      (reference "C30") (unit 1) (value "10uF 16V") (footprint "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder")
+      (reference "C30") (unit 1) (value "10uF 16V") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/b0465333-d247-495a-9681-e02638275d1b"
-      (reference "C31") (unit 1) (value "0.1uF") (footprint "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder")
+      (reference "C31") (unit 1) (value "0.1uF") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/b76509fd-5842-49dc-a81a-823aeeb03f45"
-      (reference "C32") (unit 1) (value "10uF 16V") (footprint "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder")
+      (reference "C32") (unit 1) (value "10uF 16V") (footprint "")
     )
     (path "/a735371e-e30b-43a5-a892-13a5329e8971/9974735e-a4dc-4bb1-8ca0-95e3a1046791"
       (reference "C33") (unit 1) (value "47uF 10V") (footprint "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder")
@@ -6926,31 +6926,31 @@
       (reference "C41") (unit 1) (value "0.1uF") (footprint "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/b2154131-4775-4afb-841e-a9c406707347"
-      (reference "C42") (unit 1) (value "0.1uF") (footprint "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder")
+      (reference "C42") (unit 1) (value "0.1uF") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/d04a9c4e-944f-41df-8d2b-b430f0f7b018"
-      (reference "C43") (unit 1) (value "0.1uF") (footprint "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder")
+      (reference "C43") (unit 1) (value "0.1uF") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/48c57282-6e78-4837-8902-1322495158d6"
-      (reference "C44") (unit 1) (value "0.1uF") (footprint "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder")
+      (reference "C44") (unit 1) (value "0.1uF") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/b2224060-f988-43ba-9bd1-3c614677f13f"
-      (reference "C45") (unit 1) (value "0.1uF") (footprint "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder")
+      (reference "C45") (unit 1) (value "0.1uF") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/ad2acd77-d260-4ec8-9059-c7a87872cbc9"
-      (reference "C49") (unit 1) (value "0.1uF") (footprint "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder")
+      (reference "C49") (unit 1) (value "0.1uF") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/6ea4a818-0028-484c-8a96-232bc323d6ab"
-      (reference "C50") (unit 1) (value "1uF") (footprint "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder")
+      (reference "C50") (unit 1) (value "1uF") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/23b47401-6932-4bfd-82fd-6166ee1423c5"
-      (reference "C51") (unit 1) (value "0.1uF") (footprint "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder")
+      (reference "C51") (unit 1) (value "0.1uF") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/19dfa0f5-35ab-441b-907d-2f3a165ef54b"
-      (reference "C52") (unit 1) (value "0.1uF") (footprint "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder")
+      (reference "C52") (unit 1) (value "0.1uF") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/47d46b11-fa18-409b-9440-9a06fe0384f2"
-      (reference "C53") (unit 1) (value "0.1uF") (footprint "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder")
+      (reference "C53") (unit 1) (value "0.1uF") (footprint "")
     )
     (path "/e8c71ae0-3752-4493-b083-186e0c6da5b3"
       (reference "C54") (unit 1) (value "0.1uF") (footprint "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder")
@@ -6959,10 +6959,10 @@
       (reference "C55") (unit 1) (value "1uF") (footprint "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/b2d31264-6763-4f0a-8958-e1a457968fd8"
-      (reference "C56") (unit 1) (value "1uF") (footprint "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder")
+      (reference "C56") (unit 1) (value "1uF") (footprint "")
     )
     (path "/20d49a9a-db00-4709-a347-46ba1cabd595/3db160b8-87a5-4081-b918-8c71d589b879"
-      (reference "C57") (unit 1) (value "0.1uF") (footprint "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder")
+      (reference "C57") (unit 1) (value "0.1uF") (footprint "")
     )
     (path "/a7f63f9b-8e92-4dcc-ad7d-0a89e6ad6091"
       (reference "D1") (unit 1) (value "RED LED") (footprint "LED_SMD:LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder")
@@ -6977,13 +6977,13 @@
       (reference "D4") (unit 1) (value "BLUE LED") (footprint "LED_SMD:LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder")
     )
     (path "/20d49a9a-db00-4709-a347-46ba1cabd595/38f017af-7a93-4d1f-bc86-3110320759e6"
-      (reference "D5") (unit 1) (value "ORANGE LED") (footprint "LED_SMD:LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder")
+      (reference "D5") (unit 1) (value "ORANGE LED") (footprint "")
     )
     (path "/a735371e-e30b-43a5-a892-13a5329e8971/4efb1a2c-52be-4116-8050-0bf167ef461f"
       (reference "D6") (unit 1) (value "FSV340AF") (footprint "Hestia:DO-214AD (SMAF)")
     )
     (path "/20d49a9a-db00-4709-a347-46ba1cabd595/6ee9569e-09f4-4774-8818-45c99003115a"
-      (reference "D7") (unit 1) (value "BAT54S") (footprint "Package_TO_SOT_SMD:SOT-23")
+      (reference "D7") (unit 1) (value "BAT54S") (footprint "")
     )
     (path "/9b4b4e62-106b-43c8-b951-17c6ba1c9f1f"
       (reference "FB1") (unit 1) (value "MMZ1608A222BTA00") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
@@ -6995,34 +6995,34 @@
       (reference "FB3") (unit 1) (value "74279220321") (footprint "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/a75e2173-a5d9-4835-9484-b97c6b04f663"
-      (reference "FB4") (unit 1) (value "MMZ1608A222BTA00") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "FB4") (unit 1) (value "MMZ1608A222BTA00") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/8959ad33-5125-46ba-a9a8-9009b58b51cb"
-      (reference "FB5") (unit 1) (value "MMZ1608A222BTA00") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "FB5") (unit 1) (value "MMZ1608A222BTA00") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/14732805-e8ec-49fb-a12d-5a715fe3b15c"
-      (reference "FB6") (unit 1) (value "MMZ1608A222BTA00") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "FB6") (unit 1) (value "MMZ1608A222BTA00") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/1af92870-b496-4334-9d6b-6edc6feee4a7"
-      (reference "FB7") (unit 1) (value "MMZ1608A222BTA00") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "FB7") (unit 1) (value "MMZ1608A222BTA00") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/48de4723-5de6-42da-8879-8b15fa281f32"
-      (reference "FB8") (unit 1) (value "MMZ1608A222BTA00") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "FB8") (unit 1) (value "MMZ1608A222BTA00") (footprint "")
     )
     (path "/ca073b94-0e3f-446d-9c9b-39819d3f4ae4"
       (reference "FB9") (unit 1) (value "74279220321") (footprint "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/9eead0e2-56ac-4c3d-844c-96ce64dac3a7"
-      (reference "FB10") (unit 1) (value "MMZ1608A222BTA00") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "FB10") (unit 1) (value "MMZ1608A222BTA00") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/3106e69e-b919-421f-87a1-49f3ff2e7250"
-      (reference "FB11") (unit 1) (value "MMZ1608A222BTA00") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "FB11") (unit 1) (value "MMZ1608A222BTA00") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/e62215d7-c244-4d8f-acd2-a944cdc61898"
-      (reference "FB12") (unit 1) (value "MMZ1608A222BTA00") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "FB12") (unit 1) (value "MMZ1608A222BTA00") (footprint "")
     )
     (path "/20d49a9a-db00-4709-a347-46ba1cabd595/d6e6532c-913c-4b2e-907b-0b90d60385dd"
-      (reference "FB13") (unit 1) (value "MMZ1608A222BTA00") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "FB13") (unit 1) (value "MMZ1608A222BTA00") (footprint "")
     )
     (path "/c119f42d-4ef0-46e9-b66a-ff371df73063"
       (reference "H1") (unit 1) (value "MountingHole") (footprint "MountingHole:MountingHole_3.2mm_M3_ISO7380")
@@ -7082,10 +7082,10 @@
       (reference "J2") (unit 1) (value "i2c connector") (footprint "Hestia:MolexPicoLock_6Way_2MP")
     )
     (path "/183d8dab-785b-44fb-8399-e41202bbafe3/cf62a998-53ff-4e66-a11d-3ffa207dbaf9"
-      (reference "J3") (unit 1) (value "ESQ-126-39-G-D") (footprint "Hestia:ESQ-126-39-G-D")
+      (reference "J3") (unit 1) (value "ESQ-126-39-G-D") (footprint "")
     )
     (path "/183d8dab-785b-44fb-8399-e41202bbafe3/1d60b0dd-3d5d-4bbd-8bcb-ce093031db27"
-      (reference "J4") (unit 1) (value "ESQ-126-39-G-D") (footprint "Hestia:ESQ-126-39-G-D")
+      (reference "J4") (unit 1) (value "ESQ-126-39-G-D") (footprint "")
     )
     (path "/255a6346-94a4-4eee-add8-827a6c28d12c"
       (reference "J5") (unit 1) (value "VREF+") (footprint "TestPoint:TestPoint_Pad_D2.0mm")
@@ -7094,25 +7094,25 @@
       (reference "J6") (unit 1) (value "Conn_02x07_Odd_Even") (footprint "Connector_IDC:IDC-Header_2x07_P2.54mm_Vertical")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/79988f2b-f32f-4538-8f9f-c86737e2d351"
-      (reference "J7") (unit 1) (value "B2B-ZR") (footprint "Hestia:B2B-ZR(LF)(SN)")
+      (reference "J7") (unit 1) (value "B2B-ZR") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/08cfa445-a386-42e0-801d-e9b74acd60d1"
-      (reference "J8") (unit 1) (value "B2B-ZR") (footprint "Hestia:B2B-ZR(LF)(SN)")
+      (reference "J8") (unit 1) (value "B2B-ZR") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/013186e2-89c3-43f8-9149-a330ffd20bdc"
-      (reference "J12") (unit 1) (value "B2B-ZR") (footprint "Hestia:B2B-ZR(LF)(SN)")
+      (reference "J12") (unit 1) (value "B2B-ZR") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/5eddcc42-3574-431f-99a6-26b809831986"
-      (reference "J13") (unit 1) (value "B2B-ZR") (footprint "Hestia:B2B-ZR(LF)(SN)")
+      (reference "J13") (unit 1) (value "B2B-ZR") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/aba3ecff-5c7c-47c7-9a85-eb8430d4cf71"
-      (reference "J14") (unit 1) (value "B2B-ZR") (footprint "Hestia:B2B-ZR(LF)(SN)")
+      (reference "J14") (unit 1) (value "B2B-ZR") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/cca0876a-13d5-4f0b-9a99-3c44415ccc2c"
-      (reference "J15") (unit 1) (value "B2B-ZR") (footprint "Hestia:B2B-ZR(LF)(SN)")
+      (reference "J15") (unit 1) (value "B2B-ZR") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/0e8f6572-229a-4495-ac97-200e895f2f3e"
-      (reference "J16") (unit 1) (value "B2B-ZR") (footprint "Hestia:B2B-ZR(LF)(SN)")
+      (reference "J16") (unit 1) (value "B2B-ZR") (footprint "")
     )
     (path "/c4822b7d-9b70-46be-9433-c8575c0b5e71"
       (reference "JP1") (unit 1) (value "Jumper_3_Bridged12") (footprint "Connector_PinHeader_1.27mm:PinHeader_1x03_P1.27mm_Vertical")
@@ -7121,16 +7121,16 @@
       (reference "L2") (unit 1) (value "10uH") (footprint "Inductor_SMD:L_Coilcraft_LPS5030")
     )
     (path "/20d49a9a-db00-4709-a347-46ba1cabd595/cd81cec8-2c89-4666-8996-a908a3af4f44"
-      (reference "Q1") (unit 1) (value "FDS8876") (footprint "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm")
+      (reference "Q1") (unit 1) (value "FDS8876") (footprint "")
     )
     (path "/a735371e-e30b-43a5-a892-13a5329e8971/b6ed6908-dae7-4dd5-a133-653832669022"
       (reference "R1") (unit 1) (value "33K") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
     )
     (path "/20d49a9a-db00-4709-a347-46ba1cabd595/35cbfeb0-f82a-4b63-9ff1-09f0fed8f708"
-      (reference "R2") (unit 1) (value "470R") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "R2") (unit 1) (value "470R") (footprint "")
     )
     (path "/20d49a9a-db00-4709-a347-46ba1cabd595/e67e7c36-c99b-411b-ae33-d326b2b357ca"
-      (reference "R3") (unit 1) (value "47K") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "R3") (unit 1) (value "47K") (footprint "")
     )
     (path "/7e95a756-f7f8-4816-acb7-1bef2bfc77ab"
       (reference "R4") (unit 1) (value "DNP") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
@@ -7154,31 +7154,31 @@
       (reference "R10") (unit 1) (value "100R 5% 1/10W") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/df2b7e51-4fe1-450e-a83b-76e8af20845f"
-      (reference "R11") (unit 1) (value "10K 0.5% 1/16W") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "R11") (unit 1) (value "10K 0.5% 1/16W") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/ddcc1298-1f99-4858-b0e3-5a931981855b"
-      (reference "R12") (unit 1) (value "10K 0.5% 1/16W") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "R12") (unit 1) (value "10K 0.5% 1/16W") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/c3ced1be-acaa-4be1-a909-9581f51305d7"
-      (reference "R13") (unit 1) (value "10K 0.5% 1/16W") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "R13") (unit 1) (value "10K 0.5% 1/16W") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/825f7110-868d-4e46-b8fc-e7401511f004"
-      (reference "R14") (unit 1) (value "10K 0.5% 1/16W") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "R14") (unit 1) (value "10K 0.5% 1/16W") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/357cafae-9b43-4715-80c5-f2e7ca10a0ca"
-      (reference "R15") (unit 1) (value "10K 0.5% 1/16W") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "R15") (unit 1) (value "10K 0.5% 1/16W") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/5ffcca67-fbf4-4a3d-9e11-e13588fa0d04"
-      (reference "R16") (unit 1) (value "10K 0.5% 1/16W") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "R16") (unit 1) (value "10K 0.5% 1/16W") (footprint "")
     )
     (path "/20d49a9a-db00-4709-a347-46ba1cabd595/9d101f3e-f05f-45eb-8c22-40cb097e88fe"
-      (reference "R17") (unit 1) (value "10K 0.5% 1/16W") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "R17") (unit 1) (value "10K 0.5% 1/16W") (footprint "")
     )
     (path "/20d49a9a-db00-4709-a347-46ba1cabd595/47ee2bee-a85e-4c5d-b94a-7d70d6ade01b"
-      (reference "R18") (unit 1) (value "10K 0.5% 1/16W") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "R18") (unit 1) (value "10K 0.5% 1/16W") (footprint "")
     )
     (path "/20d49a9a-db00-4709-a347-46ba1cabd595/443fdb6f-496b-4112-8a8d-805b567061a6"
-      (reference "R19") (unit 1) (value "10K 0.5% 1/16W") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "R19") (unit 1) (value "10K 0.5% 1/16W") (footprint "")
     )
     (path "/a735371e-e30b-43a5-a892-13a5329e8971/b78a9f4c-2328-4846-99ab-f946fc23f468"
       (reference "R20") (unit 1) (value "0R") (footprint "Resistor_SMD:R_1210_3225Metric_Pad1.30x2.65mm_HandSolder")
@@ -7190,16 +7190,16 @@
       (reference "R22") (unit 1) (value "1K3 5% 1/10W") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/26985ccb-7fb1-4e6a-a08a-222abf559e72"
-      (reference "R23") (unit 1) (value "10K 0.5% 1/16W") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "R23") (unit 1) (value "10K 0.5% 1/16W") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/7c3fa3fe-048d-4c6f-b5d1-d641a035e30d"
-      (reference "R24") (unit 1) (value "10K 0.5% 1/16W") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "R24") (unit 1) (value "10K 0.5% 1/16W") (footprint "")
     )
     (path "/20d49a9a-db00-4709-a347-46ba1cabd595/64036460-39b1-4302-8824-5f1436d476cf"
-      (reference "R25") (unit 1) (value "10K 0.5% 1/16W") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "R25") (unit 1) (value "10K 0.5% 1/16W") (footprint "")
     )
     (path "/20d49a9a-db00-4709-a347-46ba1cabd595/04cb94e1-9b32-495e-ad3b-edc984d59d8d"
-      (reference "R26") (unit 1) (value "Heater") (footprint "NetTie:NetTie-2_SMD_Pad0.5mm")
+      (reference "R26") (unit 1) (value "Heater") (footprint "")
     )
     (path "/263c7694-95df-4560-a0c0-06c10983110b"
       (reference "R28") (unit 1) (value "2K7 5% 1/10W") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
@@ -7208,19 +7208,19 @@
       (reference "R29") (unit 1) (value "2K7 5% 1/10W") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/f67b6bff-82c6-45c7-b3cc-da6ee5a93e5d"
-      (reference "R30") (unit 1) (value "10K 0.5% 1/16W") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "R30") (unit 1) (value "10K 0.5% 1/16W") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/e896a7c3-bc6f-4cf3-994d-a21cbf86ff80"
-      (reference "R31") (unit 1) (value "10K 0.5% 1/16W") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "R31") (unit 1) (value "10K 0.5% 1/16W") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/20d69440-000f-4a43-88ba-914e83e6f0ef"
-      (reference "R32") (unit 1) (value "10K 0.5% 1/16W") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "R32") (unit 1) (value "10K 0.5% 1/16W") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/01f59001-d810-4b82-ac83-660477a6fdae"
-      (reference "R33") (unit 1) (value "10K 0.5% 1/16W") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "R33") (unit 1) (value "10K 0.5% 1/16W") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/3df612f7-247f-44dc-ac48-8bd9de076a26"
-      (reference "R34") (unit 1) (value "10K 0.5% 1/16W") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "R34") (unit 1) (value "10K 0.5% 1/16W") (footprint "")
     )
     (path "/89ac0339-395d-47d9-85c4-ce8fdd9a879b"
       (reference "R35") (unit 1) (value "0R") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
@@ -7241,16 +7241,16 @@
       (reference "R40") (unit 1) (value "10R 5% 1/10W") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
     )
     (path "/20d49a9a-db00-4709-a347-46ba1cabd595/bbab9a41-63e6-4f50-b9d2-f9d06a010cc8"
-      (reference "R41") (unit 1) (value "100R 5% 1/10W") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "R41") (unit 1) (value "100R 5% 1/10W") (footprint "")
     )
     (path "/20d49a9a-db00-4709-a347-46ba1cabd595/7144a02a-2d7c-400d-b8fc-860eb8cb5e2e"
-      (reference "R42") (unit 1) (value "499R 0.1% 1/16W") (footprint "Capacitor_SMD:C_0402_1005Metric")
+      (reference "R42") (unit 1) (value "499R 0.1% 1/16W") (footprint "")
     )
     (path "/20d49a9a-db00-4709-a347-46ba1cabd595/9cd7d716-0e73-45c5-ab0b-f54f87732cfb"
-      (reference "R43") (unit 1) (value "LVK12R010CER") (footprint "Hestia:LVK12R010CER")
+      (reference "R43") (unit 1) (value "LVK12R010CER") (footprint "")
     )
     (path "/20d49a9a-db00-4709-a347-46ba1cabd595/7f704815-ed53-4bae-a423-3bac4ad84655"
-      (reference "R44") (unit 1) (value "10K 0.5% 1/16W") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "R44") (unit 1) (value "10K 0.5% 1/16W") (footprint "")
     )
     (path "/a735371e-e30b-43a5-a892-13a5329e8971/11a2a19e-aea4-41dc-a217-8035e2b582f7"
       (reference "R45") (unit 1) (value "0R") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
@@ -7259,28 +7259,28 @@
       (reference "SW1") (unit 1) (value "SW_Push") (footprint "Button_Switch_SMD:SW_SPST_PTS810")
     )
     (path "/20d49a9a-db00-4709-a347-46ba1cabd595/418ed0c4-ad4b-44cf-8bbc-a24073fb2f0e"
-      (reference "SW2") (unit 1) (value "SW_Push_Open") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical")
+      (reference "SW2") (unit 1) (value "SW_Push_Open") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/70cdfe32-a909-4e4a-b84a-023dca519f66"
-      (reference "TH1") (unit 1) (value "Thermistor NTC 10K 3630K") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "TH1") (unit 1) (value "Thermistor NTC 10K 3630K") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/0cc3b65e-3ade-47e4-9d0e-5b78a66ee9fa"
-      (reference "TH2") (unit 1) (value "Thermistor NTC 10K 3630K") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "TH2") (unit 1) (value "Thermistor NTC 10K 3630K") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/8a61ef99-0b2c-4fe7-821a-89dbd4616288"
-      (reference "TH3") (unit 1) (value "Thermistor NTC 10K 3630K") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "TH3") (unit 1) (value "Thermistor NTC 10K 3630K") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/e74416f9-2bb4-4109-abdb-d2d8bf457f3d"
-      (reference "TH4") (unit 1) (value "Thermistor NTC 10K 3630K") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "TH4") (unit 1) (value "Thermistor NTC 10K 3630K") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/d50f8863-cb50-4ad0-8b16-7cc2cc42639f"
-      (reference "TH5") (unit 1) (value "Thermistor NTC 10K 3630K") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "TH5") (unit 1) (value "Thermistor NTC 10K 3630K") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/07419e9e-5973-4550-9a6a-ecfedb3a6f3f"
-      (reference "TH6") (unit 1) (value "Thermistor NTC 10K 3630K") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "TH6") (unit 1) (value "Thermistor NTC 10K 3630K") (footprint "")
     )
     (path "/20d49a9a-db00-4709-a347-46ba1cabd595/7477e924-6c0e-4994-b40b-6df138b22b90"
-      (reference "TP1") (unit 1) (value "TestPoint") (footprint "TestPoint:TestPoint_Pad_2.0x2.0mm")
+      (reference "TP1") (unit 1) (value "TestPoint") (footprint "")
     )
     (path "/a735371e-e30b-43a5-a892-13a5329e8971/3bcc66cd-5e5d-47c0-b606-f8950c33a8dc"
       (reference "TP2") (unit 1) (value "TestPoint") (footprint "TestPoint:TestPoint_Pad_2.0x2.0mm")
@@ -7307,16 +7307,16 @@
       (reference "U3") (unit 1) (value "ADS7828") (footprint "Package_SO:TSSOP-16_4.4x5mm_P0.65mm")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/2fe71d1a-c24c-4f2f-aaa3-b99d1e1c73fd"
-      (reference "U4") (unit 1) (value "MAX31725MTA+T") (footprint "Package_DFN_QFN:DFN-8-1EP_3x3mm_P0.65mm_EP1.55x2.4mm")
+      (reference "U4") (unit 1) (value "MAX31725MTA+T") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/035c80ba-751f-4a75-a774-78fddbe3dc28"
-      (reference "U5") (unit 1) (value "MAX31725MTA+T") (footprint "Package_DFN_QFN:DFN-8-1EP_3x3mm_P0.65mm_EP1.55x2.4mm")
+      (reference "U5") (unit 1) (value "MAX31725MTA+T") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/68258a2d-6955-49d1-ae79-1dbb501d6f94"
-      (reference "U6") (unit 1) (value "MAX31725MTA+T") (footprint "Package_DFN_QFN:DFN-8-1EP_3x3mm_P0.65mm_EP1.55x2.4mm")
+      (reference "U6") (unit 1) (value "MAX31725MTA+T") (footprint "")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/705e3a99-73ff-4ee3-9435-fad79ea0800c"
-      (reference "U7") (unit 1) (value "MAX31725MTA+T") (footprint "Package_DFN_QFN:DFN-8-1EP_3x3mm_P0.65mm_EP1.55x2.4mm")
+      (reference "U7") (unit 1) (value "MAX31725MTA+T") (footprint "")
     )
     (path "/c1f45fe7-e68e-4696-ac8f-4ad8f8605d26"
       (reference "U8") (unit 1) (value "TXB0104PW") (footprint "Package_SO:TSSOP-14_4.4x5mm_P0.65mm")
@@ -7325,7 +7325,7 @@
       (reference "U9") (unit 1) (value "LTC4313-1") (footprint "Package_DFN_QFN:DFN-8-1EP_3x3mm_P0.65mm_EP1.55x2.4mm")
     )
     (path "/20d49a9a-db00-4709-a347-46ba1cabd595/06925751-f81d-4e5e-bbc4-351c23a9c3b4"
-      (reference "U10") (unit 1) (value "INA826") (footprint "Package_SON:WSON-8-1EP_3x3mm_P0.5mm_EP1.2x2mm")
+      (reference "U10") (unit 1) (value "INA826") (footprint "")
     )
     (path "/b26238ab-544c-4a07-8a3d-14630b1c613e"
       (reference "Y1") (unit 1) (value "32.768kHz 12.5pf") (footprint "Hestia:CM7V-T1A")
