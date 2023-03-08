@@ -1712,7 +1712,7 @@
   )
 
   (symbol (lib_id "Hestia:B2B-ZR") (at 196.85 38.1 0) (mirror y) (unit 1)
-    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (in_bom no) (on_board yes) (fields_autoplaced)
     (uuid 013186e2-89c3-43f8-9149-a330ffd20bdc)
     (property "Reference" "J12" (id 0) (at 201.93 38.0999 0)
       (effects (font (size 1.27 1.27)) (justify right))
@@ -1861,7 +1861,7 @@
   )
 
   (symbol (lib_id "Hestia:B2B-ZR") (at 104.14 64.77 0) (mirror y) (unit 1)
-    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (in_bom no) (on_board yes) (fields_autoplaced)
     (uuid 08cfa445-a386-42e0-801d-e9b74acd60d1)
     (property "Reference" "J8" (id 0) (at 109.22 64.7699 0)
       (effects (font (size 1.27 1.27)) (justify right))
@@ -1957,7 +1957,7 @@
   )
 
   (symbol (lib_id "Hestia:B2B-ZR") (at 196.85 123.19 0) (mirror y) (unit 1)
-    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (in_bom no) (on_board yes) (fields_autoplaced)
     (uuid 0e8f6572-229a-4495-ac97-200e895f2f3e)
     (property "Reference" "J16" (id 0) (at 201.93 123.1899 0)
       (effects (font (size 1.27 1.27)) (justify right))
@@ -2680,7 +2680,7 @@
   )
 
   (symbol (lib_id "Hestia:B2B-ZR") (at 196.85 59.69 0) (mirror y) (unit 1)
-    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (in_bom no) (on_board yes) (fields_autoplaced)
     (uuid 5eddcc42-3574-431f-99a6-26b809831986)
     (property "Reference" "J13" (id 0) (at 201.93 59.6899 0)
       (effects (font (size 1.27 1.27)) (justify right))
@@ -2981,7 +2981,7 @@
   )
 
   (symbol (lib_id "Hestia:B2B-ZR") (at 104.14 43.18 0) (mirror y) (unit 1)
-    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (in_bom no) (on_board yes) (fields_autoplaced)
     (uuid 79988f2b-f32f-4538-8f9f-c86737e2d351)
     (property "Reference" "J7" (id 0) (at 109.22 43.1799 0)
       (effects (font (size 1.27 1.27)) (justify right))
@@ -3361,7 +3361,7 @@
   )
 
   (symbol (lib_id "Hestia:B2B-ZR") (at 196.85 81.28 0) (mirror y) (unit 1)
-    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (in_bom no) (on_board yes) (fields_autoplaced)
     (uuid aba3ecff-5c7c-47c7-9a85-eb8430d4cf71)
     (property "Reference" "J14" (id 0) (at 201.93 81.2799 0)
       (effects (font (size 1.27 1.27)) (justify right))
@@ -3697,7 +3697,7 @@
   )
 
   (symbol (lib_id "Hestia:B2B-ZR") (at 196.85 102.87 0) (mirror y) (unit 1)
-    (in_bom yes) (on_board yes) (fields_autoplaced)
+    (in_bom no) (on_board yes) (fields_autoplaced)
     (uuid cca0876a-13d5-4f0b-9a99-3c44415ccc2c)
     (property "Reference" "J15" (id 0) (at 201.93 102.8699 0)
       (effects (font (size 1.27 1.27)) (justify right))

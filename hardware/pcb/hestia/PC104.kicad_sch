@@ -353,7 +353,7 @@
   (no_connect (at 40.64 132.08) (uuid fd897305-3c39-49a9-8be3-8f2856598517))
 
   (symbol (lib_id "Hestia:ESQ-126-39-G-D") (at 64.77 88.9 0) (unit 1)
-    (in_bom yes) (on_board yes)
+    (in_bom no) (on_board yes)
     (uuid 1d60b0dd-3d5d-4bbd-8bcb-ce093031db27)
     (property "Reference" "J4" (id 0) (at 62.23 20.32 0)
       (effects (font (size 1.27 1.27)) (justify left))
@@ -425,7 +425,7 @@
   )
 
   (symbol (lib_id "Hestia:ESQ-126-39-G-D") (at 48.26 88.9 0) (unit 1)
-    (in_bom yes) (on_board yes)
+    (in_bom no) (on_board yes)
     (uuid cf62a998-53ff-4e66-a11d-3ffa207dbaf9)
     (property "Reference" "J3" (id 0) (at 45.72 20.32 0)
       (effects (font (size 1.27 1.27)) (justify left))
