@@ -220,7 +220,7 @@ outputs:
       name: Qty
     - name: 'Manufacturer'
       field: Manufacturer
-    - field: Part
+    - field: 'Mfr PN'
       name: 'Mfg Part #'
     - field: Value
       name: 'Description / Value'
