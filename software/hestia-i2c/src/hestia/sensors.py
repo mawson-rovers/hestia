@@ -64,6 +64,7 @@ def read_max31725_temp(addr: int) -> float:
     try:
         t = i2c_read_int(addr, MAX31725_REG_TEMP, signed=True)
         # todo: add 64 deg if extended format enabled
+        logger.debug('Read value <%d> from MAX31725, addr 0x%02x', t, addr)
         return float(t) * MAX31725_CF_LSB
     except OSError as error:
         logger.warning("Could not read MAX31725 sensor 0x%02x: %s", addr, error)
@@ -73,7 +74,7 @@ def read_max31725_temp(addr: int) -> float:
 def read_msp430_temp(addr: int) -> float:
     try:
         adc_val = i2c_read_int(MSP430_I2C_ADDR, addr, byteorder="little", signed=False)
-        logger.debug('Read value <%d> from ADC addr 0x%02x', adc_val, addr)
+        logger.debug('Read value <%d> from MSP430, addr 0x%02x', adc_val, addr)
         return adc_val_to_temp(adc_val, MSP430_ADC_RESOLUTION)
     except OSError as error:
         logger.warning("Could not read MSP430 input 0x%02x: %s", addr, error)
@@ -109,7 +110,7 @@ def read_ads7828_temp(addr: int) -> float:
         adc_cmd = ads7828_command(addr)
         logger.debug('Converted addr 0x%02x to ADS7828 command: %s', addr, '{0:b}'.format(adc_cmd))
         adc_val = i2c_read_int(ADS7828_I2C_ADDR, adc_cmd, byteorder="big", signed=False)
-        logger.debug('Read value <%d> from ADC addr 0x%02x', adc_val, addr)
+        logger.debug('Read value <%d> from ADS7828, addr 0x%02x', adc_val, addr)
         return adc_val_to_temp(adc_val, ADS7828_ADC_RESOLUTION)
     except OSError as error:
         logger.warning("Could not read ADS7828 input 0x%02x: %s", addr, error)
