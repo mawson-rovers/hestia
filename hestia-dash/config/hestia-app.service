@@ -9,6 +9,8 @@ Environment=TZ=Australia/Sydney
 Environment=FLASK_PORT=5000
 WorkingDirectory=/home/debian/src/mawson/hestia/hestia-dash/src
 ExecStart=/home/debian/src/mawson/hestia/hestia-dash/venv/bin/python -m hestia.app
+Restart=on-failure
+RestartSec=30s
 
 [Install]
 WantedBy=multi-user.target
