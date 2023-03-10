@@ -86,8 +86,8 @@ Start by reviewing the configuration files to ensure they match the system paths
 
 * `config/hestia-logger.service`
   * ensure the `WorkingDirectory` and `ExecStart` directories match where the code was checked out
-  * ensure that `HESTIA_LOG_PATH` is where you want to store log files (by default it will store them on an inserted
-    Micro-SD card under `/mnt/data`)
+  * ensure that `HESTIA_LOG_PATH` is where you want to store log files (by default it will store them under
+    `/home/debian/data`)
 * `config/hestia-app.service`
   * ensure the `WorkingDirectory` and `ExecStart` directories match where the code was checked out
   * ensure that `HESTIA_LOG_PATH` matches the configuration for hestia-logger
