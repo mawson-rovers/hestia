@@ -131,7 +131,7 @@ outputs:
   comment: 3D model in STEP format
   type: step
   dir: render
-  run_by_default: false  # output is too big to include by default (>10 MB)
+  run_by_default: true  # output is too big to include by default (>10 MB)
 
 # PCBWay gerbers & drill files
 - name: pcbway_gerbers
