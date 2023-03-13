@@ -179,8 +179,8 @@ class TestHestia(unittest.TestCase):
         assert 5.0 < (finish_temp - start_temp) <= 40.0, "Should increase temperature some more"
 
 
-def run_tests():
-    unittest.main()
+def run_tests(args=()):
+    unittest.main(argv=[sys.argv[0], *args])
 
 
 def run_logger(f=sys.stdout):
@@ -220,10 +220,16 @@ def run_heater(args):
             disable_heater()
 
 
+def run_temps():
+    for sensor, read_fn in SENSORS.items():
+        print("%s => %.2f" % (sensor, read_fn()))
+
+
 COMMANDS = {
     "log": lambda: run_logger(),
     "logger": lambda: run_logger(),
-    "test": lambda: run_tests(),
+    "test": lambda args: run_tests(args),
+    "temp": lambda: run_temps(),
     "heater": lambda args: run_heater(args),
     "power": lambda args: (set_heater_pwm(int(args[0])) if args
                            else print("Power level: %d" % get_heater_pwm())),
