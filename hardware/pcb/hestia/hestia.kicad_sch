@@ -7262,22 +7262,22 @@
       (reference "SW2") (unit 1) (value "SW_Push_Open") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/70cdfe32-a909-4e4a-b84a-023dca519f66"
-      (reference "TH1") (unit 1) (value "Thermistor NTC 10K 3630K") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "TH1") (unit 1) (value "Thermistor NTC 10K 3610K") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/0cc3b65e-3ade-47e4-9d0e-5b78a66ee9fa"
-      (reference "TH2") (unit 1) (value "Thermistor NTC 10K 3630K") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "TH2") (unit 1) (value "Thermistor NTC 10K 3610K") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/8a61ef99-0b2c-4fe7-821a-89dbd4616288"
-      (reference "TH3") (unit 1) (value "Thermistor NTC 10K 3630K") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "TH3") (unit 1) (value "Thermistor NTC 10K 3610K") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/e74416f9-2bb4-4109-abdb-d2d8bf457f3d"
-      (reference "TH4") (unit 1) (value "Thermistor NTC 10K 3630K") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "TH4") (unit 1) (value "Thermistor NTC 10K 3610K") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/d50f8863-cb50-4ad0-8b16-7cc2cc42639f"
-      (reference "TH5") (unit 1) (value "Thermistor NTC 10K 3630K") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "TH5") (unit 1) (value "Thermistor NTC 10K 3610K") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
     )
     (path "/05bc7b3d-8834-4e3f-a014-0abddc6f66d0/07419e9e-5973-4550-9a6a-ecfedb3a6f3f"
-      (reference "TH6") (unit 1) (value "Thermistor NTC 10K 3630K") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "TH6") (unit 1) (value "Thermistor NTC 10K 3610K") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
     )
     (path "/20d49a9a-db00-4709-a347-46ba1cabd595/7477e924-6c0e-4994-b40b-6df138b22b90"
       (reference "TP1") (unit 1) (value "TestPoint") (footprint "TestPoint:TestPoint_Pad_2.0x2.0mm")
