@@ -1,0 +1,6 @@
+# CCS build directory
+Debug/
+Release/
+
+# CLion build directory
+cmake-build-*/

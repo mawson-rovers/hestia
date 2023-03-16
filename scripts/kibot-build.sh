@@ -4,8 +4,8 @@
 # - working directory should be top level of source directory
 # - kibot should be on the PATH
 
-PCB_PATH="$PWD/hardware/pcb/hestia"
-BUILD_PATH="$PWD/build/pcb"
+PCB_PATH="$PWD/hestia-pcb"
+BUILD_PATH="$PWD/build/hestia-pcb"
 
 set -e  # abort if any command fails
 

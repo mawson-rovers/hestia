@@ -4,7 +4,7 @@ name: "Kibot PCB build"
 on:
   push:
     paths:
-      - 'hardware/pcb/**'
+      - 'hestia-pcb/**'
       - '.github/workflows/kibot*'
       - 'scripts/kibot*'
 
