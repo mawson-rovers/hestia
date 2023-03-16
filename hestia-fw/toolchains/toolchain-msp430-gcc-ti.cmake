@@ -2,7 +2,7 @@
 include(CMakeForceCompiler)
 
 # Add the location of your "toolchains" folder to the module path.
-SET(TOOLCHAINS_PATH "/Users/mryall/src/mawson/hestia/software/msp430_adcToI2c/toolchains")
+SET(TOOLCHAINS_PATH "/Users/mryall/src/mawson/hestia/hestia-fw/toolchains")
 list(APPEND CMAKE_MODULE_PATH "${TOOLCHAINS_PATH}")
 
 SET(PLATFORM_PACKAGES_PATH "${TOOLCHAINS_PATH}/packages/msp430")
