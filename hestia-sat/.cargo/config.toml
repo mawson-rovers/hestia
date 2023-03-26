@@ -1,0 +1,5 @@
+[build]
+target = "arm-unknown-linux-gnueabihf"
+
+[target.arm-unknown-linux-gnueabihf]
+linker = "arm-linux-gcc" # linker must be on PATH

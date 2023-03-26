@@ -1,0 +1,29 @@
+[package]
+name = "uts-api"
+version = "1.0.0"
+edition = "2018"
+
+[dependencies]
+bincode = "1.0"
+byteorder = "1.4.3"
+failure = "0.1.2"
+i2c-linux = "0.1.2"
+log = "0.4.17"
+serde = "1.0"
+serial = "0.4.0"
+cubeos-error = { git = "ssh://git@github.com/Cube-OS/cubeos-error.git"}
+rust-uart = { git = "ssh://git@github.com/Cube-OS/rust-uart.git" }
+rust-i2c = { git = "ssh://git@github.com/Cube-OS/rust-i2c.git" }
+rust-spi = { git = "ssh://git@github.com/Cube-OS/rust-spi.git" }
+rust-udp = { git = "ssh://git@github.com/Cube-OS/rust-udp.git" }
+strum = "0.24"
+strum_macros = "0.24"
+
+# ground = { git = "ssh://git@github.com/Cube-OS/ground", optional = true}
+
+# juniper = { version = "0.14.2", optional = true }
+
+# [features]
+# default = []
+# ground = ["dep:ground"]
+# debug = []
