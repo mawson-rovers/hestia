@@ -8,7 +8,7 @@ pub fn main() {
     for (s, t) in zip(&board.sensors, &board.read_temps()) {
         match t {
             Ok(temp) => println!("{}: {}", s.id, temp),
-            Err(e) => panic!("{}: failed with {:?}", s.id, e),
+            Err(e) => println!("{}: failed with {:?}", s.id, e),
         }
     }
 }
