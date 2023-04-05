@@ -2,7 +2,7 @@ use log::{debug, info, warn};
 use strum_macros::Display;
 use byteorder::{BigEndian, LittleEndian};
 
-use crate::i2c::{i2c_read_i16, i2c_read_u16, I2cAddr, I2cReg};
+use crate::i2c::{i2c_read_u16_be, i2c_read_u16_le, I2cAddr, I2cReg};
 use crate::{I2cBus, ReadError, ReadResult};
 
 const MSP430_I2C_ADDR: I2cAddr = I2cAddr(0x08);
@@ -90,7 +90,7 @@ impl Sensor {
     fn read_ads7828_raw(&self, bus: &I2cBus) -> ReadResult<u16> {
         let adc_cmd = adc7828_command(self.addr);
         debug!("Converted addr 0x{:02x} to ADS7828 command: {:b}", self.addr.0, adc_cmd.0);
-        Ok(i2c_read_u16::<BigEndian>(bus, ADS7828_I2C_ADDR, adc_cmd)?)
+        Ok(i2c_read_u16_be(bus, ADS7828_I2C_ADDR, adc_cmd)?)
     }
 
     fn read_max31725_temp(&self, bus: &I2cBus) -> ReadResult<f32> {
@@ -107,7 +107,7 @@ impl Sensor {
     }
 
     fn read_max31725_raw(&self, bus: &I2cBus) -> ReadResult<u16> {
-        Ok(i2c_read_u16::<BigEndian>(bus, self.addr, MAX31725_REG_TEMP)?)
+        Ok(i2c_read_u16_be(bus, self.addr, MAX31725_REG_TEMP)?)
     }
 
     fn read_msp430_temp(&self, bus: &I2cBus) -> ReadResult<f32> {
@@ -125,7 +125,7 @@ impl Sensor {
 
     fn read_msp430_raw(&self, bus: &I2cBus) -> ReadResult<u16> {
         let reg = I2cReg(self.addr.0);
-        Ok(i2c_read_u16::<LittleEndian>(bus, MSP430_I2C_ADDR, reg)?)
+        Ok(i2c_read_u16_le(bus, MSP430_I2C_ADDR, reg)?)
     }
 }
 

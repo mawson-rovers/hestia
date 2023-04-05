@@ -35,7 +35,7 @@ impl TryFrom<u16> for HeaterMode {
 
 pub fn is_enabled(bus: &I2cBus) -> bool {
     debug!("Reading heater mode");
-    match i2c_read_u16::<LittleEndian>(bus, MSP430_I2C_ADDR, MSP430_READ_HEATER_MODE) {
+    match i2c_read_u16_le(bus, MSP430_I2C_ADDR, MSP430_READ_HEATER_MODE) {
         Ok(mode) => {
             info!("Read heater mode: {:?}", mode);
             match mode.try_into() {
@@ -57,10 +57,10 @@ pub fn is_enabled(bus: &I2cBus) -> bool {
 
 pub fn enable_heater(bus: &I2cBus) {
     info!("Enabling heater");
-    let result = i2c_write_u16::<LittleEndian>(
+    let result = i2c_write_u16_le(
         bus, MSP430_I2C_ADDR, MSP430_WRITE_HEATER_MODE, HeaterMode::PWM as u16);
     match result {
-        Ok(v) => (),
+        Ok(_) => (),
         Err(e) => warn!("Failed to enable heater: {:?}", e),
     };
 }
