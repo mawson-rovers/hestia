@@ -27,18 +27,28 @@
 #define HEATER_PWM_FREQ_DEFAULT 50
 
 // ADC
-#define ADC_MIN_VALUE 0x10
+#define ADC_MIN_VALUE 0x0010
+#define ADC_MAX_VALUE 0x0FFF
 #define ADC_UNKNOWN_VALUE 0xffff
 
+// ADC values for TH1 - thermistor model NB21K00103
+#define TEMP_80C 3561
+#define TEMP_70C 3406
+#define TEMP_60C 3204
+#define TEMP_50C 2947
+#define TEMP_40C 2629
+#define TEMP_25C 2030
+#define TEMP_0C  1012
 
-void heater_process();
-void process_cmd_tx(unsigned char cmd);
-void I2C_Slave_ProcessCMD(unsigned char *message, uint16_t length);
 void initGPIO();
-void set_adc_channel(int channel);
 void initClockTo16MHz();
 void initADC();
+void initTimer();
 
+void process_cmd_tx(unsigned char cmd);
+void transmit_uint(unsigned int value);
 
+void I2C_Slave_ProcessCMD(unsigned char *message, uint16_t length);
+void heater_process();
 
 #endif

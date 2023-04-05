@@ -1,8 +1,7 @@
 //******************************************************************************
-//   MSP430x261x ADC to I2C
+//   Hestia firmware for MSP430F2618.
 //
-//   Description: read from a given adc pin and allow reading over i2c
-//   i2c commands can be sent to change the adc pin and turn on the heater
+//   I2C interface and control logic for the Hestia circuit board.
 //******************************************************************************
 
 #include <msp430.h>
@@ -16,21 +15,20 @@
 
 union I2C_Packet_t message_tx;
 
-void transmit_uint(unsigned int value);
-
 volatile unsigned int adc_readings[8];
-unsigned int control_sensor = 0; // sensor used for PWM control
-double target_temperature = -999;
+unsigned int control_sensor = 0; // ADC input used for PWM control
+unsigned int set_point = TEMP_0C;
 unsigned int heater_mode = HEATER_MODE_OFF;
 unsigned int current_pwm = HEATER_PWM_FREQ_DEFAULT; // Currently bit-banged 8 bit resolution
 unsigned int counter = 0;
 
+// PID control variables
+#define K_P         7       // PID proportional gain
+#define K_I_SHIFT   7       // PID integral shift right bits
+#define MAX_OUT     1000
+#define MIN_OUT     0
 
-//******************************************************************************
-// Main ************************************************************************
-// Enters LPM0 and waits for I2C interrupts. The data sent from the master is  *
-// then interpreted and the device will respond accordingly                    *
-//******************************************************************************
+int error_sum = 0;
 
 
 int main(void) {
@@ -41,8 +39,7 @@ int main(void) {
     initGPIO();
     initI2C();
     initADC();
-
-//    PRxData = (unsigned char *)RxBuffer;    // Start of RX buffer
+    initTimer();
 
     // #TODO continuously read and filter ADC values and send to internal array
     for (;;) {
@@ -53,6 +50,54 @@ int main(void) {
     }
 }
 
+void initTimer() {
+    // Configure Timer A at 250 Hz
+    BCSCTL2 |= DIVS_3;                  // SMCLK: 16MHz DCO divided by 8 = 2 MHz (SLAU144K, table 5-4)
+    CCR0 = 1000;                        // timer frequency: SMCLK 2 MHz / 1000 = 2 kHz
+    TACCTL0 = CCIE;                     // enable A0 interrupt on CCR0 overflow
+    CCR2 = 0;                           // duty cycle: CCR2 / 1000
+    TACCTL2 = OUTMOD_7;                 // CCR2 reset/set mode for output
+    TACTL = TASSEL_2 + MC_1 + ID_3;     // SMCLK, CCR0 up mode, input divider /8 = 250 Hz
+}
+
+inline unsigned int update_pid(unsigned int value) {
+    int error = (int) set_point - (int) value; // both inputs must be positive and <=2^12 (ADC values)
+    error_sum += error;
+    int out = K_P * error + (error_sum >> K_I_SHIFT); // MSP430 ABI maintains sign in arithmetic right-shift
+    if (out > MAX_OUT) out = MAX_OUT;
+    else if (out < MIN_OUT) out = MIN_OUT;
+    return (unsigned int) out; // max and min ensure conversion is safe: 0 < out < 2^15
+}
+
+unsigned int ta_count = 0;
+
+// Timer A interrupt handler
+#if defined(__TI_COMPILER_VERSION__) || defined(__IAR_SYSTEMS_ICC__)
+#pragma vector=TIMERA0_VECTOR
+__interrupt void Timer_A(void)
+#elif defined(__GNUC__)
+void __attribute__ ((interrupt(TIMERA0_VECTOR))) Timer_A(void)
+#else
+#error Compiler not supported!
+#endif
+{
+    ta_count++;
+    if (ta_count > 250) {
+        ta_count = 0;
+        P5OUT ^= LED_GREEN;     // toggle LED
+        if (heater_mode == HEATER_MODE_PID) {
+            unsigned int adc_value = adc_readings[control_sensor];
+            if (adc_value >= ADC_MIN_VALUE && adc_value <= ADC_MAX_VALUE) {
+                CCR2 = update_pid(adc_value);
+            } else {
+                CCR2 = 0;
+            }
+        } else {
+            CCR2 = 0;
+        }
+    }
+}
+
 void process_cmd_tx(unsigned char cmd) {
     if (cmd >= COMMAND_READ_SENSOR_LOW && cmd <= COMMAND_READ_SENSOR_HIGH) {
         // set active adc to read from
@@ -60,6 +105,10 @@ void process_cmd_tx(unsigned char cmd) {
         transmit_uint(adc_readings[sensor]);
     } else if (cmd == COMMAND_READ_HEATER_MODE) {
         transmit_uint(heater_mode);
+    } else if (cmd == COMMAND_READ_TARGET_TEMP) {
+        transmit_uint(set_point);
+    } else if (cmd == COMMAND_READ_TARGET_SENSOR) {
+        transmit_uint(control_sensor);
     } else if (cmd == COMMAND_READ_PWM_FREQ) {
         transmit_uint(current_pwm);
     } else {
@@ -85,8 +134,7 @@ void I2C_Slave_ProcessCMD(unsigned char *message_rx, uint16_t length) {
         // Set the heater mode
         heater_mode = package[0];
     } else if (cmd == COMMAND_WRITE_TARGET_TEMP) {
-        target_temperature = *((float *) package); //#TODO check this works
-        // Should be as the memory is fully allocated
+        set_point = package[0]; // TODO fix this - set_point needs two bytes
         TransmitLen = 0;
     } else if (cmd == COMMAND_WRITE_TARGET_SENSOR) {
         control_sensor = package[0];
@@ -99,8 +147,6 @@ void I2C_Slave_ProcessCMD(unsigned char *message_rx, uint16_t length) {
     } else {
         // unknown command
     }
-
-    // TOOD checksum??
 }
 
 void heater_process() {
@@ -126,29 +172,26 @@ void heater_process() {
 }
 
 void initClockTo16MHz() {
-    if (CALBC1_16MHZ == 0xFF)                  // If calibration constant erased
-    {
-        while (1);                               // do not load, trap CPU!!
+    if (CALBC1_16MHZ == 0xFF) {
+        while (1); // trap CPU if calibration constant not found
     }
-    DCOCTL = 0;                               // Select lowest DCOx and MODx settings
-    BCSCTL1 = CALBC1_16MHZ;                    // Set DCO
+    DCOCTL = 0;                 // Select lowest DCOx and MODx settings
+    BCSCTL1 = CALBC1_16MHZ;     // Set DCO to 16 MHz
     DCOCTL = CALDCO_16MHZ;
 }
 
 void initGPIO() {
-    //I2C Pins
+    // I2C Pins
     P3SEL |= BIT1 | BIT2;                     // P3.1,2 for I2C
-    P5DIR |= 0x0F;                            // P5.0-3 output -> status LEDs
-    P5OUT &= ~(LED_YELLOW | LED_GREEN);       // Turn off status LEDs
-    P1DIR |= HEATER_PIN;                      // P1.7 output -> heater
-//    P1SEL |= HEATER_PIN;                      // P1.7 TA2 options
-    P1OUT &= ~HEATER_PIN;                     // Turn off the heater
-//    CCR0 = 512-1;                             // PWM Period
-//    CCTL2 = OUTMOD_7;                         // CCR2 reset/set
-//    CCR2 = 100;                                 // CCR2 PWM duty cycle 0%
-//    TACTL = TASSEL_2 + MC_1;                  // SMCLK, up mode
-}
 
+    // Status LEDs
+    P5DIR |= 0x0F;                            // LED output on P5.0-3
+    P5OUT &= ~(LED_YELLOW | LED_GREEN);       // Turn off both status LEDs
+
+    P1DIR |= HEATER_PIN;                      // P1.7 is output
+    P1OUT &= ~HEATER_PIN;                     // Set heater off
+    P1SEL |= HEATER_PIN;                      // P1.7 TA2 option
+}
 
 void initADC() {
     P6SEL = 0x0F;                             // Enable A/D channel inputs
@@ -170,9 +213,9 @@ void initADC() {
 // ADC12 interrupt service routine
 #if defined(__TI_COMPILER_VERSION__) || defined(__IAR_SYSTEMS_ICC__)
 #pragma vector=ADC12_VECTOR
-__interrupt void ADC12_ISR (void)
+__interrupt void ADC12_ISR(void)
 #elif defined(__GNUC__)
-void __attribute__ ((interrupt(ADC12_VECTOR))) ADC12_ISR (void)
+void __attribute__ ((interrupt(ADC12_VECTOR))) ADC12_ISR(void)
 #else
 #error Compiler not supported!
 #endif
