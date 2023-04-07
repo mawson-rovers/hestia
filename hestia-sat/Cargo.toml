@@ -18,6 +18,8 @@ rust-spi = { git = "ssh://git@github.com/Cube-OS/rust-spi.git" }
 rust-udp = { git = "ssh://git@github.com/Cube-OS/rust-udp.git" }
 strum = "0.24"
 strum_macros = "0.24"
+chrono = "0.4.24"
+csv = "1.2.1"
 
 # ground = { git = "ssh://git@github.com/Cube-OS/ground", optional = true}
 

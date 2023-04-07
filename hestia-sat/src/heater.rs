@@ -1,9 +1,8 @@
 use std::convert::{TryFrom, TryInto};
-use byteorder::LittleEndian;
 use log::{debug, info, warn};
 
 use crate::i2c::*;
-use crate::I2cBus;
+use crate::{I2cBus, ReadResult};
 
 const MSP430_I2C_ADDR: I2cAddr = I2cAddr(0x08);
 const MSP430_READ_HEATER_MODE: I2cReg = I2cReg(0x20);
@@ -63,4 +62,9 @@ pub fn enable_heater(bus: &I2cBus) {
         Ok(_) => (),
         Err(e) => warn!("Failed to enable heater: {:?}", e),
     };
+}
+
+pub fn read_heater_pwm(bus: &I2cBus) -> ReadResult<u16> {
+    debug!("Reading heater power level");
+    Ok(i2c_read_u16_le(bus, MSP430_I2C_ADDR, MSP430_READ_HEATER_PWM_FREQ)?)
 }

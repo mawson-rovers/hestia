@@ -38,7 +38,7 @@ pub struct Board {
 }
 
 impl Board {
-    pub fn init(bus: I2cBus) -> Board {
+    pub fn init(bus: &I2cBus) -> Board {
         let mut sensors = Vec::from(ALL_SENSORS);
         if env::var(SENSOR_DISABLE_ENV_VAR).is_ok() {
             let disabled_var = env::var(SENSOR_DISABLE_ENV_VAR)
@@ -51,7 +51,7 @@ impl Board {
             sensors.retain(|s| !disabled.contains(&s.id.to_uppercase().as_str()))
         }
         Board {
-            bus,
+            bus: bus.clone(),
             sensors: sensors.clone(),
             center_sensor: sensors[0],
             thermostat_sensor: sensors[0],
@@ -62,12 +62,17 @@ impl Board {
         self.center_sensor.read_temp(&self.bus)
     }
 
-    pub fn read_temps(&self) -> Vec<ReadResult<f32>> {
-        self.sensors.iter().map(|s| s.read_temp(&self.bus)).collect()
+    pub fn read_temps(&self) -> Vec<f32> {
+        self.sensors.iter().map(|s| s.read_temp(&self.bus)
+            .unwrap_or(f32::NAN)).collect()
     }
 
     pub fn is_heater_enabled(&self) -> bool {
-        return heater::is_enabled(&self.bus);
+        heater::is_enabled(&self.bus)
+    }
+
+    pub fn read_heater_pwm(&self) -> ReadResult<u16> {
+        heater::read_heater_pwm(&self.bus)
     }
 }
 

@@ -1,6 +1,5 @@
-use log::{debug, info, warn};
+use log::{debug, warn};
 use strum_macros::Display;
-use byteorder::{BigEndian, LittleEndian};
 
 use crate::i2c::{i2c_read_u16_be, i2c_read_u16_le, I2cAddr, I2cReg};
 use crate::{I2cBus, ReadError, ReadResult};
