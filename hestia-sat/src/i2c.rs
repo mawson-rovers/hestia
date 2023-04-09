@@ -1,6 +1,7 @@
 extern crate i2c_linux;
 
 use std::io;
+use std::time::Duration;
 
 use byteorder::{ByteOrder, BigEndian, LittleEndian};
 use i2c_linux::I2c;
@@ -27,7 +28,9 @@ pub fn i2c_read_u16_le(bus: &I2cBus, addr: I2cAddr, reg: I2cReg) -> io::Result<u
 
 fn i2c_read_bytes<const LEN: usize>(bus: &I2cBus, addr: I2cAddr, reg: I2cReg) -> io::Result<[u8; LEN]> {
     let mut data = [0; LEN];
-    let mut i2c = I2c::from_path(bus.path)?;
+    let mut i2c = I2c::from_path(bus.path())?;
+    // i2c.i2c_set_retries(0)?;
+    // i2c.i2c_set_timeout(Duration::from_millis(10))?;
     i2c.smbus_set_slave_address(addr.0 as u16, false)?;
     i2c.i2c_read_block_data(reg.0, &mut data)?;
     Ok(data)
@@ -37,7 +40,9 @@ fn i2c_read_bytes<const LEN: usize>(bus: &I2cBus, addr: I2cAddr, reg: I2cReg) ->
 pub fn i2c_write_u16_le(bus: &I2cBus, addr: I2cAddr, reg: I2cReg, data: u16) -> io::Result<()> {
     let mut buf: [u8; 2] = [0; 2];
     LittleEndian::write_u16(&mut buf, data);
-    let mut i2c = I2c::from_path(bus.path)?;
+    let mut i2c = I2c::from_path(bus.path())?;
+    // i2c.i2c_set_retries(0)?;
+    // i2c.i2c_set_timeout(Duration::from_millis(10))?;
     i2c.smbus_set_slave_address(addr.0 as u16, false)?;
     i2c.i2c_write_block_data(reg.0, &buf)
 }

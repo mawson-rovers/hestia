@@ -3,6 +3,7 @@ use std::env;
 use log::info;
 
 use crate::{heater, I2cBus, ReadResult};
+use crate::heater::HeaterMode;
 use crate::sensors::{Sensor, SensorInterface};
 
 static ALL_SENSORS: &[Sensor] = &[
@@ -30,6 +31,7 @@ static ALL_SENSORS: &[Sensor] = &[
 
 const SENSOR_DISABLE_ENV_VAR: &str = "UTS_SENSOR_DISABLE";
 
+#[derive(Debug, Clone)]
 pub struct Board {
     pub bus: I2cBus,
     pub sensors: Vec<Sensor>,
@@ -47,12 +49,12 @@ impl Board {
             let disabled: Vec<&str> = disabled_var
                 .split(",")
                 .collect();
-            info!("Disabling sensors per configuration: {:?}", disabled);
+            info!("i2c{}: Disabling sensors per configuration: {:?}", bus.id, disabled);
             sensors.retain(|s| !disabled.contains(&s.id.to_uppercase().as_str()))
         }
         Board {
-            bus: bus.clone(),
-            sensors: sensors.clone(),
+            bus: bus.to_owned(),
+            sensors: sensors.to_owned(),
             center_sensor: sensors[0],
             thermostat_sensor: sensors[0],
         }
@@ -62,13 +64,20 @@ impl Board {
         self.center_sensor.read_temp(&self.bus)
     }
 
-    pub fn read_temps(&self) -> Vec<f32> {
-        self.sensors.iter().map(|s| s.read_temp(&self.bus)
-            .unwrap_or(f32::NAN)).collect()
+    pub fn read_temps(&self) -> Vec<ReadResult<f32>> {
+        self.sensors.iter().map(|s| s.read_temp(&self.bus)).collect()
+    }
+
+    pub fn read_raws(&self) -> Vec<ReadResult<u16>> {
+        self.sensors.iter().map(|s| s.read_raw(&self.bus)).collect()
     }
 
     pub fn is_heater_enabled(&self) -> bool {
         heater::is_enabled(&self.bus)
+    }
+
+    pub fn read_heater_mode(&self) -> ReadResult<HeaterMode> {
+        heater::read_heater_mode(&self.bus)
     }
 
     pub fn read_heater_pwm(&self) -> ReadResult<u16> {

@@ -20,6 +20,8 @@ strum = "0.24"
 strum_macros = "0.24"
 chrono = "0.4.24"
 csv = "1.2.1"
+envy = "0.4.2"
+env_logger = "0.10.0"
 
 # ground = { git = "ssh://git@github.com/Cube-OS/ground", optional = true}
 

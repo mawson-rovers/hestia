@@ -1,25 +1,43 @@
 use std::convert::From;
 use std::io;
+use std::path::Path;
 
 use cubeos_error::Error;
 use failure::Fail;
+use serde::{Deserialize, Serialize};
 
 // public modules
 pub mod board;
 pub mod sensors;
+pub mod config;
 
 // private modules
 mod heater;
 mod i2c;
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct I2cBus {
-    pub id: i8,
-    pub path: &'static str,
+    pub id: u8,
 }
 
-pub const I2C_BUS1: I2cBus = I2cBus { id: 1, path: "/dev/i2c-1" };
-pub const I2C_BUS2: I2cBus = I2cBus { id: 2, path: "/dev/i2c-2" };
+impl From<u8> for I2cBus {
+    fn from(id: u8) -> Self {
+        I2cBus { id }
+    }
+}
+
+impl I2cBus {
+    pub fn path(&self) -> String {
+        format!("/dev/i2c-{}", self.id)
+    }
+    
+    pub fn exists(&self) -> bool {
+        Path::new(&self.path()).exists()
+    }
+}
+
+pub const I2C_BUS1: I2cBus = I2cBus { id: 1 };
+pub const I2C_BUS2: I2cBus = I2cBus { id: 2 };
 
 /// Errors reading from the payload - usually can be logged and ignored
 #[derive(Debug, Fail)]
