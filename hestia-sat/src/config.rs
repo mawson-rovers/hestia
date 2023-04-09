@@ -2,8 +2,8 @@ use serde::Deserialize;
 use crate::I2cBus;
 use crate::board::Board;
 
-fn default_i2c_bus() -> Vec<I2cBus> {
-    return vec![I2cBus::from(1), I2cBus::from(2)];
+fn default_i2c_bus() -> Vec<u8> {
+    return vec![1, 2];
 }
 
 #[derive(Deserialize, Debug)]
@@ -11,7 +11,7 @@ pub struct Config {
     pub log_path: String,
 
     #[serde(default="default_i2c_bus")]
-    pub i2c_bus: Vec<I2cBus>,
+    pub i2c_bus: Vec<u8>,
 
     pub disabled_sensors: Option<Vec<String>>,
 }
@@ -22,6 +22,8 @@ impl Config {
     }
 
     pub fn create_boards(&self) -> Vec<Board> {
-        self.i2c_bus.iter().map(Board::init).collect()
+        let buses: Vec<I2cBus> = self.i2c_bus.clone().into_iter()
+            .map(I2cBus::from).collect();
+        buses.iter().map(Board::init).collect()
     }
 }
