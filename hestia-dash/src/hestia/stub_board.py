@@ -4,8 +4,8 @@ from datetime import datetime, timedelta
 from random import random
 from typing import Dict, Optional, List, Any
 
-from hestia import Hestia, HeaterMode
-from hestia.board import Sensor
+from hestia.board import Hestia, Sensor
+from hestia.heater import HeaterMode
 
 _stub_values = {
     "TH1": 24.64,
