@@ -36,16 +36,18 @@
             <div class="column column-20"><label for="heater-mode">Heater mode</label></div>
             <div class="column column-20"><input disabled id="heater-mode" size="10" value="n/a"></div>
             <div class="column column-60">
-                <button id="heater-toggle">Toggle</button>
+                <button class="set-heater-mode" data-mode="ON">OFF</button>
+                <button class="set-heater-mode" data-mode="PWM">Power</button>
+                <button class="set-heater-mode" data-mode="PID">Thermostat</button>
             </div>
         </div>
         <div class="row">
-            <div class="column column-20"><label for="heater-power-level">Power level</label></div>
-            <div class="column column-20"><input disabled id="heater-power-level" size="10" value="n/a"></div>
+            <div class="column column-20"><label for="heater-duty">Heater duty (%)</label></div>
+            <div class="column column-20"><input disabled id="heater-duty" size="10" value="n/a"></div>
             <div class="column column-60">
-                <button class="set-heater-power" data-power-level="50">Low</button>
-                <button class="set-heater-power" data-power-level="150">Medium</button>
-                <button class="set-heater-power" data-power-level="255">Full</button>
+                <button class="set-heater-duty" data-duty="20">20%</button>
+                <button class="set-heater-duty" data-duty="50">50%</button>
+                <button class="set-heater-duty" data-duty="100">100%</button>
             </div>
         </div>
     </section>

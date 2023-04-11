@@ -46,3 +46,13 @@ def test_adc_val_to_temp():
     assert math.isnan(sensors.adc_val_to_temp(resolution, resolution))
     assert math.isnan(sensors.adc_val_to_temp(0, resolution))
     assert math.isnan(sensors.adc_val_to_temp(-250, resolution))
+
+
+def test_temp_to_adc_val():
+    assert sensors.temp_to_adc_value(0) == 1012
+    assert sensors.temp_to_adc_value(25) == 2048
+    assert sensors.temp_to_adc_value(40) == 2629
+    assert sensors.temp_to_adc_value(50) == 2947
+    assert sensors.temp_to_adc_value(60) == 3204
+    assert sensors.temp_to_adc_value(70) == 3406
+    assert sensors.temp_to_adc_value(80) == 3561

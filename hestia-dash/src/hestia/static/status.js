@@ -1,19 +1,18 @@
 (function () { // prevent leakage into global scope
     const coreTemperature = document.getElementById('core-temperature');
     const heaterMode = document.getElementById('heater-mode');
-    const heaterPowerLevel = document.getElementById('heater-power-level');
-    const heaterToggle = document.getElementById('heater-toggle');
+    const heaterDuty = document.getElementById('heater-duty');
     const boardChartElement = document.getElementById('board-chart');
 
     function updateStatus(data) {
         coreTemperature.value = "center_temp" in data ? data["center_temp"] : "n/a";
-        if ('heater_enabled' in data) {
-            heaterMode.value = data['heater_enabled'] ? "ON" : "OFF";
+        if ('heater_mode' in data) {
+            heaterMode.value = data['heater_mode'];
         } else {
             heaterMode.value = "n/a";
         }
-        heaterPowerLevel.value = ("heater_pwm_freq" in data && data["heater_pwm_freq"]) ?
-            data["heater_pwm_freq"] : "n/a";
+        heaterDuty.value = ("heater_duty" in data && data["heater_duty"]) ?
+            data["heater_duty"] : "n/a";
 
         if (!window.boardChart) {
             window.boardChart = newBoardChart(boardChartElement, data['sensors']);
@@ -112,20 +111,22 @@
             .then(data => updateStatus(data))
     }
 
-    // toggle heater button
-    heaterToggle.addEventListener('click', (e) => {
-        let newValue = heaterMode.value !== "ON";
-        postStatusUpdate(JSON.stringify({
-            'heater_enabled': newValue,
-        }));
+    // heater mode buttons
+    document.querySelectorAll(".set-heater-mode").forEach(el => {
+        el.addEventListener('click', () => {
+            let mode = el.getAttribute("data-mode");
+            postStatusUpdate(JSON.stringify({
+                'heater_mode': mode,
+            }));
+        });
     });
 
-    // power level buttons
-    document.querySelectorAll(".set-heater-power").forEach(el => {
+    // heater duty buttons
+    document.querySelectorAll(".set-heater-duty").forEach(el => {
         el.addEventListener('click', () => {
-            let powerLevel = Number(el.getAttribute('data-power-level'));
+            let duty = Number(el.getAttribute('data-duty'));
             postStatusUpdate(JSON.stringify({
-                'heater_pwm_freq': powerLevel,
+                'heater_duty': duty,
             }));
         });
     });

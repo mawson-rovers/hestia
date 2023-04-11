@@ -6,7 +6,7 @@ from pathlib import Path
 from time import sleep
 from typing import List
 
-from hestia import Hestia, i2c, stub_instance
+from hestia import Hestia, i2c, stub_instance, HeaterMode
 
 LOG_PATH_ENV_VAR = 'HESTIA_LOG_PATH'
 
@@ -68,7 +68,7 @@ def main():
             timestamp = datetime.now().strftime("%Y-%m-%d %T.%f")
             try:
                 values = board.read_sensor_values()
-                heater_level = board.get_heater_pwm() if board.is_heater_enabled() else 0
+                heater_level = board.get_heater_power_level() if board.get_heater_mode() != HeaterMode.OFF else 0
                 if not all(map(math.isnan, values.values())):
                     print(timestamp,
                           *['%.4f' % values[s] if not math.isnan(values[s]) else '' for s in sensors],

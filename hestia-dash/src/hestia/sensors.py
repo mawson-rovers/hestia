@@ -15,7 +15,8 @@ logger = logging.getLogger(name='hestia.sensors')
 MSP430_I2C_ADDR = 0x08
 MSP430_ADC_RESOLUTION = 1 << 12
 
-ADC_MIN_VALUE = 0x10  # disconnected ADC input fluctuates in low values close to zero
+ADC_MIN_VALUE = 0x0010  # disconnected ADC input fluctuates in low values close to zero
+ADC_MAX_VALUE = 0x0FFF  # ADC held high returns 4095
 
 NB21K00103_THERMISTOR_B_VALUE = 3630
 ZERO_CELSIUS_IN_KELVIN = 273.15
@@ -82,7 +83,7 @@ def read_msp430_temp(addr: int) -> float:
 
 
 def adc_val_to_temp(adc_val: int, adc_resolution: int) -> float:
-    if adc_val < ADC_MIN_VALUE:
+    if adc_val < ADC_MIN_VALUE or adc_val >= ADC_MAX_VALUE:
         # return NaN if value too low (indicates no reading on ADC)
         return math.nan
     try:
@@ -92,6 +93,15 @@ def adc_val_to_temp(adc_val: int, adc_resolution: int) -> float:
     except (ValueError, ZeroDivisionError):
         # return NaN if value out of range (zero/negative)
         return math.nan
+
+
+def temp_to_adc_value(temp: float, adc_resolution: int = MSP430_ADC_RESOLUTION) -> int:
+    if temp < -55 or temp > 150:
+        # temperature out of range - return
+        return 0
+    return round(adc_resolution / (
+            math.exp((1 / (temp + ZERO_CELSIUS_IN_KELVIN) - (1 / NB21K00103_THERMISTOR_REF_TEMP_K)) *
+                     NB21K00103_THERMISTOR_B_VALUE) + 1))
 
 
 def ads7828_channel_select(addr: int) -> int:
