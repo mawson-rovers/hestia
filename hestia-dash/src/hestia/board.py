@@ -1,11 +1,10 @@
-import contextlib
 import logging
 import os
 from collections import OrderedDict
-from time import sleep
 from typing import Dict
 
 from hestia import heater
+from hestia.heater import HeaterMode
 from hestia.i2c import i2c_write_int
 from hestia.sensors import Sensor, SensorInterface
 
@@ -61,42 +60,17 @@ class Hestia:
     def read_sensor_values(self) -> Dict[Sensor, float]:
         return OrderedDict((s, s.read_temp()) for s in self.sensors)
 
-    def is_heater_enabled(self) -> bool:
-        return heater.is_enabled()
+    def get_heater_mode(self) -> HeaterMode:
+        return heater.get_heater_mode()
 
-    def get_heater_pwm(self) -> int:
-        return heater.get_heater_pwm()
+    def get_heater_power_level(self) -> int:
+        return heater.get_heater_power_level()
 
     def set_heater_pwm(self, power_level: int):
-        heater.set_heater_pwm(power_level)
+        heater.set_heater_power_level(power_level)
 
-    def enable_heater(self):
-        heater.enable_heater()
-
-    def disable_heater(self):
-        heater.disable_heater()
-
-    @contextlib.contextmanager
-    def heating(self, power_level: int = 50):
-        self.set_heater_pwm(power_level)
-        self.enable_heater()
-        try:
-            yield self
-        finally:
-            self.disable_heater()
-
-    def heating_thermostat(self, temp: int = 80):
-        self.set_heater_pwm(255)
-        try:
-            while True:
-                t = self.read_center_temp()
-                if t < temp - 1:
-                    self.enable_heater()
-                else:
-                    self.disable_heater()
-                sleep(1)
-        finally:
-            self.disable_heater()  # always disable heater at end
+    def set_heater_mode(self, mode: HeaterMode):
+        heater.set_heater_mode(mode);
 
     def reset(self):
         logger.info("Sending reset command")

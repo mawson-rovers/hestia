@@ -1,16 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" autoUpload="On explicit save action" serverName="beagle" remoteFilesAllowedToDisappearOnAutoupload="false" confirmBeforeUploading="false" autoUploadExternalChanges="true">
+  <component name="PublishConfigData" serverName="beagle" remoteFilesAllowedToDisappearOnAutoupload="false" confirmBeforeUploading="false" autoUploadExternalChanges="true">
     <option name="confirmBeforeUploading" value="false" />
     <serverData>
       <paths name="beagle">
         <serverdata>
           <mappings>
-            <mapping deploy="/src/mawson/hestia-sat" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/opt/hestia-sat" local="$PROJECT_DIR$/target/arm-unknown-linux-gnueabihf/debug/" web="/" />
           </mappings>
+          <excludedPaths>
+            <excludedPath local="true" path="$PROJECT_DIR$/target/arm-unknown-linux-gnueabihf/debug/build" />
+            <excludedPath local="true" path="$PROJECT_DIR$/target/arm-unknown-linux-gnueabihf/debug/deps" />
+            <excludedPath local="true" path="$PROJECT_DIR$/target/arm-unknown-linux-gnueabihf/debug/examples" />
+            <excludedPath local="true" path="$PROJECT_DIR$/target/arm-unknown-linux-gnueabihf/debug/incremental" />
+          </excludedPaths>
         </serverdata>
       </paths>
     </serverData>
-    <option name="myAutoUpload" value="ON_EXPLICIT_SAVE" />
   </component>
 </project>

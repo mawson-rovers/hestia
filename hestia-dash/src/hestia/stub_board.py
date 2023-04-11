@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from random import random
 from typing import Dict, Optional, List, Any
 
-from hestia import Hestia
+from hestia import Hestia, HeaterMode
 from hestia.board import Sensor
 
 _stub_values = {
@@ -55,7 +55,7 @@ def get_stub_logs() -> List[Dict[str, Any]]:
 class StubHestia(Hestia):
     def __init__(self):
         super().__init__()
-        self.heater_enabled: bool = False
+        self.heater_mode: HeaterMode = HeaterMode.OFF
         self.heater_pwm: int = 50
         self.heater_started: Optional[datetime] = None
 
@@ -64,7 +64,7 @@ class StubHestia(Hestia):
 
     def read_sensor(self, sensor_id):
         base_val = _stub_values.get(sensor_id, math.nan) + random() * 5 - 2
-        if self.heater_enabled:
+        if self.heater_mode != HeaterMode.OFF:
             heating_duration: timedelta = datetime.now() - self.heater_started
             max_temp: float = 50 + self.heater_pwm / 4
             return round(min(base_val + self.heater_pwm / 50 * heating_duration.total_seconds(),
@@ -75,18 +75,16 @@ class StubHestia(Hestia):
     def read_center_temp(self) -> float:
         return self.read_sensor('TH1')
 
-    def is_heater_enabled(self) -> bool:
-        return self.heater_enabled
+    def get_heater_mode(self) -> HeaterMode:
+        return self.heater_mode
 
-    def get_heater_pwm(self) -> int:
+    def get_heater_power_level(self) -> int:
         return self.heater_pwm
 
     def set_heater_pwm(self, power_level: int):
         self.heater_pwm = power_level
 
-    def enable_heater(self):
-        self.heater_enabled = True
-        self.heater_started = datetime.now()
-
-    def disable_heater(self):
-        self.heater_enabled = False
+    def set_heater_mode(self, mode: HeaterMode):
+        self.heater_mode = mode
+        if self.heater_mode != HeaterMode.OFF:
+            self.heater_started = datetime.now()

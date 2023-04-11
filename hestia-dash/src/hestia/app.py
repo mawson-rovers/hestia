@@ -10,7 +10,7 @@ from typing import List, Dict, Any
 from flask import Flask, jsonify, Response, render_template, request, redirect, send_from_directory
 from flask_compress import Compress
 
-from hestia import Hestia, logger, i2c, stub_instance, stub_board
+from hestia import Hestia, logger, i2c, stub_instance, stub_board, HeaterMode
 
 app = Flask("hestia")
 Compress(app)
@@ -43,8 +43,8 @@ def get_status():
     board = get_board()
     return jsonify({
         "center_temp": board.read_center_temp(),
-        "heater_enabled": board.is_heater_enabled(),
-        "heater_pwm_freq": board.get_heater_pwm(),
+        "heater_mode": board.get_heater_mode().name,
+        "heater_duty": power_level_to_duty(board.get_heater_power_level()),
         "heater_voltage": 0.0,
         "heater_current": 0.0,
         "sensors": {sensor.id: sensor for sensor in board.sensors},
@@ -55,13 +55,22 @@ def get_status():
 def post_status():
     board = get_board()
     data = request.json
-    if 'heater_enabled' in data:
-        app.logger.info('Enabling heater' if data['heater_enabled'] else 'Disabling heater')
-        board.enable_heater() if data['heater_enabled'] else board.disable_heater()
-    if 'heater_pwm_freq' in data:
-        app.logger.info('Setting heater power level to %d', data['heater_pwm_freq'])
-        board.set_heater_pwm(data['heater_pwm_freq'])
+    if 'heater_mode' in data:
+        app.logger.info('Setting heater mode to %s', data['heater_mode'])
+        board.set_heater_mode(HeaterMode(data['heater_mode']))
+    if 'heater_duty' in data:
+        power_level = duty_to_power_level(data['heater_duty'])
+        app.logger.info('Setting heater power level to %d (%d%%)', power_level, data['heater_duty'])
+        board.set_heater_pwm(power_level)
     return redirect('/api/status')
+
+
+def duty_to_power_level(duty: int):
+    return round(duty / 100 * 255)
+
+
+def power_level_to_duty(power_level: int):
+    return round(power_level / 255 * 10)
 
 
 def get_log_files(attrs=('name', 'url', 'file')):
@@ -81,7 +90,7 @@ def get_board():
 def get_data():
     board = get_board()
     timestamp = datetime.now().strftime("%Y-%m-%d %T.%f")
-    heater_level = board.get_heater_pwm() if board.is_heater_enabled() else 0
+    heater_level = board.get_heater_power_level() if board.get_heater_mode() != HeaterMode.OFF else 0
     sensor_readings = {sensor.id: [[timestamp, value]] if not math.isnan(value) else []
                        for sensor, value in board.read_sensor_values().items()}
     return {**sensor_readings, 'heater': [[timestamp, heater_level]]}

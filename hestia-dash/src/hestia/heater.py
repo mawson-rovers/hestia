@@ -5,6 +5,7 @@ This is an internal module. See :meth:`hestia.board.Hestia` for the public API.
 import logging
 from enum import Enum
 
+from hestia import sensors
 from hestia.i2c import i2c_write_int, i2c_read_int
 
 logger = logging.getLogger(name='hestia.heater')
@@ -14,6 +15,8 @@ MSP430_I2C_ADDR = 0x08
 MSP430_READ_HEATER_MODE = 0x20
 MSP430_READ_HEATER_PWM_FREQ = 0x23
 MSP430_WRITE_HEATER_MODE = 0x40
+MSP430_WRITE_TARGET_TEMP = 0x41
+MSP430_WRITE_TARGET_SENSOR = 0x42
 MSP430_WRITE_PWM_FREQUENCY = 0x43
 
 
@@ -24,33 +27,39 @@ class HeaterMode(Enum):
     UNKNOWN = 0xFF
 
 
-def enable_heater():
-    logger.info('Enabling heater')
-    i2c_write_int(MSP430_I2C_ADDR, MSP430_WRITE_HEATER_MODE, HeaterMode.PWM.value, byteorder="little")
+def set_heater_mode(mode: HeaterMode):
+    logger.info("Setting heater mode to %s (%02x)", mode.name, mode.value)
+    try:
+        i2c_write_int(MSP430_I2C_ADDR, MSP430_WRITE_HEATER_MODE, mode.value, byteorder="little")
+    except OSError as error:
+        logger.warning("Could not set heater mode: %s", error)
 
 
-def disable_heater():
-    logger.info('Disabling heater')
-    i2c_write_int(MSP430_I2C_ADDR, MSP430_WRITE_HEATER_MODE, HeaterMode.OFF.value, byteorder="little")
-
-
-def set_heater_pwm(pwm_freq: int):
-    logger.info('Setting heater power level %d', pwm_freq)
+def set_heater_power_level(pwm_freq: int):
+    logger.info('Setting heater power level to %d', pwm_freq)
     i2c_write_int(MSP430_I2C_ADDR, MSP430_WRITE_PWM_FREQUENCY, pwm_freq, byteorder="little")
 
 
-def is_enabled() -> bool:
+def set_heater_target_temp(temp: float):
+    adc_value = sensors.temp_to_adc_value(temp)
+    logger.info('Setting heater set point to %0.2f (ADC value: %d)', temp, adc_value)
+    i2c_write_int(MSP430_I2C_ADDR, MSP430_WRITE_TARGET_TEMP, adc_value, byteorder="little")
+
+
+def get_heater_mode() -> HeaterMode:
     logger.debug('Reading heater mode')
     try:
         mode = i2c_read_int(MSP430_I2C_ADDR, MSP430_READ_HEATER_MODE, byteorder="little")
-    except OSError as error:
-        logger.warning("Could not read heater mode from MSP430: %s", error)
-        return False
-    logger.info('Read heater mode: %d', mode)
-    return HeaterMode(mode) != HeaterMode.OFF  # throws ValueError if unknown value
+        logger.info('Read heater mode: %d', mode)
+        return HeaterMode(mode)
+    except OSError as e:
+        logger.warning("Could not read heater mode from MSP430: %s", e)
+        return HeaterMode.UNKNOWN
+    except ValueError:
+        return HeaterMode.UNKNOWN
 
 
-def get_heater_pwm() -> int:
+def get_heater_power_level() -> int:
     logger.debug('Reading heater power level')
     try:
         pwm_freq = i2c_read_int(MSP430_I2C_ADDR, MSP430_READ_HEATER_PWM_FREQ, byteorder="little")
