@@ -90,13 +90,13 @@
                 // add all new data items (API can return multiple points)
                 dataset.data.push(...newData);
 
-                // limit samples to maximum visible (30 min * 12 per min)
+                // limit samples to maximum visible (120 min * 12 per min)
                 while (dataset.data.length > 1500) {
                     dataset.data.shift();
                 }
             } else {
                 // new sensor has appeared - add as new dataset
-                let newChartData = getChartData({label: newData});
+                let newChartData = getChartData({ [label]: newData });
                 chart.data.datasets.push(...newChartData.datasets);
             }
 

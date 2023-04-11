@@ -29,14 +29,14 @@
     <section id="status-section">
         <h3>Status</h3>
         <div class="row">
-            <div class="column column-20"><label for="core-temperature">Core temperature</label></div>
+            <div class="column column-20"><label for="core-temperature">Core temperature (°C)</label></div>
             <div class="column column-20"><input disabled id="core-temperature" size="10" value="n/a"></div>
         </div>
         <div class="row">
             <div class="column column-20"><label for="heater-mode">Heater mode</label></div>
             <div class="column column-20"><input disabled id="heater-mode" size="10" value="n/a"></div>
             <div class="column column-60">
-                <button class="set-heater-mode" data-mode="ON">OFF</button>
+                <button class="set-heater-mode" data-mode="OFF">OFF</button>
                 <button class="set-heater-mode" data-mode="PWM">Power</button>
                 <button class="set-heater-mode" data-mode="PID">Thermostat</button>
             </div>
@@ -48,6 +48,17 @@
                 <button class="set-heater-duty" data-duty="20">20%</button>
                 <button class="set-heater-duty" data-duty="50">50%</button>
                 <button class="set-heater-duty" data-duty="100">100%</button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="column column-20"><label for="target-temp">Target temp (°C)</label></div>
+            <div class="column column-20"><input disabled id="target-temp" size="10" value="n/a"></div>
+            <div class="column column-60">
+                <button class="set-target-temp" data-temp="0">0</button>
+                <button class="set-target-temp" data-temp="50">50</button>
+                <button class="set-target-temp" data-temp="60">60</button>
+                <button class="set-target-temp" data-temp="70">70</button>
+                <button class="set-target-temp" data-temp="80">80°C</button>
             </div>
         </div>
     </section>

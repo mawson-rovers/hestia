@@ -134,7 +134,9 @@ void I2C_Slave_ProcessCMD(unsigned char *message_rx, uint16_t length) {
         // Set the heater mode
         heater_mode = package[0];
     } else if (cmd == COMMAND_WRITE_TARGET_TEMP) {
-        set_point = package[0]; // TODO fix this - set_point needs two bytes
+        if (length >= 2) {
+            set_point = (package[1] << 8) + package[0];
+        }
         TransmitLen = 0;
     } else if (cmd == COMMAND_WRITE_TARGET_SENSOR) {
         control_sensor = package[0];

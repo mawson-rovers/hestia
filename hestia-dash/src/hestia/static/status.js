@@ -2,6 +2,7 @@
     const coreTemperature = document.getElementById('core-temperature');
     const heaterMode = document.getElementById('heater-mode');
     const heaterDuty = document.getElementById('heater-duty');
+    const targetTemp = document.getElementById('target-temp');
     const boardChartElement = document.getElementById('board-chart');
 
     function updateStatus(data) {
@@ -11,8 +12,8 @@
         } else {
             heaterMode.value = "n/a";
         }
-        heaterDuty.value = ("heater_duty" in data && data["heater_duty"]) ?
-            data["heater_duty"] : "n/a";
+        heaterDuty.value = "heater_duty" in data ? data["heater_duty"] : "n/a";
+        targetTemp.value = "target_temp" in data ? data["target_temp"] : "n/a";
 
         if (!window.boardChart) {
             window.boardChart = newBoardChart(boardChartElement, data['sensors']);
@@ -127,6 +128,16 @@
             let duty = Number(el.getAttribute('data-duty'));
             postStatusUpdate(JSON.stringify({
                 'heater_duty': duty,
+            }));
+        });
+    });
+
+    // target temperature buttons
+    document.querySelectorAll(".set-target-temp").forEach(el => {
+        el.addEventListener('click', () => {
+            let temp = Number(el.getAttribute('data-temp'));
+            postStatusUpdate(JSON.stringify({
+                'target_temp': temp,
             }));
         });
     });

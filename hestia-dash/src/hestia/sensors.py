@@ -82,7 +82,7 @@ def read_msp430_temp(addr: int) -> float:
         return math.nan
 
 
-def adc_val_to_temp(adc_val: int, adc_resolution: int) -> float:
+def adc_val_to_temp(adc_val: int, adc_resolution: int = MSP430_ADC_RESOLUTION) -> float:
     if adc_val < ADC_MIN_VALUE or adc_val >= ADC_MAX_VALUE:
         # return NaN if value too low (indicates no reading on ADC)
         return math.nan
