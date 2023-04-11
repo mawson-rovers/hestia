@@ -45,6 +45,7 @@ def get_status():
         "center_temp": board.read_center_temp(),
         "heater_mode": board.get_heater_mode().name,
         "heater_duty": power_level_to_duty(board.get_heater_power_level()),
+        "target_temp": board.get_target_temp(),
         "heater_voltage": 0.0,
         "heater_current": 0.0,
         "sensors": {sensor.id: sensor for sensor in board.sensors},
@@ -57,11 +58,14 @@ def post_status():
     data = request.json
     if 'heater_mode' in data:
         app.logger.info('Setting heater mode to %s', data['heater_mode'])
-        board.set_heater_mode(HeaterMode(data['heater_mode']))
+        board.set_heater_mode(HeaterMode[data['heater_mode']])
     if 'heater_duty' in data:
         power_level = duty_to_power_level(data['heater_duty'])
         app.logger.info('Setting heater power level to %d (%d%%)', power_level, data['heater_duty'])
         board.set_heater_pwm(power_level)
+    if 'target_temp' in data:
+        app.logger.info('Setting target temperature to %d°C', data['target_temp'])
+        board.set_target_temp(data['target_temp'])
     return redirect('/api/status')
 
 
@@ -70,7 +74,7 @@ def duty_to_power_level(duty: int):
 
 
 def power_level_to_duty(power_level: int):
-    return round(power_level / 255 * 10)
+    return round(power_level / 255 * 100)
 
 
 def get_log_files(attrs=('name', 'url', 'file')):

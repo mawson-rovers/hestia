@@ -33,6 +33,8 @@ a:visited {
 button {
     background-color: #FF9041;
     border-color: #FF9041;
+    font-size: 13px;
+    padding: 0 1.0rem;
 }
 
 button.button-clear,

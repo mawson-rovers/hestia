@@ -69,6 +69,12 @@ class Hestia:
     def set_heater_pwm(self, power_level: int):
         heater.set_heater_power_level(power_level)
 
+    def get_target_temp(self):
+        return heater.get_target_temp()
+
+    def set_target_temp(self, temp: float):
+        heater.set_heater_target_temp(temp)
+
     def set_heater_mode(self, mode: HeaterMode):
         heater.set_heater_mode(mode);
 
