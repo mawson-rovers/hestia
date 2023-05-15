@@ -116,7 +116,7 @@ impl LogWriter {
         } else {
             format_values(self.board.read_temps())
         };
-        fields.push_front(timestamp.format("%Y-%m-%d %T.%f").to_string());
+        fields.push_front(timestamp.format("%Y-%m-%d %T.%6f").to_string());
         fields.push_back(heater_level.to_string());
 
         self.writer.write_record(fields)
@@ -134,7 +134,7 @@ trait LogOutput {
 impl LogOutput for ReadResult<f32> {
     fn format(self) -> String {
         match self {
-            Ok(f) => format!("{:0.2}", f),
+            Ok(f) => format!("{:0.4}", f),
             Err(_) => String::from(""),
         }
     }
