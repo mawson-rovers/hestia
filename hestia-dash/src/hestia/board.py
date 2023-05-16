@@ -31,9 +31,9 @@ _sensors = [
 
     Sensor("J7", SensorInterface.MSP430, 0x04, "Mounted"),
     Sensor("J8", SensorInterface.MSP430, 0x05, "Mounted"),
-    Sensor("J9", SensorInterface.MSP430, 0x06, "Mounted"),
-    Sensor("J10", SensorInterface.MSP430, 0x07, "Mounted"),
-    Sensor("J11", SensorInterface.MSP430, 0x08, "Mounted"),
+    Sensor("J9", SensorInterface.RAW, 0x06, "Mounted"),
+    Sensor("J10", SensorInterface.RAW, 0x07, "Mounted"),
+    Sensor("J11", SensorInterface.RAW, 0x08, "Mounted"),
 
     Sensor("J12", SensorInterface.ADS7828, 0x03, "Mounted"),
     Sensor("J13", SensorInterface.ADS7828, 0x04, "Mounted"),

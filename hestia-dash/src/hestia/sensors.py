@@ -37,6 +37,7 @@ class SensorInterface(str, Enum):
     MSP430 = 'MSP430'
     ADS7828 = 'ADS7828'
     MAX31725 = 'MAX31725'
+    RAW = 'RAW'
 
 
 @dataclass(frozen=True)
@@ -55,6 +56,8 @@ class Sensor:
             return round(read_ads7828_temp(self.addr), 4)
         elif self.iface == SensorInterface.MAX31725:
             return round(read_max31725_temp(self.addr), 4)
+        elif self.iface == SensorInterface.RAW:
+            return i2c_read_int(MSP430_I2C_ADDR, self.addr, byteorder="little", signed=False)
         else:
             logger.warning('Unknown sensor interface: %s', self.iface)
             return math.nan
