@@ -2,8 +2,9 @@
 #define MAIN_H
 
 // GPIO PINS
-#define LED_GREEN BIT2   // P5.2
-#define LED_YELLOW BIT3  // P5.3
+#define LED_YELLOW BIT2  // P5.2
+#define LED_GREEN  BIT3  // P5.3
+#define LED_BLUE   BIT4  // P5.4
 #define HEATER_PIN BIT7  // P1.7
 
 // I2C commands

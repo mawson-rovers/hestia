@@ -130,6 +130,9 @@ void I2C_Slave_ProcessCMD(unsigned char *message_rx, uint16_t length) {
     uint8_t cmd = message_rx[0];
     unsigned char *package = message_rx + 1; // ignore the command
 
+
+    P5OUT ^= LED_BLUE;
+
     if (cmd == COMMAND_WRITE_HEATER_MODE) {
         // Set the heater mode
         heater_mode = package[0];
@@ -153,7 +156,7 @@ void I2C_Slave_ProcessCMD(unsigned char *message_rx, uint16_t length) {
 
 void heater_process() {
     if (heater_mode == HEATER_MODE_PWM) {
-        // TODO PWM currently dosen't seem to be working so bit banging
+        // TODO PWM currently doesn't seem to be working so bit banging
         // CCR2 = current_pwm;                                 // CCR2 PWM duty cycle 0%
         if (current_pwm > counter) {
             P1OUT |= HEATER_PIN;
@@ -187,8 +190,8 @@ void initGPIO() {
     P3SEL |= BIT1 | BIT2;                     // P3.1,2 for I2C
 
     // Status LEDs
-    P5DIR |= 0x0F;                            // LED output on P5.0-3
-    P5OUT &= ~(LED_YELLOW | LED_GREEN);       // Turn off both status LEDs
+    P5DIR |= (LED_YELLOW | LED_GREEN | LED_BLUE);  // LED output pins
+    P5OUT &= ~(LED_YELLOW | LED_GREEN | LED_BLUE); // Turn off status LEDs
 
     P1DIR |= HEATER_PIN;                      // P1.7 is output
     P1OUT &= ~HEATER_PIN;                     // Set heater off
@@ -207,7 +210,7 @@ void initADC() {
     ADC12MCTL4 = INCH_4;                      // ref+=AVcc, channel = A4
     ADC12MCTL5 = INCH_5;                      // ref+=AVcc, channel = A5
     ADC12MCTL6 = INCH_6;                      // ref+=AVcc, channel = A6
-    ADC12MCTL7 = INCH_7 + EOS;                  // ref+=AVcc, channel = A7, end seq.
+    ADC12MCTL7 = INCH_7 + EOS;                // ref+=AVcc, channel = A7, end seq.
     ADC12IE = 0x08;                           // Enable ADC12IFG.3
     ADC12CTL0 |= ENC;                         // Enable conversions
 }
