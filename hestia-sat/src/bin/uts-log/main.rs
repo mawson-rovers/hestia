@@ -2,7 +2,6 @@ use std::collections::VecDeque;
 use std::fs;
 use std::fs::{File, OpenOptions};
 use std::path::Path;
-use std::thread::sleep;
 use std::time::Duration;
 
 use chrono::{Datelike, DateTime, Utc};
@@ -38,7 +37,7 @@ fn logger(config: &Config) {
             writer.write_data(timestamp);
         }
 
-        sleep(Duration::from_secs(5));
+        spin_sleep::sleep(Duration::from_secs(5));
         if Utc::now().day() != start_date.day() {
             // it's a new day, it's a new dawn...
             return;
