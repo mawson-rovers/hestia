@@ -1,7 +1,6 @@
 extern crate i2c_linux;
 
 use std::io;
-use std::time::Duration;
 
 use byteorder::{ByteOrder, BigEndian, LittleEndian};
 use i2c_linux::I2c;
