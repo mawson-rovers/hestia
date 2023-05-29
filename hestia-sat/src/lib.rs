@@ -5,6 +5,7 @@ use std::path::Path;
 use cubeos_error::Error;
 use failure::Fail;
 use serde::{Deserialize, Serialize};
+use crate::csv::CsvData;
 
 // public modules
 pub mod board;
@@ -74,4 +75,11 @@ impl From<io::Error> for ReadError {
 
 pub type ReadResult<T> = Result<T, ReadError>;
 
-
+impl From<ReadResult<u16>> for CsvData {
+    fn from(value: ReadResult<u16>) -> Self {
+        match value {
+            Ok(value) => value.into(),
+            Err(_) => CsvData::Error
+        }
+    }
+}

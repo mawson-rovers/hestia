@@ -31,6 +31,7 @@ pub enum CsvData {
     Timestamp {
         value: DateTime<Utc>,
     },
+    Error,
 }
 
 impl From<CsvData> for String {
@@ -39,6 +40,7 @@ impl From<CsvData> for String {
             CsvData::F32 { value } => format!("{:0.4}", value),
             CsvData::U16 { value } => format!("{}", value),
             CsvData::Timestamp { value } => format!("{}", value.format("%Y-%m-%d %T.%6f")),
+            CsvData::Error => String::from(""), // errors are logged to stderr, not the CSV file
         }
     }
 }

@@ -1,3 +1,5 @@
+use std::fmt;
+use std::fmt::Formatter;
 use log::{debug, warn};
 use strum_macros::Display;
 
@@ -154,4 +156,10 @@ fn adc_val_to_temp(adc_val: u16, adc_resolution: u16) -> ReadResult<f32> {
         INV_NB21K00103_REF_TEMP_K +
             INV_NB21K00103_B_VALUE * f32::ln(adc_resolution as f32 / adc_val as f32 - 1.0)) -
         ZERO_CELSIUS_IN_KELVIN)
+}
+
+impl fmt::Display for Sensor {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.id)
+    }
 }

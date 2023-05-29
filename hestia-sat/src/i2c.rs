@@ -29,7 +29,7 @@ fn i2c_read_bytes<const LEN: usize>(bus: &I2cBus, addr: I2cAddr, reg: I2cReg) ->
     let mut data = [0; LEN];
     let mut i2c = I2c::from_path(bus.path())?;
     // i2c.i2c_set_retries(0)?;
-    // i2c.i2c_set_timeout(Duration::from_millis(10))?;
+    // i2c.i2c_set_timeout(Duration::from_millis(10))?;  // doesn't actually work on the BBB :-(
     i2c.smbus_set_slave_address(addr.0 as u16, false)?;
     i2c.i2c_read_block_data(reg.0, &mut data)?;
     Ok(data)
