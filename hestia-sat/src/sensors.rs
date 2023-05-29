@@ -20,7 +20,7 @@ const INV_NB21K00103_REF_TEMP_K: f32 = 1.0 / NB21K00103_REF_TEMP_K;
 const NB21K00103_B_VALUE: f32 = 3630.0;
 const INV_NB21K00103_B_VALUE: f32 = 1.0 / NB21K00103_B_VALUE;
 
-const ADS7828_I2C_ADDR: I2cAddr = I2cAddr(0x48);
+const ADS7828_I2C_ADDR: I2cAddr = I2cAddr(0x4A);
 // switch to 0x4a for board v2
 const ADS7828_ADC_RESOLUTION: u16 = 1 << 12;
 
