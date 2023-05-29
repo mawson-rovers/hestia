@@ -1,15 +1,12 @@
-use std::collections::VecDeque;
 use std::fs;
-use std::fs::{File, OpenOptions};
 use std::path::Path;
 use std::time::Duration;
 
 use chrono::{Datelike, DateTime, Utc};
-use csv::{Terminator, Writer, WriterBuilder};
 
 use uts_api::board::Board;
-use uts_api::ReadResult;
 use uts_api::config::Config;
+use uts_api::csv::CsvWriter;
 
 pub fn main() {
     env_logger::init();
@@ -46,7 +43,7 @@ fn logger(config: &Config) {
 }
 
 struct LogWriter {
-    writer: Writer<File>,
+    writer: CsvWriter,
     is_new: bool,
     board: Board,
     read_raw: bool,
@@ -54,13 +51,32 @@ struct LogWriter {
 
 impl LogWriter {
     fn create_all(config: &Config, boards: &Vec<Board>, start_date: &DateTime<Utc>) -> Vec<LogWriter> {
-        boards.iter().flat_map(|b| [
-            LogWriter::create(&config.log_path, b, start_date, false),
-            LogWriter::create(&config.log_path, b, start_date, true),
-        ]).collect()
+        match &config.log_path {
+            None => {
+                Vec::from([
+                    LogWriter::create_stdout_writer(&boards[0])
+                ])
+            }
+            Some(log_path) => {
+                boards.iter().flat_map(|b| [
+                    LogWriter::create_file_writer(&log_path, b, start_date, false),
+                    LogWriter::create_file_writer(&log_path, b, start_date, true),
+                ]).collect()
+            }
+        }
     }
 
-    pub fn create(path: &String, board: &Board, start_date: &DateTime<Utc>, read_raw: bool) -> LogWriter {
+    pub fn create_stdout_writer(board: &Board) -> LogWriter {
+        LogWriter {
+            writer: CsvWriter::stdout(),
+            is_new: true,
+            board: board.to_owned(),
+            read_raw: true
+        }
+    }
+
+    pub fn create_file_writer(path: &String, board: &Board, start_date: &DateTime<Utc>,
+                              read_raw: bool) -> LogWriter {
         let log_path = Path::new(&path);
         fs::create_dir_all(log_path)
             .expect("Log path does not exist and could not be created: {}");
@@ -74,28 +90,16 @@ impl LogWriter {
                   if read_raw { "raw" } else { "temp" },
                   file_path.display());
         let is_new = !file_path.exists();
-        let writer = OpenOptions::new()
-            .create(true)
-            .append(true)
-            .open(file_path)
-            .unwrap();
-        let writer = WriterBuilder::new()
-            .terminator(Terminator::CRLF)
-            .from_writer(writer);
+        let writer = CsvWriter::file(file_path)
+            .expect("Unable to create log file");
 
         LogWriter { writer, is_new, board: board.to_owned(), read_raw }
     }
 
     pub fn write_header_if_new(&mut self) {
         if self.is_new {
-            let mut headers: VecDeque<String> = VecDeque::from(
-                self.board.sensors.iter().map(|s| s.id.to_string()).collect::<Vec<_>>()
-            );
-            headers.push_front(String::from("timestamp"));
-            headers.push_back(String::from("heater"));
-            self.writer.write_record(headers)
-                .expect("Failed to write header to new CSV file: {}");
-            self.writer.flush().expect("Failed to flush header output");
+            self.writer.write_headers()
+                .expect("Failed to write header to new CSV file");
         }
     }
 
@@ -104,50 +108,35 @@ impl LogWriter {
             return;
         }
 
-        let heater_level = if self.board.is_heater_enabled() {
-            self.board.read_heater_pwm().unwrap()
-        } else {
-            0
-        };
-
-        let mut fields = if self.read_raw {
-            format_values(self.board.read_raws())
-        } else {
-            format_values(self.board.read_temps())
-        };
-        fields.push_front(timestamp.format("%Y-%m-%d %T.%6f").to_string());
-        fields.push_back(heater_level.to_string());
-
-        self.writer.write_record(fields)
-            .unwrap_or_else(|e| eprint!("Failed to write to log file: {:?}", e));
-        self.writer.flush().unwrap_or_else(|e| eprint!("Failed to flush log output: {:?}", e));
+        let data = self.board.read_sensors(timestamp, self.board.bus.id as u16);
+        
+        self.writer.write_data([
+            data.timestamp.into(),
+            data.board_id.into(),
+            data.th1.unwrap_or(u16::MAX).into(),
+            data.th2.unwrap_or(u16::MAX).into(),
+            data.th3.unwrap_or(u16::MAX).into(),
+            data.u4.unwrap_or(u16::MAX).into(),
+            data.u5.unwrap_or(u16::MAX).into(),
+            data.u6.unwrap_or(u16::MAX).into(),
+            data.u7.unwrap_or(u16::MAX).into(),
+            data.th4.unwrap_or(u16::MAX).into(),
+            data.th5.unwrap_or(u16::MAX).into(),
+            data.th6.unwrap_or(u16::MAX).into(),
+            data.j7.unwrap_or(u16::MAX).into(),
+            data.j8.unwrap_or(u16::MAX).into(),
+            data.j12.unwrap_or(u16::MAX).into(),
+            data.j13.unwrap_or(u16::MAX).into(),
+            data.j14.unwrap_or(u16::MAX).into(),
+            data.j15.unwrap_or(u16::MAX).into(),
+            data.j16.unwrap_or(u16::MAX).into(),
+            data.heater_mode.unwrap_or(u16::MAX).into(),
+            data.target_temp.unwrap_or(u16::MAX).into(),
+            data.target_sensor.unwrap_or(u16::MAX).into(),
+            data.pwm_freq.unwrap_or(u16::MAX).into(),
+            data.heater_v_high.unwrap_or(u16::MAX).into(),
+            data.heater_v_low.unwrap_or(u16::MAX).into(),
+            data.heater_curr.unwrap_or(u16::MAX).into(),
+        ]).unwrap_or_else(|e| eprint!("Failed to write to log file: {:?}", e));
     }
-}
-
-trait LogOutput {
-    fn format(self) -> String
-        where
-            Self: Sized;
-}
-
-impl LogOutput for ReadResult<f32> {
-    fn format(self) -> String {
-        match self {
-            Ok(f) => format!("{:0.4}", f),
-            Err(_) => String::from(""),
-        }
-    }
-}
-
-impl LogOutput for ReadResult<u16> {
-    fn format(self) -> String {
-        match self {
-            Ok(value) => format!("{}", value),
-            Err(_) => String::from(""),
-        }
-    }
-}
-
-fn format_values<T: LogOutput>(values: Vec<T>) -> VecDeque<String> {
-    VecDeque::from(values.into_iter().map(|v| v.format()).collect::<Vec<_>>())
 }

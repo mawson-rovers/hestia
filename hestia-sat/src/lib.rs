@@ -10,10 +10,12 @@ use serde::{Deserialize, Serialize};
 pub mod board;
 pub mod sensors;
 pub mod config;
+pub mod csv;
 
 // private modules
 mod heater;
 mod i2c;
+
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct I2cBus {

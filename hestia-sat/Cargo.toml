@@ -15,7 +15,6 @@ cubeos-error = { git = "ssh://git@github.com/Cube-OS/cubeos-error.git"}
 rust-uart = { git = "ssh://git@github.com/Cube-OS/rust-uart.git" }
 strum_macros = "0.24"
 chrono = "0.4.24"
-csv = "1.2.1"
 envy = "0.4.2"
 env_logger = "0.10.0"
 spin_sleep = "1.1.1"

@@ -7,8 +7,12 @@ use crate::ReadError::ValueOutOfRange;
 
 const MSP430_I2C_ADDR: I2cAddr = I2cAddr(0x08);
 const MSP430_READ_HEATER_MODE: I2cReg = I2cReg(0x20);
+const MSP430_READ_HEATER_TARGET_TEMP: I2cReg = I2cReg(0x21);
+const MSP430_READ_HEATER_TARGET_SENSOR: I2cReg = I2cReg(0x22);
 const MSP430_READ_HEATER_PWM_FREQ: I2cReg = I2cReg(0x23);
 const MSP430_WRITE_HEATER_MODE: I2cReg = I2cReg(0x40);
+const MSP430_WRITE_HEATER_TARGET_TEMP: I2cReg = I2cReg(0x41);
+const MSP430_WRITE_HEATER_TARGET_SENSOR: I2cReg = I2cReg(0x42);
 const MSP430_WRITE_PWM_FREQUENCY: I2cReg = I2cReg(0x43);
 
 #[repr(u16)]
@@ -55,24 +59,33 @@ pub fn enable_heater(bus: &I2cBus) {
 }
 
 pub fn read_heater_mode(bus: &I2cBus) -> ReadResult<HeaterMode> {
+    let mode = read_heater_mode_raw(bus)?;
+    HeaterMode::try_from(mode).or_else(|e| {
+        warn!("i2c{}: Invalid heater mode: {:?}", bus.id, mode);
+        Err(ValueOutOfRange)
+    })
+}
+
+pub fn read_heater_mode_raw(bus: &I2cBus) -> ReadResult<u16> {
     debug!("i2c{}: Reading heater mode", bus.id);
     let mode = i2c_read_u16_le(bus, MSP430_I2C_ADDR, MSP430_READ_HEATER_MODE);
-    match mode {
-        Ok(mode) => match HeaterMode::try_from(mode) {
-            Ok(mode) => Ok(mode),
-            Err(_) => {
-                warn!("i2c{}: Invalid heater mode: {:?}", bus.id, mode);
-                Err(ValueOutOfRange)
-            }
-        },
-        Err(e) => {
-            warn!("i2c{}: Could not read heater mode from MSP430: {:?}", bus.id, e);
-            Err(ReadError::from(e))
-        }
-    }
+    mode.or_else(|e| {
+        warn!("i2c{}: Could not read heater mode from MSP430: {:?}", bus.id, e);
+        Err(ReadError::from(e))
+    })
 }
 
 pub fn read_heater_pwm(bus: &I2cBus) -> ReadResult<u16> {
     debug!("i2c{}: Reading heater power level", bus.id);
     Ok(i2c_read_u16_le(bus, MSP430_I2C_ADDR, MSP430_READ_HEATER_PWM_FREQ)?)
+}
+
+pub fn read_target_temp(bus: &I2cBus) -> ReadResult<u16> {
+    debug!("i2c{}: Reading heater target temp", bus.id);
+    Ok(i2c_read_u16_le(bus, MSP430_I2C_ADDR, MSP430_READ_HEATER_TARGET_TEMP)?)
+}
+
+pub fn read_target_sensor(bus: &I2cBus) -> ReadResult<u16> {
+    debug!("i2c{}: Reading heater target sensor", bus.id);
+    Ok(i2c_read_u16_le(bus, MSP430_I2C_ADDR, MSP430_READ_HEATER_TARGET_SENSOR)?)
 }

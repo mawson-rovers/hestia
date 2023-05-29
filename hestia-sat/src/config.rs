@@ -8,7 +8,7 @@ fn default_i2c_bus() -> Vec<u8> {
 
 #[derive(Deserialize, Debug)]
 pub struct Config {
-    pub log_path: String,
+    pub log_path: Option<String>,
 
     #[serde(default="default_i2c_bus")]
     pub i2c_bus: Vec<u8>,
