@@ -139,9 +139,9 @@ impl LogWriter {
                     data.target_temp.into(),
                     data.target_sensor.into(),
                     data.pwm_freq.into(),
-                    data.heater_v_high.into(),
                     data.heater_v_low.into(),
                     data.heater_curr.into(),
+                    data.heater_v_high.into(),
                 ]).unwrap_or_else(|e| eprint!("Failed to write to log file: {:?}", e));
             },
             None => {
