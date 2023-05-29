@@ -4,7 +4,7 @@ use crate::board::Board;
 
 fn default_i2c_bus() -> Vec<u8> { vec![1, 2] }
 
-fn default_check_sensor() -> String { "TH1".to_string() }
+fn default_check_sensor() -> String { "U4".to_string() }
 
 #[derive(Deserialize, Debug)]
 pub struct Config {
