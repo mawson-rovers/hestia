@@ -130,7 +130,6 @@ void I2C_Slave_ProcessCMD(unsigned char *message_rx, uint16_t length) {
     uint8_t cmd = message_rx[0];
     unsigned char *package = message_rx + 1; // ignore the command
 
-
     P5OUT ^= LED_BLUE;
 
     if (cmd == COMMAND_WRITE_HEATER_MODE) {
@@ -225,14 +224,14 @@ void __attribute__ ((interrupt(ADC12_VECTOR))) ADC12_ISR(void)
 #error Compiler not supported!
 #endif
 {
-    adc_readings[0] = ADC12MEM0 >= ADC_MIN_VALUE ? ADC12MEM0 : ADC_UNKNOWN_VALUE;
-    adc_readings[1] = ADC12MEM1 >= ADC_MIN_VALUE ? ADC12MEM1 : ADC_UNKNOWN_VALUE;
-    adc_readings[2] = ADC12MEM2 >= ADC_MIN_VALUE ? ADC12MEM2 : ADC_UNKNOWN_VALUE;
-    adc_readings[3] = ADC12MEM3 >= ADC_MIN_VALUE ? ADC12MEM3 : ADC_UNKNOWN_VALUE;
-    adc_readings[4] = ADC12MEM4 >= ADC_MIN_VALUE ? ADC12MEM4 : ADC_UNKNOWN_VALUE;
-    adc_readings[5] = ADC12MEM5 >= ADC_MIN_VALUE ? ADC12MEM5 : ADC_UNKNOWN_VALUE;
-    adc_readings[6] = ADC12MEM6 >= ADC_MIN_VALUE ? ADC12MEM6 : ADC_UNKNOWN_VALUE;
-    adc_readings[7] = ADC12MEM7 >= ADC_MIN_VALUE ? ADC12MEM7 : ADC_UNKNOWN_VALUE;
+    adc_readings[0] = ADC12MEM0;
+    adc_readings[1] = ADC12MEM1;
+    adc_readings[2] = ADC12MEM2;
+    adc_readings[3] = ADC12MEM3;
+    adc_readings[4] = ADC12MEM4;
+    adc_readings[5] = ADC12MEM5;
+    adc_readings[6] = ADC12MEM6;
+    adc_readings[7] = ADC12MEM7;
     // IFG is cleared by reads
 
     __bic_SR_register_on_exit(CPUOFF);      // Clear CPUOFF bit from 0(SR)
