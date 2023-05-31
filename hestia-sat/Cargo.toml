@@ -12,7 +12,7 @@ log = "0.4.17"
 serde = "1.0"
 serial = "0.4.0"
 cubeos-error = { git = "ssh://git@github.com/Cube-OS/cubeos-error.git"}
-rust-uart = { git = "ssh://git@github.com/Cube-OS/rust-uart.git" }
+uart-rs = { git = "ssh://git@github.com/Cube-OS/uart-rs.git" }
 strum_macros = "0.24"
 chrono = "0.4.24"
 envy = "0.4.2"
