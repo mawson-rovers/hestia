@@ -3,7 +3,7 @@ use std::fmt::{Display, Formatter};
 use std::io;
 use std::path::Path;
 
-use cubeos_error::Error;
+// use cubeos_error::Error;
 use failure::Fail;
 use serde::{Deserialize, Serialize};
 use crate::csv::CsvData;
@@ -65,15 +65,15 @@ pub enum ReadError {
 }
 
 /// Convert ReadErrors to cubeos_error::Error::ServiceError(u8)
-impl From<ReadError> for Error {
-    fn from(e: ReadError) -> Error {
-        match e {
-            ReadError::None => Error::ServiceError(0),
-            ReadError::ValueOutOfRange => Error::ServiceError(1),
-            ReadError::I2CError(io) => cubeos_error::Error::from(io),
-        }
-    }
-}
+// impl From<ReadError> for Error {
+//     fn from(e: ReadError) -> Error {
+//         match e {
+//             ReadError::None => Error::ServiceError(0),
+//             ReadError::ValueOutOfRange => Error::ServiceError(1),
+//             ReadError::I2CError(io) => cubeos_error::Error::from(io),
+//         }
+//     }
+// }
 
 impl From<io::Error> for ReadError {
     fn from(io_err: io::Error) -> ReadError {
