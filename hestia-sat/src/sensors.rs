@@ -155,12 +155,15 @@ impl Sensor {
     }
 
     fn read_msp430_voltage(&self, bus: &I2cBus) -> ReadResult<f32> {
-        let adc_val = self.read_msp430_raw(bus)? as f32;
+        let adc_val = self.read_msp430_raw(bus)?;
+        let adc_val = adc_range_check(adc_val)? as f32;
         Ok(adc_val / (MSP430_ADC_RESOLUTION as f32) * MSP430_ADC_V_REF * MSP430_V_DIVIDER_FACTOR)
     }
 
     fn read_msp430_current(&self, bus: &I2cBus) -> ReadResult<f32> {
-        Ok(self.read_msp430_raw(bus)? as f32)
+        let adc_val = self.read_msp430_raw(bus)?;
+        let adc_val = adc_range_check(adc_val)? as f32;
+        Ok(adc_val / (MSP430_ADC_RESOLUTION as f32) * MSP430_ADC_V_REF)
     }
 }
 
@@ -175,13 +178,19 @@ fn ads7828_channel_select(addr: u8) -> u8 {
     ((addr & 0x01) << 2) | (addr >> 1)
 }
 
-pub(crate) fn adc_val_to_temp(adc_val: u16, adc_resolution: u16) -> ReadResult<f32> {
+fn adc_range_check(adc_val: u16) -> ReadResult<u16> {
     if adc_val < ADC_MIN_VALUE || adc_val >= ADC_MAX_VALUE {
-        return Err(ReadError::ValueOutOfRange);
+        Err(ReadError::ValueOutOfRange)
+    } else {
+        Ok(adc_val)
     }
+}
+
+pub(crate) fn adc_val_to_temp(adc_val: u16, adc_resolution: u16) -> ReadResult<f32> {
+    let adc_val = adc_range_check(adc_val);
     Ok(1.0 / (
         INV_NB21K00103_REF_TEMP_K +
-            INV_NB21K00103_B_VALUE * f32::ln(adc_resolution as f32 / adc_val as f32 - 1.0)) -
+            INV_NB21K00103_B_VALUE * f32::ln(adc_resolution as f32 / adc_val? as f32 - 1.0)) -
         ZERO_CELSIUS_IN_KELVIN)
 }
 
