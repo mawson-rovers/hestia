@@ -1,4 +1,5 @@
 use std::convert::From;
+use std::fmt::{Display, Formatter};
 use std::io;
 use std::path::Path;
 
@@ -9,13 +10,14 @@ use crate::csv::CsvData;
 
 // public modules
 pub mod board;
-pub mod sensors;
 pub mod config;
 pub mod csv;
+pub mod heater;
+pub mod logger;
 
 // private modules
-mod heater;
 mod i2c;
+mod sensors;
 
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
@@ -33,9 +35,15 @@ impl I2cBus {
     pub fn path(&self) -> String {
         format!("/dev/i2c-{}", self.id)
     }
-    
+
     pub fn exists(&self) -> bool {
         Path::new(&self.path()).exists()
+    }
+}
+
+impl Display for I2cBus {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.id)
     }
 }
 
@@ -75,8 +83,9 @@ impl From<io::Error> for ReadError {
 
 pub type ReadResult<T> = Result<T, ReadError>;
 
-impl From<ReadResult<u16>> for CsvData {
-    fn from(value: ReadResult<u16>) -> Self {
+impl<T> From<ReadResult<T>> for CsvData
+    where CsvData: From<T> {
+    fn from(value: ReadResult<T>) -> Self {
         match value {
             Ok(value) => value.into(),
             Err(_) => CsvData::Error

@@ -1,9 +1,11 @@
 use std::convert::{TryFrom, TryInto};
+use std::fmt::{Display, Formatter};
 use log::{debug, info, warn};
 
 use crate::i2c::*;
 use crate::{I2cBus, ReadError, ReadResult};
 use crate::ReadError::ValueOutOfRange;
+use crate::sensors;
 
 const MSP430_I2C_ADDR: I2cAddr = I2cAddr(0x08);
 const MSP430_READ_HEATER_MODE: I2cReg = I2cReg(0x20);
@@ -16,12 +18,23 @@ const MSP430_WRITE_HEATER_TARGET_SENSOR: I2cReg = I2cReg(0x42);
 const MSP430_WRITE_PWM_FREQUENCY: I2cReg = I2cReg(0x43);
 
 #[repr(u16)]
+#[derive(Debug, Copy, Clone)]
 pub enum HeaterMode {
     OFF = 0x00,
     /// temperature controlled
     PID = 0x01,
     /// fixed power input
     PWM = 0x02,
+}
+
+impl Display for HeaterMode {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            HeaterMode::OFF => write!(f, "OFF"),
+            HeaterMode::PID => write!(f, "PID"),
+            HeaterMode::PWM => write!(f, "PWM"),
+        }
+    }
 }
 
 impl TryFrom<u16> for HeaterMode {
@@ -80,7 +93,12 @@ pub fn read_heater_pwm(bus: &I2cBus) -> ReadResult<u16> {
     Ok(i2c_read_u16_le(bus, MSP430_I2C_ADDR, MSP430_READ_HEATER_PWM_FREQ)?)
 }
 
-pub fn read_target_temp(bus: &I2cBus) -> ReadResult<u16> {
+pub fn read_target_temp(bus: &I2cBus) -> ReadResult<f32> {
+    sensors::adc_val_to_temp(read_target_temp_raw(bus)?,
+                             sensors::MSP430_ADC_RESOLUTION)
+}
+
+pub fn read_target_temp_raw(bus: &I2cBus) -> ReadResult<u16> {
     debug!("i2c{}: Reading heater target temp", bus.id);
     Ok(i2c_read_u16_le(bus, MSP430_I2C_ADDR, MSP430_READ_HEATER_TARGET_TEMP)?)
 }

@@ -5,6 +5,8 @@ use std::io::Write;
 use std::path::Path;
 
 use chrono::{DateTime, Utc};
+use crate::board::{DisplayData, SensorData};
+use crate::heater::HeaterMode;
 
 pub enum LineEnding {
     LF,
@@ -31,6 +33,9 @@ pub enum CsvData {
     Timestamp {
         value: DateTime<Utc>,
     },
+    HeaterMode {
+        value: HeaterMode,
+    },
     Error,
 }
 
@@ -41,6 +46,7 @@ impl From<CsvData> for String {
             CsvData::U16 { value } => format!("{}", value),
             CsvData::Timestamp { value } => format!("{}", value.format("%Y-%m-%d %T.%6f")),
             CsvData::Error => String::from(""), // errors are logged to stderr, not the CSV file
+            CsvData::HeaterMode { value } => format!("{}", value)
         }
     }
 }
@@ -60,6 +66,12 @@ impl From<u16> for CsvData {
 impl From<DateTime<Utc>> for CsvData {
     fn from(value: DateTime<Utc>) -> Self {
         CsvData::Timestamp { value }
+    }
+}
+
+impl From<HeaterMode> for CsvData {
+    fn from(value: HeaterMode) -> Self {
+        CsvData::HeaterMode { value }
     }
 }
 
@@ -89,9 +101,9 @@ pub const CSV_HEADERS: [&'static str; CSV_FIELD_COUNT] = [
     "target_temp",
     "target_sensor",
     "pwm_freq",
-    "heater_v_high",
     "heater_v_low",
     "heater_curr",
+    "heater_v_high",
 ];
 
 pub struct CsvWriter {
@@ -114,6 +126,70 @@ impl CsvWriter {
 
     pub fn write_headers(&mut self) -> io::Result<()> {
         self.write_line(CSV_HEADERS.map(|s| s.to_string()))
+    }
+
+    //noinspection DuplicatedCode
+    pub fn write_sensor_data(&mut self, data: SensorData) {
+        self.write_data([
+            data.timestamp.into(),
+            data.board_id.into(),
+            data.th1.into(),
+            data.th2.into(),
+            data.th3.into(),
+            data.u4.into(),
+            data.u5.into(),
+            data.u6.into(),
+            data.u7.into(),
+            data.th4.into(),
+            data.th5.into(),
+            data.th6.into(),
+            data.j7.into(),
+            data.j8.into(),
+            data.j12.into(),
+            data.j13.into(),
+            data.j14.into(),
+            data.j15.into(),
+            data.j16.into(),
+            data.heater_mode.into(),
+            data.target_temp.into(),
+            data.target_sensor.into(),
+            data.pwm_freq.into(),
+            data.heater_v_low.into(),
+            data.heater_curr.into(),
+            data.heater_v_high.into(),
+        ]).unwrap_or_else(|e| eprint!("Failed to write to log file: {:?}", e));
+    }
+
+    //noinspection DuplicatedCode
+    pub fn write_display_data(&mut self, data: DisplayData) {
+        self.write_data([
+            data.timestamp.into(),
+            data.board_id.into(),
+            data.th1.into(),
+            data.th2.into(),
+            data.th3.into(),
+            data.u4.into(),
+            data.u5.into(),
+            data.u6.into(),
+            data.u7.into(),
+            data.th4.into(),
+            data.th5.into(),
+            data.th6.into(),
+            data.j7.into(),
+            data.j8.into(),
+            data.j12.into(),
+            data.j13.into(),
+            data.j14.into(),
+            data.j15.into(),
+            data.j16.into(),
+            data.heater_mode.into(),
+            data.target_temp.into(),
+            data.target_sensor.into(),
+            data.pwm_freq.into(),
+            data.heater_v_low.into(),
+            data.heater_curr.into(),
+            data.heater_v_high.into(),
+        ]).unwrap_or_else(|e| eprint!("Failed to write to log file: {:?}", e));
     }
 
     pub fn write_data(&mut self, data: [CsvData; CSV_FIELD_COUNT]) -> io::Result<()> {

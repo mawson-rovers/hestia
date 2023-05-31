@@ -17,7 +17,8 @@ strum_macros = "0.24"
 chrono = "0.4.24"
 envy = "0.4.2"
 env_logger = "0.10.0"
-spin_sleep = "1.1.1"
+clap = { version = "4.3.0", features = ["derive"] }
+syn = "2.0.18"
 
 # ground = { git = "ssh://git@github.com/Cube-OS/ground", optional = true}
 
