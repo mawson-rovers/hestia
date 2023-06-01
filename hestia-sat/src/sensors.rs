@@ -68,7 +68,7 @@ impl Sensor {
         Sensor { id, iface, addr: I2cAddr(addr), label: "Mounted", pos_x: 0.0, pos_y: 0.0 }
     }
 
-    pub fn read_temp(&self, bus: &I2cBus) -> ReadResult<f32> {
+    pub fn read_temp(&self, bus: I2cBus) -> ReadResult<f32> {
         match self.iface {
             SensorInterface::MSP430 => self.read_msp430_temp(bus),
             SensorInterface::ADS7828 => self.read_ads7828_temp(bus),
@@ -78,7 +78,7 @@ impl Sensor {
         }
     }
 
-    pub fn read_raw(&self, bus: &I2cBus) -> ReadResult<u16> {
+    pub fn read_raw(&self, bus: I2cBus) -> ReadResult<u16> {
         match self.iface {
             SensorInterface::MSP430 => self.read_msp430_raw(bus),
             SensorInterface::ADS7828 => self.read_ads7828_raw(bus),
@@ -88,7 +88,7 @@ impl Sensor {
         }
     }
 
-    fn read_ads7828_temp(&self, bus: &I2cBus) -> ReadResult<f32> {
+    fn read_ads7828_temp(&self, bus: I2cBus) -> ReadResult<f32> {
         match self.read_ads7828_raw(bus) {
             Ok(adc_val) => {
                 debug!("i2c{}: Read value <{}> from ADS7828, addr 0x{:02x}",
@@ -103,14 +103,14 @@ impl Sensor {
         }
     }
 
-    fn read_ads7828_raw(&self, bus: &I2cBus) -> ReadResult<u16> {
+    fn read_ads7828_raw(&self, bus: I2cBus) -> ReadResult<u16> {
         let adc_cmd = adc7828_command(self.addr);
         debug!("i2c{}: Converted addr 0x{:02x} to ADS7828 command: {:b}",
             bus.id, self.addr.0, adc_cmd.0);
         Ok(i2c_read_u16_be(bus, ADS7828_I2C_ADDR, adc_cmd)?)
     }
 
-    fn read_max31725_temp(&self, bus: &I2cBus) -> ReadResult<f32> {
+    fn read_max31725_temp(&self, bus: I2cBus) -> ReadResult<f32> {
         match self.read_max31725_raw(bus) {
             Ok(t) => {
                 debug!("i2c{}: Read value <{}> from MAX31725, addr 0x{:02x}",
@@ -125,11 +125,11 @@ impl Sensor {
         }
     }
 
-    fn read_max31725_raw(&self, bus: &I2cBus) -> ReadResult<u16> {
+    fn read_max31725_raw(&self, bus: I2cBus) -> ReadResult<u16> {
         Ok(i2c_read_u16_be(bus, self.addr, MAX31725_REG_TEMP)?)
     }
 
-    fn read_msp430_temp(&self, bus: &I2cBus) -> ReadResult<f32> {
+    fn read_msp430_temp(&self, bus: I2cBus) -> ReadResult<f32> {
         match self.read_msp430_raw(bus) {
             Ok(adc_val) => {
                 debug!("i2c{}: Read value <{}> from MSP430, addr 0x{:02x}",
@@ -144,7 +144,7 @@ impl Sensor {
         }
     }
 
-    fn read_msp430_raw(&self, bus: &I2cBus) -> ReadResult<u16> {
+    fn read_msp430_raw(&self, bus: I2cBus) -> ReadResult<u16> {
         let reg = I2cReg(self.addr.0);
         match i2c_read_u16_le(bus, MSP430_I2C_ADDR, reg) {
             Ok(adc_val) => {
@@ -160,12 +160,12 @@ impl Sensor {
         }
     }
 
-    fn read_msp430_voltage(&self, bus: &I2cBus) -> ReadResult<f32> {
+    fn read_msp430_voltage(&self, bus: I2cBus) -> ReadResult<f32> {
         let adc_val = self.read_msp430_raw(bus)? as f32;
         Ok(adc_val / (MSP430_ADC_RESOLUTION as f32) * MSP430_ADC_V_REF * MSP430_V_DIVIDER_FACTOR)
     }
 
-    fn read_msp430_current(&self, bus: &I2cBus) -> ReadResult<f32> {
+    fn read_msp430_current(&self, bus: I2cBus) -> ReadResult<f32> {
         let adc_val = self.read_msp430_raw(bus)? as f32;
         Ok(adc_val / (MSP430_ADC_RESOLUTION as f32) * MSP430_ADC_V_REF)
     }

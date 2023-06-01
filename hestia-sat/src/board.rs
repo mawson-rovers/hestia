@@ -1,8 +1,10 @@
+use std::rc::Rc;
 use chrono::{DateTime, Utc};
 use log::error;
 
-use crate::{heater, I2cBus, ReadError, ReadResult};
-use crate::heater::HeaterMode;
+use crate::{I2cBus, ReadError, ReadResult};
+use crate::heater::{Heater, HeaterMode};
+use crate::msp430::Msp430;
 use crate::sensors::{Sensor, SensorInterface};
 
 const TH1: Sensor = Sensor::new("TH1", SensorInterface::MSP430, 0x01,
@@ -123,43 +125,46 @@ pub struct DisplayData {
     pub heater_curr: ReadResult<f32>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Board {
     pub bus: I2cBus,
+    pub heater: Rc<dyn Heater>,
     pub sensors: Vec<Sensor>,
     pub check_sensor: &'static Sensor,
 }
 
 impl Board {
-    pub fn init(bus: &I2cBus, check_sensor: &String) -> Board {
+    pub fn init(bus: &I2cBus, check_sensor: &String) -> Self {
         let check_sensor = Board::sensor_by_id(check_sensor)
             .expect("Check sensor not found");
         let sensors = Vec::from(ALL_SENSORS);
+        let msp430 = Msp430::new(bus.clone());
         Board {
-            bus: bus.to_owned(),
+            bus: bus.clone(),
+            heater: Rc::new(msp430),
             sensors,
             check_sensor,
         }
     }
 
     pub fn read_heater_mode(&self) -> ReadResult<HeaterMode> {
-        heater::read_heater_mode(&self.bus)
+        self.heater.read_mode()
     }
 
     pub fn write_heater_mode(&self, mode: HeaterMode) {
-        heater::write_heater_mode(&self.bus, mode)
+        self.heater.write_mode(mode)
     }
 
     pub fn read_target_temp(&self) -> ReadResult<f32> {
-        heater::read_target_temp(&self.bus)
+        self.heater.read_target_temp()
     }
 
     pub fn write_target_temp(&self, temp: f32) {
-        heater::write_target_temp(&self.bus, crate::sensors::temp_to_adc_val(temp))
+        self.heater.write_target_temp(temp)
     }
 
     pub fn get_target_sensor(&self) -> ReadResult<Sensor> {
-        let sensor_id = heater::read_target_sensor(&self.bus)?;
+        let sensor_id = self.heater.read_target_sensor()?;
         match sensor_id {
             0 => Ok(TH1),
             1 => Ok(TH2),
@@ -172,19 +177,19 @@ impl Board {
 
     pub fn read_target_sensor_temp(&self) -> ReadResult<f32> {
         let sensor = self.get_target_sensor()?;
-        sensor.read_temp(&self.bus)
+        sensor.read_temp(self.bus)
     }
 
     pub fn write_target_sensor(&self, target_sensor: u8) {
-        heater::write_target_sensor(&self.bus, target_sensor)
+        self.heater.write_target_sensor(target_sensor)
     }
 
     pub fn read_heater_pwm(&self) -> ReadResult<u16> {
-        heater::read_heater_pwm(&self.bus)
+        self.heater.read_duty()
     }
 
     pub fn write_heater_pwm(&self, pwm_duty_cycle: u8) {
-        heater::write_heater_pwm(&self.bus, pwm_duty_cycle)
+        self.heater.write_duty(pwm_duty_cycle)
     }
 
     fn sensor_by_id(id: &String) -> Option<&'static Sensor> {
@@ -202,7 +207,7 @@ impl Board {
             error!("I2C bus device not found: {}", self.bus);
             return None
         }
-        let test_read = self.check_sensor.read_raw(&self.bus);
+        let test_read = self.check_sensor.read_raw(self.bus);
         if test_read.is_err() {
             error!("Failed to read check sensor {} on I2C bus {}", self.check_sensor, self.bus);
             return None
@@ -211,30 +216,30 @@ impl Board {
         return Some(SensorData {
             timestamp,
             board_id: self.bus.id as u16,
-            th1: TH1.read_raw(&self.bus),
-            th2: TH2.read_raw(&self.bus),
-            th3: TH3.read_raw(&self.bus),
-            u4: U4.read_raw(&self.bus),
-            u5: U5.read_raw(&self.bus),
-            u6: U6.read_raw(&self.bus),
-            u7: U7.read_raw(&self.bus),
-            th4: TH4.read_raw(&self.bus),
-            th5: TH5.read_raw(&self.bus),
-            th6: TH6.read_raw(&self.bus),
-            j7: J7.read_raw(&self.bus),
-            j8: J8.read_raw(&self.bus),
-            j12: J12.read_raw(&self.bus),
-            j13: J13.read_raw(&self.bus),
-            j14: J14.read_raw(&self.bus),
-            j15: J15.read_raw(&self.bus),
-            j16: J16.read_raw(&self.bus),
-            heater_mode: heater::read_heater_mode_raw(&self.bus),
-            target_temp: heater::read_target_temp_raw(&self.bus),
-            target_sensor: heater::read_target_sensor(&self.bus),
-            pwm_freq: heater::read_heater_pwm(&self.bus),
-            heater_v_high: HEATER_V_HIGH.read_raw(&self.bus),
-            heater_v_low: HEATER_V_LOW.read_raw(&self.bus),
-            heater_curr: HEATER_CURR.read_raw(&self.bus),
+            th1: TH1.read_raw(self.bus),
+            th2: TH2.read_raw(self.bus),
+            th3: TH3.read_raw(self.bus),
+            u4: U4.read_raw(self.bus),
+            u5: U5.read_raw(self.bus),
+            u6: U6.read_raw(self.bus),
+            u7: U7.read_raw(self.bus),
+            th4: TH4.read_raw(self.bus),
+            th5: TH5.read_raw(self.bus),
+            th6: TH6.read_raw(self.bus),
+            j7: J7.read_raw(self.bus),
+            j8: J8.read_raw(self.bus),
+            j12: J12.read_raw(self.bus),
+            j13: J13.read_raw(self.bus),
+            j14: J14.read_raw(self.bus),
+            j15: J15.read_raw(self.bus),
+            j16: J16.read_raw(self.bus),
+            heater_mode: self.heater.read_mode_raw(),
+            target_temp: self.heater.read_target_temp_raw(),
+            target_sensor: self.heater.read_target_sensor(),
+            pwm_freq: self.heater.read_duty(),
+            heater_v_high: HEATER_V_HIGH.read_raw(self.bus),
+            heater_v_low: HEATER_V_LOW.read_raw(self.bus),
+            heater_curr: HEATER_CURR.read_raw(self.bus),
         });
     }
 
@@ -244,7 +249,7 @@ impl Board {
             error!("I2C bus device not found: {}", self.bus);
             return None
         }
-        let test_read = self.check_sensor.read_raw(&self.bus);
+        let test_read = self.check_sensor.read_raw(self.bus);
         if test_read.is_err() {
             error!("Failed to read check sensor {} on I2C bus {}", self.check_sensor, self.bus);
             return None
@@ -253,30 +258,30 @@ impl Board {
         return Some(DisplayData {
             timestamp,
             board_id: self.bus.id as u16,
-            th1: TH1.read_temp(&self.bus),
-            th2: TH2.read_temp(&self.bus),
-            th3: TH3.read_temp(&self.bus),
-            u4: U4.read_temp(&self.bus),
-            u5: U5.read_temp(&self.bus),
-            u6: U6.read_temp(&self.bus),
-            u7: U7.read_temp(&self.bus),
-            th4: TH4.read_temp(&self.bus),
-            th5: TH5.read_temp(&self.bus),
-            th6: TH6.read_temp(&self.bus),
-            j7: J7.read_temp(&self.bus),
-            j8: J8.read_temp(&self.bus),
-            j12: J12.read_temp(&self.bus),
-            j13: J13.read_temp(&self.bus),
-            j14: J14.read_temp(&self.bus),
-            j15: J15.read_temp(&self.bus),
-            j16: J16.read_temp(&self.bus),
-            heater_mode: heater::read_heater_mode(&self.bus),
-            target_temp: self.read_target_temp(),
+            th1: TH1.read_temp(self.bus),
+            th2: TH2.read_temp(self.bus),
+            th3: TH3.read_temp(self.bus),
+            u4: U4.read_temp(self.bus),
+            u5: U5.read_temp(self.bus),
+            u6: U6.read_temp(self.bus),
+            u7: U7.read_temp(self.bus),
+            th4: TH4.read_temp(self.bus),
+            th5: TH5.read_temp(self.bus),
+            th6: TH6.read_temp(self.bus),
+            j7: J7.read_temp(self.bus),
+            j8: J8.read_temp(self.bus),
+            j12: J12.read_temp(self.bus),
+            j13: J13.read_temp(self.bus),
+            j14: J14.read_temp(self.bus),
+            j15: J15.read_temp(self.bus),
+            j16: J16.read_temp(self.bus),
+            heater_mode: self.heater.read_mode(),
+            target_temp: self.heater.read_target_temp(),
             target_sensor: self.get_target_sensor(),
-            pwm_freq: heater::read_heater_pwm(&self.bus),
-            heater_v_high: HEATER_V_HIGH.read_temp(&self.bus),
-            heater_v_low: HEATER_V_LOW.read_temp(&self.bus),
-            heater_curr: HEATER_CURR.read_temp(&self.bus),
+            pwm_freq: self.heater.read_duty(),
+            heater_v_high: HEATER_V_HIGH.read_temp(self.bus),
+            heater_v_low: HEATER_V_LOW.read_temp(self.bus),
+            heater_curr: HEATER_CURR.read_temp(self.bus),
         });
     }
 }
