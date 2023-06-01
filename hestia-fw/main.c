@@ -15,7 +15,7 @@
 
 union I2C_Packet_t message_tx;
 
-volatile unsigned int adc_readings[8];
+volatile unsigned int adc_readings[ADC_SENSOR_COUNT];
 unsigned int control_sensor = 0; // ADC input used for PWM control
 unsigned int set_point = TEMP_0C;
 unsigned int heater_mode = HEATER_MODE_OFF;
@@ -141,7 +141,9 @@ void I2C_Slave_ProcessCMD(unsigned char *message_rx, uint16_t length) {
         }
         TransmitLen = 0;
     } else if (cmd == COMMAND_WRITE_TARGET_SENSOR) {
-        control_sensor = package[0];
+        if (package[0] < ADC_SENSOR_COUNT) {
+            control_sensor = package[0];
+        }
         TransmitLen = 0;
     } else if (cmd == COMMAND_WRITE_PWM_FREQ) {
         current_pwm = package[0];
