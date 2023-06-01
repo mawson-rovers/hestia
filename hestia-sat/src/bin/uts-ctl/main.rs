@@ -125,7 +125,7 @@ fn do_status() {
         if let Some(data) = board.read_display_data(Utc::now()) {
             println!("board:{} temp:{:0.2} heater:{} target:{:0.2} V:{:0.2}/{:0.2} I:{:0.2}",
                      data.board_id,
-                     data.u4.unwrap(),
+                     data.u7.unwrap(),
                      data.heater_mode.unwrap_or(uts_api::heater::HeaterMode::OFF),
                      data.target_temp.unwrap(),
                      data.heater_v_high.unwrap(),
