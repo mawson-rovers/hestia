@@ -59,9 +59,9 @@ static ALL_SENSORS: &[Sensor] = &[
     J14,
     J15,
     J16,
+    HEATER_V_HIGH,
     HEATER_V_LOW,
     HEATER_CURR,
-    HEATER_V_HIGH,
 ];
 
 
@@ -89,9 +89,9 @@ pub struct SensorData {
     pub target_temp: ReadResult<u16>,
     pub target_sensor: ReadResult<u16>,
     pub pwm_freq: ReadResult<u16>,
+    pub heater_v_high: ReadResult<u16>,
     pub heater_v_low: ReadResult<u16>,
     pub heater_curr: ReadResult<u16>,
-    pub heater_v_high: ReadResult<u16>,
 }
 
 pub struct DisplayData {
@@ -118,9 +118,9 @@ pub struct DisplayData {
     pub target_temp: ReadResult<f32>,
     pub target_sensor: ReadResult<Sensor>,
     pub pwm_freq: ReadResult<u16>,
+    pub heater_v_high: ReadResult<f32>,
     pub heater_v_low: ReadResult<f32>,
     pub heater_curr: ReadResult<f32>,
-    pub heater_v_high: ReadResult<f32>,
 }
 
 #[derive(Debug, Clone)]
@@ -232,9 +232,9 @@ impl Board {
             target_temp: heater::read_target_temp_raw(&self.bus),
             target_sensor: heater::read_target_sensor(&self.bus),
             pwm_freq: heater::read_heater_pwm(&self.bus),
+            heater_v_high: HEATER_V_HIGH.read_raw(&self.bus),
             heater_v_low: HEATER_V_LOW.read_raw(&self.bus),
             heater_curr: HEATER_CURR.read_raw(&self.bus),
-            heater_v_high: HEATER_V_HIGH.read_raw(&self.bus),
         });
     }
 
@@ -274,9 +274,9 @@ impl Board {
             target_temp: self.read_target_temp(),
             target_sensor: self.get_target_sensor(),
             pwm_freq: heater::read_heater_pwm(&self.bus),
+            heater_v_high: HEATER_V_HIGH.read_temp(&self.bus),
             heater_v_low: HEATER_V_LOW.read_temp(&self.bus),
             heater_curr: HEATER_CURR.read_temp(&self.bus),
-            heater_v_high: HEATER_V_HIGH.read_temp(&self.bus),
         });
     }
 }

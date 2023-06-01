@@ -89,7 +89,7 @@ impl From<Sensor> for CsvData {
 pub const CSV_FIELD_COUNT: usize = 26;
 
 pub const CSV_HEADERS: [&'static str; CSV_FIELD_COUNT] = [
-    "timestamp",
+    "UTC",
     "board",
     "TH1",
     "TH2",
@@ -112,9 +112,9 @@ pub const CSV_HEADERS: [&'static str; CSV_FIELD_COUNT] = [
     "target_temp",
     "target_sensor",
     "pwm_duty",
+    "heater_v_high",
     "heater_v_low",
     "heater_curr",
-    "heater_v_high",
 ];
 
 pub struct CsvWriter {
@@ -165,9 +165,9 @@ impl CsvWriter {
             data.target_temp.into(),
             data.target_sensor.into(),
             data.pwm_freq.into(),
+            data.heater_v_high.into(),
             data.heater_v_low.into(),
             data.heater_curr.into(),
-            data.heater_v_high.into(),
         ]).unwrap_or_else(|e| eprint!("Failed to write to log file: {:?}", e));
     }
 
@@ -197,9 +197,9 @@ impl CsvWriter {
             data.target_temp.into(),
             data.target_sensor.into(),
             data.pwm_freq.into(),
+            data.heater_v_high.into(),
             data.heater_v_low.into(),
             data.heater_curr.into(),
-            data.heater_v_high.into(),
         ]).unwrap_or_else(|e| eprint!("Failed to write to log file: {:?}", e));
     }
 
