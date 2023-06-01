@@ -4,7 +4,7 @@ use crate::board::Board;
 
 fn default_i2c_bus() -> Vec<u8> { vec![1, 2] }
 
-fn default_check_sensor() -> String { "U4".to_string() }
+fn default_check_sensor() -> String { "U7".to_string() }
 
 fn default_log_interval() -> u16 { 5 }
 
