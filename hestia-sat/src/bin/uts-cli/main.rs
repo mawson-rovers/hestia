@@ -146,11 +146,12 @@ fn do_status() {
     let boards = Config::read().create_boards();
     for board in boards {
         if let Some(data) = board.read_display_data(Utc::now()) {
-            println!("board:{} temp:{:0.2} heater:{} target:{:0.2} V:{:0.2}/{:0.2} I:{:0.2}",
+            println!("board:{} temp:{:0.2} heater:{} target:{:0.2} sensor:{} V:{:0.2}/{:0.2} I:{:0.2}",
                      data.board_id,
                      board.read_target_sensor_temp().unwrap_or(data.u7.unwrap()),
                      data.heater_mode.unwrap_or(uts_ws1::heater::HeaterMode::OFF),
                      data.target_temp.unwrap(),
+                     board.get_target_sensor().map(|s| s.id).unwrap_or("#err"),
                      data.heater_v_high.unwrap(),
                      data.heater_v_low.unwrap(),
                      data.heater_curr.unwrap());
