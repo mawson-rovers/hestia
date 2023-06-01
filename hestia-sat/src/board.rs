@@ -116,7 +116,7 @@ pub struct DisplayData {
     pub j16: ReadResult<f32>,
     pub heater_mode: ReadResult<HeaterMode>,
     pub target_temp: ReadResult<f32>,
-    pub target_sensor: ReadResult<u16>,
+    pub target_sensor: ReadResult<Sensor>,
     pub pwm_freq: ReadResult<u16>,
     pub heater_v_low: ReadResult<f32>,
     pub heater_curr: ReadResult<f32>,
@@ -181,6 +181,10 @@ impl Board {
 
     pub fn read_heater_pwm(&self) -> ReadResult<u16> {
         heater::read_heater_pwm(&self.bus)
+    }
+
+    pub fn write_heater_pwm(&self, pwm_duty_cycle: u8) {
+        heater::write_heater_pwm(&self.bus, pwm_duty_cycle)
     }
 
     fn sensor_by_id(id: &String) -> Option<&'static Sensor> {
@@ -268,7 +272,7 @@ impl Board {
             j16: J16.read_temp(&self.bus),
             heater_mode: heater::read_heater_mode(&self.bus),
             target_temp: self.read_target_temp(),
-            target_sensor: heater::read_target_sensor(&self.bus),
+            target_sensor: self.get_target_sensor(),
             pwm_freq: heater::read_heater_pwm(&self.bus),
             heater_v_low: HEATER_V_LOW.read_temp(&self.bus),
             heater_curr: HEATER_CURR.read_temp(&self.bus),

@@ -2,6 +2,8 @@ use std::thread;
 use std::time::Duration;
 use chrono::Utc;
 use clap::{Parser, Subcommand};
+use log::error;
+use uts_ws1::board::Board;
 use uts_ws1::config::Config;
 use uts_ws1::heater::HeaterMode;
 use uts_ws1::logger::LogWriter;
@@ -15,15 +17,15 @@ struct CommandLine {
 
 #[derive(Subcommand)]
 enum Command {
-    /// Show status of all connected boards
+    /// Show status of boards
+    ///
+    /// Use UTS_I2C_BUS environment variable to configure active boards.
     Status,
 
-    /// Log sensor values to stdout
+    /// Log sensor values to stdout.
+    ///
+    /// Use UTS_I2C_BUS environment variable to configure active boards.
     Log {
-        /// Board to log, use multiple times to specify multiple boards
-        #[arg(short, long, default_values = ["1", "2"])]
-        board: Vec<u8>,
-
         // Log raw ADC values instead of converted temperatures, voltages, etc.
         #[arg(short, long)]
         raw: bool,
@@ -57,10 +59,18 @@ enum Command {
         #[arg(short, long, required = true)]
         board: u8,
 
-        /// Target sensor ID
-        /// 0 = TH1, 1 = TH2, 2 = TH3, 3 = J7, 4 = J8
-        /// 5-7 = Voltage and current sensing, don't use these
-        target_sensor: u8,
+        /// Target sensor: TH1, TH2, TH3, J7 or J8
+        target_sensor: String,
+    },
+
+    /// Set PWM duty cycle
+    Duty {
+        /// Board to update
+        #[arg(short, long, required = true)]
+        board: u8,
+
+        /// duty cycle (0-255)
+        duty: u8,
     }
 }
 
@@ -86,34 +96,49 @@ pub fn main() {
     let cli = CommandLine::parse();
     match &cli.command {
         Some(command) => match command {
-            Command::Log { board, raw } => do_log(board, *raw),
+            Command::Log { raw } => do_log(*raw),
             Command::Status => do_status(),
             Command::Heater { board, command } => do_heater(*board, command),
             Command::Target { board, temp } => do_target(*board, *temp),
-            Command::TargetSensor { board, target_sensor } => do_target_sensor(*board, *target_sensor),
+            Command::TargetSensor { board, target_sensor } => do_target_sensor(*board, target_sensor),
+            Command::Duty { board, duty } => do_your_duty(*board, *duty),
         },
         None => do_status()
     }
 }
 
-fn do_target_sensor(board: u8, target_sensor: u8) {
-    let boards = Config {
-        i2c_bus: vec![board],
-        ..Config::read()
-    }.create_boards();
-    for board in boards {
-        board.write_target_sensor(target_sensor);
+fn do_your_duty(board: u8, duty: u8) {
+    let board = single_board(board);
+    board.write_heater_pwm(duty);
+    show_status(board);
+}
+
+fn do_target_sensor(board: u8, target_sensor: &String) {
+    let board = single_board(board);
+    match target_sensor.to_uppercase().as_str() {
+        "TH1" => board.write_target_sensor(0),
+        "TH2" => board.write_target_sensor(1),
+        "TH3" => board.write_target_sensor(2),
+        "J7" => board.write_target_sensor(3),
+        "J8" => board.write_target_sensor(4),
+        _ => error!("Unsupported target sensor: {}", target_sensor),
     }
+    show_status(board);
 }
 
 fn do_target(board: u8, temp: f32) {
+    let board = single_board(board);
+    board.write_target_temp(temp);
+    show_status(board);
+}
+
+fn single_board(board: u8) -> Board {
     let boards = Config {
         i2c_bus: vec![board],
         ..Config::read()
     }.create_boards();
-    for board in boards {
-        board.write_target_temp(temp);
-    }
+    assert_eq!(boards.len(), 1, "Only one board");
+    boards[0].clone()
 }
 
 fn do_heater(board_id: u8, command: &HeaterCommand) {
@@ -126,7 +151,7 @@ fn do_heater(board_id: u8, command: &HeaterCommand) {
     let other_boards = all_boards.iter().filter(|b| b.bus.id != board_id);
     for other in other_boards {
         match command {
-            HeaterCommand::Off => { }, // do nothing if switching off
+            HeaterCommand::Off => {} // do nothing if switching off
             _ => other.write_heater_mode(HeaterMode::OFF),
         }
     }
@@ -140,32 +165,46 @@ fn do_heater(board_id: u8, command: &HeaterCommand) {
             HeaterCommand::On => this_board.write_heater_mode(HeaterMode::PWM),
         }
     }
+
+    show_status_all(all_boards);
 }
 
 fn do_status() {
     let boards = Config::read().create_boards();
+    show_status_all(boards);
+}
+
+fn show_status_all(boards: Vec<Board>) {
     for board in boards {
-        if let Some(data) = board.read_display_data(Utc::now()) {
-            println!("board:{} temp:{:0.2} heater:{} target:{:0.2} sensor:{} V:{:0.2}/{:0.2} I:{:0.2}",
-                     data.board_id,
-                     board.read_target_sensor_temp().unwrap_or(data.u7.unwrap()),
-                     data.heater_mode.unwrap_or(uts_ws1::heater::HeaterMode::OFF),
-                     data.target_temp.unwrap(),
-                     board.get_target_sensor().map(|s| s.id).unwrap_or("#err"),
-                     data.heater_v_high.unwrap(),
-                     data.heater_v_low.unwrap(),
-                     data.heater_curr.unwrap());
-        } else {
-            println!("board:{} #err", board.bus);
-        }
+        show_status(board);
     }
 }
 
-fn do_log(bus: &Vec<u8>, raw: bool) {
-    let config = Config {
-        i2c_bus: bus.to_owned(),
-        ..Config::read()
-    };
+fn show_status(board: Board) {
+    if let Some(data) = board.read_display_data(Utc::now()) {
+        let target_sensor_temp = board.read_target_sensor_temp()
+            .map(|v| format!("{:0.2}", v))
+            .unwrap_or(String::from("#err"));
+        let heater_mode = data.heater_mode
+            .map(|m| m.to_string())
+            .unwrap_or(String::from("#err"));
+        println!("board:{} temp:{} heater:{} target:{:0.2} sensor:{} duty:{} V:{:0.2}/{:0.2} I:{:0.2}",
+                 data.board_id,
+                 target_sensor_temp,
+                 heater_mode,
+                 data.target_temp.unwrap(),
+                 board.get_target_sensor().map(|s| s.id).unwrap_or("#err"),
+                 board.read_heater_pwm().unwrap(),
+                 data.heater_v_high.unwrap(),
+                 data.heater_v_low.unwrap(),
+                 data.heater_curr.unwrap());
+    } else {
+        println!("board:{} #err", board.bus);
+    }
+}
+
+fn do_log(raw: bool) {
+    let config = Config::read();
     let boards = config.create_boards();
 
     let mut writer = LogWriter::create_stdout_writer(boards, raw);

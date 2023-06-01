@@ -49,6 +49,12 @@ pub struct Sensor {
     pub pos_y: f32,
 }
 
+impl fmt::Display for Sensor {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.id)
+    }
+}
+
 impl Sensor {
     pub const fn new(id: SensorId, iface: SensorInterface,
                      addr: u8, label: &'static str,
@@ -196,10 +202,4 @@ pub(crate) fn temp_to_adc_val(temp: f32) -> u16 {
     assert!(temp > -55.0 && temp < 150.0, "temp out of range");
     (MSP430_ADC_RESOLUTION as f32 / (f32::exp((1.0 / (temp + ZERO_CELSIUS_IN_KELVIN) - INV_NB21K00103_REF_TEMP_K) *
                  NB21K00103_B_VALUE) + 1.0)) as u16
-}
-
-impl fmt::Display for Sensor {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.id)
-    }
 }

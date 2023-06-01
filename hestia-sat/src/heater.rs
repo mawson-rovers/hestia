@@ -11,11 +11,11 @@ const MSP430_I2C_ADDR: I2cAddr = I2cAddr(0x08);
 const MSP430_READ_HEATER_MODE: I2cReg = I2cReg(0x20);
 const MSP430_READ_HEATER_TARGET_TEMP: I2cReg = I2cReg(0x21);
 const MSP430_READ_HEATER_TARGET_SENSOR: I2cReg = I2cReg(0x22);
-const MSP430_READ_HEATER_PWM_FREQ: I2cReg = I2cReg(0x23);
+const MSP430_READ_HEATER_PWM_DUTY_CYCLE: I2cReg = I2cReg(0x23);
 const MSP430_WRITE_HEATER_MODE: I2cReg = I2cReg(0x40);
 const MSP430_WRITE_HEATER_TARGET_TEMP: I2cReg = I2cReg(0x41);
 const MSP430_WRITE_HEATER_TARGET_SENSOR: I2cReg = I2cReg(0x42);
-const MSP430_WRITE_PWM_FREQUENCY: I2cReg = I2cReg(0x43);
+const MSP430_WRITE_HEATER_PWM_DUTY_CYCLE: I2cReg = I2cReg(0x43);
 
 #[repr(u16)]
 #[derive(Debug, Copy, Clone)]
@@ -78,7 +78,16 @@ pub fn write_heater_mode(bus: &I2cBus, mode: HeaterMode) {
 
 pub fn read_heater_pwm(bus: &I2cBus) -> ReadResult<u16> {
     debug!("i2c{}: Reading heater power level", bus.id);
-    Ok(i2c_read_u16_le(bus, MSP430_I2C_ADDR, MSP430_READ_HEATER_PWM_FREQ)?)
+    Ok(i2c_read_u16_le(bus, MSP430_I2C_ADDR, MSP430_READ_HEATER_PWM_DUTY_CYCLE)?)
+}
+
+pub fn write_heater_pwm(bus: &I2cBus, pwm_duty_cycle: u8) {
+    info!("i2c{}: Setting heater PWM duty cycle to {}", bus, pwm_duty_cycle);
+    let result = i2c_write_u16_le(bus, MSP430_I2C_ADDR,
+                                  MSP430_WRITE_HEATER_PWM_DUTY_CYCLE, pwm_duty_cycle as u16);
+    if result.is_err() {
+        warn!("i2c{}: Failed to set heater PWM duty cycle: {:?}", bus, result.unwrap_err())
+    }
 }
 
 pub fn read_target_temp(bus: &I2cBus) -> ReadResult<f32> {

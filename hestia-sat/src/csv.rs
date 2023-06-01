@@ -7,6 +7,7 @@ use std::path::Path;
 use chrono::{DateTime, Utc};
 use crate::board::{DisplayData, SensorData};
 use crate::heater::HeaterMode;
+use crate::sensors::Sensor;
 
 pub enum LineEnding {
     LF,
@@ -36,6 +37,9 @@ pub enum CsvData {
     HeaterMode {
         value: HeaterMode,
     },
+    Sensor {
+        value: Sensor,
+    },
     Error,
 }
 
@@ -46,7 +50,8 @@ impl From<CsvData> for String {
             CsvData::U16 { value } => format!("{}", value),
             CsvData::Timestamp { value } => format!("{}", value.format("%Y-%m-%d %T.%6f")),
             CsvData::Error => String::from(""), // errors are logged to stderr, not the CSV file
-            CsvData::HeaterMode { value } => format!("{}", value)
+            CsvData::HeaterMode { value } => format!("{}", value),
+            CsvData::Sensor { value } => format!("{}", value),
         }
     }
 }
@@ -75,6 +80,12 @@ impl From<HeaterMode> for CsvData {
     }
 }
 
+impl From<Sensor> for CsvData {
+    fn from(value: Sensor) -> Self {
+        CsvData::Sensor { value }
+    }
+}
+
 pub const CSV_FIELD_COUNT: usize = 26;
 
 pub const CSV_HEADERS: [&'static str; CSV_FIELD_COUNT] = [
@@ -100,7 +111,7 @@ pub const CSV_HEADERS: [&'static str; CSV_FIELD_COUNT] = [
     "heater_mode",
     "target_temp",
     "target_sensor",
-    "pwm_freq",
+    "pwm_duty",
     "heater_v_low",
     "heater_curr",
     "heater_v_high",
