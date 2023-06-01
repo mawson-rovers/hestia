@@ -104,3 +104,12 @@ pub fn read_target_sensor(bus: &I2cBus) -> ReadResult<u16> {
     debug!("i2c{}: Reading heater target sensor", bus.id);
     Ok(i2c_read_u16_le(bus, MSP430_I2C_ADDR, MSP430_READ_HEATER_TARGET_SENSOR)?)
 }
+
+pub fn write_target_sensor(bus: &I2cBus, target_sensor: u8) {
+    info!("i2c{}: Setting heater target sensor to {}", bus, target_sensor);
+    let result = i2c_write_u16_le(bus, MSP430_I2C_ADDR,
+                                  MSP430_WRITE_HEATER_TARGET_SENSOR, target_sensor as u16);
+    if result.is_err() {
+        warn!("i2c{}: Failed to set heater target sensor: {:?}", bus, result.unwrap_err())
+    }
+}

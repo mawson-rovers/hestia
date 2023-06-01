@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use log::error;
 
-use crate::{heater, I2cBus, ReadResult};
+use crate::{heater, I2cBus, ReadError, ReadResult};
 use crate::heater::HeaterMode;
 use crate::sensors::{Sensor, SensorInterface};
 
@@ -158,6 +158,27 @@ impl Board {
         heater::write_target_temp(&self.bus, crate::sensors::temp_to_adc_val(temp))
     }
 
+    pub fn get_target_sensor(&self) -> ReadResult<Sensor> {
+        let sensor_id = heater::read_target_sensor(&self.bus)?;
+        match sensor_id {
+            0 => Ok(TH1),
+            1 => Ok(TH2),
+            2 => Ok(TH3),
+            3 => Ok(J7),
+            4 => Ok(J8),
+            _ => Err(ReadError::ValueOutOfRange),
+        }
+    }
+
+    pub fn read_target_sensor_temp(&self) -> ReadResult<f32> {
+        let sensor = self.get_target_sensor()?;
+        sensor.read_temp(&self.bus)
+    }
+
+    pub fn write_target_sensor(&self, target_sensor: u8) {
+        heater::write_target_sensor(&self.bus, target_sensor)
+    }
+
     pub fn read_heater_pwm(&self) -> ReadResult<u16> {
         heater::read_heater_pwm(&self.bus)
     }
@@ -212,7 +233,7 @@ impl Board {
             heater_v_high: HEATER_V_HIGH.read_raw(&self.bus),
         });
     }
-    
+
     pub fn read_display_data(&self, timestamp: DateTime<Utc>) -> Option<DisplayData> {
         // fail fast if bus isn't found or check sensor is not readable
         if !self.bus.exists() {

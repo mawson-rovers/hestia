@@ -1,8 +1,8 @@
 use std::thread;
 use std::time::Duration;
 use chrono::{Datelike, DateTime, Utc};
-use uts_api::config::Config;
-use uts_api::logger::LogWriter;
+use uts_ws1::config::Config;
+use uts_ws1::logger::LogWriter;
 
 pub fn main() {
     loop {

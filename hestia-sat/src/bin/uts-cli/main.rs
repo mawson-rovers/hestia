@@ -2,9 +2,9 @@ use std::thread;
 use std::time::Duration;
 use chrono::Utc;
 use clap::{Parser, Subcommand};
-use uts_api::config::Config;
-use uts_api::heater::HeaterMode;
-use uts_api::logger::LogWriter;
+use uts_ws1::config::Config;
+use uts_ws1::heater::HeaterMode;
+use uts_ws1::logger::LogWriter;
 
 #[derive(Parser)]
 #[command(version, about)]
@@ -49,6 +49,18 @@ enum Command {
 
         /// temperature in °C
         temp: f32,
+    },
+
+    /// Set target sensor
+    TargetSensor {
+        /// Board to update
+        #[arg(short, long, required = true)]
+        board: u8,
+
+        /// Target sensor ID
+        /// 0 = TH1, 1 = TH2, 2 = TH3, 3 = J7, 4 = J8
+        /// 5-7 = Voltage and current sensing, don't use these
+        target_sensor: u8,
     }
 }
 
@@ -78,8 +90,19 @@ pub fn main() {
             Command::Status => do_status(),
             Command::Heater { board, command } => do_heater(*board, command),
             Command::Target { board, temp } => do_target(*board, *temp),
+            Command::TargetSensor { board, target_sensor } => do_target_sensor(*board, *target_sensor),
         },
         None => do_status()
+    }
+}
+
+fn do_target_sensor(board: u8, target_sensor: u8) {
+    let boards = Config {
+        i2c_bus: vec![board],
+        ..Config::read()
+    }.create_boards();
+    for board in boards {
+        board.write_target_sensor(target_sensor);
     }
 }
 
@@ -125,8 +148,8 @@ fn do_status() {
         if let Some(data) = board.read_display_data(Utc::now()) {
             println!("board:{} temp:{:0.2} heater:{} target:{:0.2} V:{:0.2}/{:0.2} I:{:0.2}",
                      data.board_id,
-                     data.u7.unwrap(),
-                     data.heater_mode.unwrap_or(uts_api::heater::HeaterMode::OFF),
+                     board.read_target_sensor_temp().unwrap_or(data.u7.unwrap()),
+                     data.heater_mode.unwrap_or(uts_ws1::heater::HeaterMode::OFF),
                      data.target_temp.unwrap(),
                      data.heater_v_high.unwrap(),
                      data.heater_v_low.unwrap(),
