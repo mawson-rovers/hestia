@@ -3,32 +3,53 @@ use std::time::Duration;
 use chrono::Utc;
 use clap::{Parser, Subcommand};
 use uts_api::config::Config;
+use uts_api::heater::HeaterMode;
 use uts_api::logger::LogWriter;
 
 #[derive(Parser)]
 #[command(version, about)]
 struct CommandLine {
     #[command(subcommand)]
-    command: Command,
+    command: Option<Command>,
 }
 
 #[derive(Subcommand)]
 enum Command {
+    /// Show status of all connected boards
     Status,
+
     /// Log sensor values to stdout
     Log {
-        /// I2C buses to poll, use multiple times to specify multiple buses
+        /// Board to log, use multiple times to specify multiple boards
         #[arg(short, long, default_values = ["1", "2"])]
-        bus: Vec<u8>,
+        board: Vec<u8>,
 
+        // Log raw ADC values instead of converted temperatures, voltages, etc.
         #[arg(short, long)]
         raw: bool,
     },
-    /// Control heater
+
+    /// Set heater mode
     Heater {
+        /// Board to update
+        #[arg(short, long, required = true)]
+        board: u8,
+
+        /// Mode to configure on the heater. Turning on heater on one board will first
+        /// disable it on any other connected boards.
         #[command(subcommand)]
         command: HeaterCommand,
     },
+
+    /// Set target temperature
+    Target {
+        /// Board to update
+        #[arg(short, long, required = true)]
+        board: u8,
+
+        /// temperature in °C
+        temp: f32,
+    }
 }
 
 #[derive(Subcommand)]
@@ -36,7 +57,7 @@ enum HeaterCommand {
     Off,
     Thermostat,
     Thermocool,
-    On
+    On,
 }
 
 // COMMANDS = {
@@ -52,24 +73,57 @@ enum HeaterCommand {
 pub fn main() {
     let cli = CommandLine::parse();
     match &cli.command {
-        Command::Log { bus, raw } => {
-            do_log(bus, *raw);
+        Some(command) => match command {
+            Command::Log { board, raw } => do_log(board, *raw),
+            Command::Status => do_status(),
+            Command::Heater { board, command } => do_heater(*board, command),
+            Command::Target { board, temp } => do_target(*board, *temp),
         },
-        Command::Status => {
-            do_status();
-        },
-        Command::Heater { .. } => {
-            todo!()
+        None => do_status()
+    }
+}
+
+fn do_target(board: u8, temp: f32) {
+    let boards = Config {
+        i2c_bus: vec![board],
+        ..Config::read()
+    }.create_boards();
+    for board in boards {
+        board.write_target_temp(temp);
+    }
+}
+
+fn do_heater(board_id: u8, command: &HeaterCommand) {
+    let all_boards = Config {
+        i2c_bus: vec![1, 2],
+        ..Config::read()
+    }.create_boards();
+
+    // disable heater on other boards before enabling on this one
+    let other_boards = all_boards.iter().filter(|b| b.bus.id != board_id);
+    for other in other_boards {
+        match command {
+            HeaterCommand::Off => { }, // do nothing if switching off
+            _ => other.write_heater_mode(HeaterMode::OFF),
+        }
+    }
+    // set mode on this board
+    let this_board = all_boards.iter().find(|b| b.bus.id == board_id);
+    if let Some(this_board) = this_board {
+        match command {
+            HeaterCommand::Off => this_board.write_heater_mode(HeaterMode::OFF),
+            HeaterCommand::Thermostat => this_board.write_heater_mode(HeaterMode::PID),
+            HeaterCommand::Thermocool => todo!(),
+            HeaterCommand::On => this_board.write_heater_mode(HeaterMode::PWM),
         }
     }
 }
 
 fn do_status() {
-    let config = Config::read();
-    let boards = config.create_boards();
+    let boards = Config::read().create_boards();
     for board in boards {
         if let Some(data) = board.read_display_data(Utc::now()) {
-            println!("board:{} temp:{:0.2} mode:{} target:{:0.2} V:{:0.2}/{:0.2} I:{:0.2}",
+            println!("board:{} temp:{:0.2} heater:{} target:{:0.2} V:{:0.2}/{:0.2} I:{:0.2}",
                      data.board_id,
                      data.u4.unwrap(),
                      data.heater_mode.unwrap_or(uts_api::heater::HeaterMode::OFF),

@@ -146,8 +146,16 @@ impl Board {
         heater::read_heater_mode(&self.bus)
     }
 
+    pub fn write_heater_mode(&self, mode: HeaterMode) {
+        heater::write_heater_mode(&self.bus, mode)
+    }
+
     pub fn read_target_temp(&self) -> ReadResult<f32> {
         heater::read_target_temp(&self.bus)
+    }
+
+    pub fn write_target_temp(&self, temp: f32) {
+        heater::write_target_temp(&self.bus, crate::sensors::temp_to_adc_val(temp))
     }
 
     pub fn read_heater_pwm(&self) -> ReadResult<u16> {
