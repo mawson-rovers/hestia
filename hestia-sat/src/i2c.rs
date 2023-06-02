@@ -5,7 +5,27 @@ use std::path::Path;
 
 use byteorder::ByteOrder;
 use i2c_linux::I2c;
+use log::{debug, info, warn};
 
+#[derive(Debug, Copy, Clone)]
+pub struct I2cAddr(pub u8);
+
+impl std::fmt::Display for I2cAddr {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "0x{:02x}", self.0)
+    }
+}
+
+#[derive(Debug, Copy, Clone)]
+pub struct I2cReg(pub u8);
+
+impl std::fmt::Display for I2cReg {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "0x{:02x}", self.0)
+    }
+}
+
+/// Byte-oriented interface to I2C bus
 #[derive(Debug, Copy, Clone)]
 pub struct I2cBus {
     pub id: u8,
@@ -25,21 +45,7 @@ impl I2cBus {
     pub fn exists(&self) -> bool {
         Path::new(&self.path()).exists()
     }
-}
 
-impl std::fmt::Display for I2cBus {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.id)
-    }
-}
-
-#[derive(Debug, Copy, Clone)]
-pub struct I2cAddr(pub u8);
-
-#[derive(Debug, Copy, Clone)]
-pub struct I2cReg(pub u8);
-
-impl I2cBus {
     fn open_bus(&self) -> io::Result<I2c<std::fs::File>> {
         I2c::from_path(&self.path())
     }
@@ -55,12 +61,18 @@ impl I2cBus {
     }
 
     fn write_bytes<const LEN: usize>(&self, addr: I2cAddr, reg: I2cReg, buf: &[u8; LEN])
-                                         -> io::Result<()> {
+                                     -> io::Result<()> {
         let mut i2c = self.open_bus()?;
         // i2c.i2c_set_retries(0)?;
         // i2c.i2c_set_timeout(Duration::from_millis(10))?;
         i2c.smbus_set_slave_address(addr.0 as u16, false)?;
         i2c.i2c_write_block_data(reg.0, buf)
+    }
+}
+
+impl std::fmt::Display for I2cBus {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.id)
     }
 }
 
@@ -93,45 +105,92 @@ impl ByteConverter for I2cByteOrder {
     }
 }
 
+/// I2C device which can read/write u16 data
 #[derive(Debug, Clone)]
 pub struct I2cDevice {
-    pub bus: I2cBus,
-    pub byte_order: I2cByteOrder,
+    bus: I2cBus,
+    addr: I2cAddr,
+    byte_order: I2cByteOrder,
 }
 
 impl I2cDevice {
-    pub fn little_endian(bus: I2cBus) -> Self {
-        I2cDevice { bus, byte_order: I2cByteOrder::LittleEndian }
+    pub fn little_endian(bus: I2cBus, addr: I2cAddr) -> Self {
+        I2cDevice { bus, byte_order: I2cByteOrder::LittleEndian, addr }
     }
 
-    pub fn big_endian(bus: I2cBus) -> Self {
-        I2cDevice { bus, byte_order: I2cByteOrder::LittleEndian }
+    pub fn big_endian(bus: I2cBus, addr: I2cAddr) -> Self {
+        I2cDevice { bus, byte_order: I2cByteOrder::BigEndian, addr }
     }
 
-    pub fn read_u16(&self, addr: I2cAddr, reg: I2cReg) -> io::Result<u16> {
-        let data: [u8; 2] = self.bus.read_bytes::<2>(addr, reg)?;
+    pub fn read_u16(&self, reg: I2cReg) -> io::Result<u16> {
+        let data: [u8; 2] = self.bus.read_bytes::<2>(self.addr, reg)?;
         Ok(self.byte_order.read_u16(&data))
     }
 
-    pub fn write_u16(&self, addr: I2cAddr, reg: I2cReg, data: u16) -> io::Result<()> {
+    pub fn write_u16(&self, reg: I2cReg, data: u16) -> io::Result<()> {
         let mut buf: [u8; 2] = [0; 2];
         self.byte_order.write_u16(&mut buf, data);
-        self.bus.write_bytes::<2>(addr, reg, &buf)
-    }
-}
-
-impl std::fmt::Display for I2cDevice {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "i2c{}", self.bus)
+        self.bus.write_bytes::<2>(self.addr, reg, &buf)
     }
 }
 
 /// Read a big-endian unsigned 16-bit integer from an I2C bus + address + register
 pub fn i2c_read_u16_be(bus: I2cBus, addr: I2cAddr, reg: I2cReg) -> io::Result<u16> {
-    I2cDevice { bus, byte_order: I2cByteOrder::BigEndian }.read_u16(addr, reg)
+    I2cDevice { bus, addr, byte_order: I2cByteOrder::BigEndian }.read_u16(reg)
 }
 
 /// Read a little-endian unsigned 16-bit integer from an I2C bus + address + register
 pub fn i2c_read_u16_le(bus: I2cBus, addr: I2cAddr, reg: I2cReg) -> io::Result<u16> {
-    I2cDevice { bus, byte_order: I2cByteOrder::LittleEndian }.read_u16(addr, reg)
+    I2cDevice { bus, addr, byte_order: I2cByteOrder::LittleEndian }.read_u16(reg)
 }
+
+/// Wrapper around I2cDevice that provides logging about what is going on, with a read/write API
+/// for named u16 registers.
+#[derive(Debug, Clone)]
+pub struct LoggingI2cDevice {
+    name: String,
+    device: I2cDevice,
+}
+
+impl std::fmt::Display for LoggingI2cDevice {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "i2c{}/{}", self.device.bus, self.name)
+    }
+}
+
+impl LoggingI2cDevice {
+    pub fn new(name: String, device: I2cDevice) -> LoggingI2cDevice {
+        LoggingI2cDevice { name, device }
+    }
+
+    pub fn read_register(&self, reg: I2cReg, desc: &str) -> crate::ReadResult<u16> {
+        info!("{}: Reading {} from addr {}, reg {}",
+            self.name, desc, self.device.addr, reg);
+        match self.device.read_u16(reg) {
+            Ok(result) => {
+                debug!("{}: Read value <{}> from {}", self, result, desc);
+                Ok(result)
+            },
+            Err(e) => {
+                warn!("{}: Could not read from {}: {:?}", self, desc, e);
+                Err(e.into())
+            },
+        }
+    }
+
+    /// Writes a value to the I2C register on the device. Logs a warning if it fails,
+    /// debug if it succeeds.
+    pub fn write_register(&self, reg: I2cReg, desc: &str, data: u16) -> () {
+        info!("{}: Setting {} to value <{}> (addr {}, reg {})",
+            self.name, desc, self.device.addr, reg, data);
+        match self.device.write_u16(reg, data) {
+            Ok(_) => {
+                debug!("{}: Set {} to value <{}>", self, desc, data);
+            },
+            Err(e) => {
+                warn!("{}: Failed to set {}: {:?}", self, desc, e);
+            }
+        }
+    }
+}
+
