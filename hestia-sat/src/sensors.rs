@@ -3,8 +3,8 @@ use std::fmt::Formatter;
 use log::{debug, warn};
 use strum_macros::Display;
 
-use crate::i2c::{i2c_read_u16_be, i2c_read_u16_le, I2cAddr, I2cReg};
-use crate::{I2cBus, ReadError, ReadResult};
+use crate::i2c::*;
+use crate::{ReadError, ReadResult};
 
 const MSP430_I2C_ADDR: I2cAddr = I2cAddr(0x08);
 pub(crate) const MSP430_ADC_RESOLUTION: u16 = 1 << 12;
@@ -202,4 +202,12 @@ pub(crate) fn temp_to_adc_val(temp: f32) -> u16 {
     assert!(temp > -55.0 && temp < 150.0, "temp out of range");
     (MSP430_ADC_RESOLUTION as f32 / (f32::exp((1.0 / (temp + ZERO_CELSIUS_IN_KELVIN) - INV_NB21K00103_REF_TEMP_K) *
                  NB21K00103_B_VALUE) + 1.0)) as u16
+}
+
+trait I2cRegister {
+    fn read(&self) -> u16;
+}
+
+trait SensorValue: std::fmt::Display {
+    fn raw(&self) -> u16;
 }

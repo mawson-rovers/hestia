@@ -1,6 +1,6 @@
 use serde::Deserialize;
-use crate::I2cBus;
 use crate::board::Board;
+use crate::i2c::I2cBus;
 
 fn default_i2c_bus() -> Vec<u8> { vec![1, 2] }
 

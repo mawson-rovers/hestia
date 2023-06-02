@@ -1,8 +1,8 @@
 use std::convert::TryInto;
 use log::{debug, info, warn};
 use crate::heater::{Heater, HeaterMode};
-use crate::i2c::{I2cAddr, I2cDevice, I2cReadWrite, I2cReg};
-use crate::{I2cBus, ReadError, ReadResult, sensors};
+use crate::i2c::*;
+use crate::{ReadError, ReadResult, sensors};
 use crate::ReadError::ValueOutOfRange;
 
 const MSP430_I2C_ADDR: I2cAddr = I2cAddr(0x08);
@@ -15,7 +15,7 @@ const MSP430_WRITE_HEATER_TARGET_TEMP: I2cReg = I2cReg(0x41);
 const MSP430_WRITE_HEATER_TARGET_SENSOR: I2cReg = I2cReg(0x42);
 const MSP430_WRITE_HEATER_PWM_DUTY_CYCLE: I2cReg = I2cReg(0x43);
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub struct Msp430 {
     i2c: I2cDevice,
 }
@@ -28,7 +28,7 @@ impl std::fmt::Display for Msp430 {
 
 impl Msp430 {
     pub fn new(bus: I2cBus) -> Self {
-        Msp430 { i2c: I2cDevice::LittleEndian { bus } }
+        Msp430 { i2c: I2cDevice::little_endian(bus) }
     }
 
     fn read_register(&self, reg: I2cReg, desc: &str) -> Result<u16, ReadError> {

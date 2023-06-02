@@ -2,8 +2,9 @@ use std::rc::Rc;
 use chrono::{DateTime, Utc};
 use log::error;
 
-use crate::{I2cBus, ReadError, ReadResult};
+use crate::{ReadError, ReadResult};
 use crate::heater::{Heater, HeaterMode};
+use crate::i2c::I2cBus;
 use crate::msp430::Msp430;
 use crate::sensors::{Sensor, SensorInterface};
 
@@ -177,7 +178,7 @@ impl Board {
 
     pub fn read_target_sensor_temp(&self) -> ReadResult<f32> {
         let sensor = self.get_target_sensor()?;
-        sensor.read_temp(self.bus)
+        sensor.read_temp(self.bus.clone())
     }
 
     pub fn write_target_sensor(&self, target_sensor: u8) {
