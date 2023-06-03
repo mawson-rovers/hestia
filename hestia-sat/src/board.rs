@@ -1,6 +1,5 @@
 use std::convert::TryInto;
 use std::rc::Rc;
-use chrono::{DateTime, Utc};
 use log::error;
 
 use crate::{ReadError, ReadResult};
@@ -47,7 +46,7 @@ const HEATER_V_HIGH: Sensor = Sensor::mounted("heater_v_high", SensorInterface::
 const HEATER_V_LOW: Sensor = Sensor::mounted("heater_v_low", SensorInterface::MSP430Voltage, 0x06);
 const HEATER_CURR: Sensor = Sensor::mounted("heater_curr", SensorInterface::MSP430Current, 0x07);
 
-static TEMP_SENSORS: &[Sensor] = &[
+static ALL_SENSORS: &[Sensor; 20] = &[
     TH1,
     TH2,
     TH3,
@@ -65,66 +64,10 @@ static TEMP_SENSORS: &[Sensor] = &[
     J14,
     J15,
     J16,
+    HEATER_V_HIGH,
+    HEATER_V_LOW,
+    HEATER_CURR,
 ];
-
-
-pub struct SensorData {
-    pub timestamp: DateTime<Utc>,
-    pub board_id: u16,
-    pub th1: ReadResult<u16>,
-    pub th2: ReadResult<u16>,
-    pub th3: ReadResult<u16>,
-    pub u4: ReadResult<u16>,
-    pub u5: ReadResult<u16>,
-    pub u6: ReadResult<u16>,
-    pub u7: ReadResult<u16>,
-    pub th4: ReadResult<u16>,
-    pub th5: ReadResult<u16>,
-    pub th6: ReadResult<u16>,
-    pub j7: ReadResult<u16>,
-    pub j8: ReadResult<u16>,
-    pub j12: ReadResult<u16>,
-    pub j13: ReadResult<u16>,
-    pub j14: ReadResult<u16>,
-    pub j15: ReadResult<u16>,
-    pub j16: ReadResult<u16>,
-    pub heater_mode: ReadResult<u16>,
-    pub target_temp: ReadResult<u16>,
-    pub target_sensor: ReadResult<u16>,
-    pub pwm_freq: ReadResult<u16>,
-    pub heater_v_high: ReadResult<u16>,
-    pub heater_v_low: ReadResult<u16>,
-    pub heater_curr: ReadResult<u16>,
-}
-
-pub struct DisplayData {
-    pub timestamp: DateTime<Utc>,
-    pub board_id: u16,
-    pub th1: ReadResult<f32>,
-    pub th2: ReadResult<f32>,
-    pub th3: ReadResult<f32>,
-    pub u4: ReadResult<f32>,
-    pub u5: ReadResult<f32>,
-    pub u6: ReadResult<f32>,
-    pub u7: ReadResult<f32>,
-    pub th4: ReadResult<f32>,
-    pub th5: ReadResult<f32>,
-    pub th6: ReadResult<f32>,
-    pub j7: ReadResult<f32>,
-    pub j8: ReadResult<f32>,
-    pub j12: ReadResult<f32>,
-    pub j13: ReadResult<f32>,
-    pub j14: ReadResult<f32>,
-    pub j15: ReadResult<f32>,
-    pub j16: ReadResult<f32>,
-    pub heater_mode: ReadResult<HeaterMode>,
-    pub target_temp: ReadResult<f32>,
-    pub target_sensor: ReadResult<Sensor>,
-    pub pwm_freq: ReadResult<u16>,
-    pub heater_v_high: ReadResult<f32>,
-    pub heater_v_low: ReadResult<f32>,
-    pub heater_curr: ReadResult<f32>,
-}
 
 pub struct Board {
     pub bus: I2cBus,
@@ -135,7 +78,7 @@ pub struct Board {
 
 impl Board {
     pub fn init(bus: &I2cBus, check_sensor: &String) -> Self {
-        let sensors = Board::get_readable_sensors(bus, TEMP_SENSORS);
+        let sensors = Board::get_readable_sensors(bus, ALL_SENSORS);
         let check_sensor = Board::sensor_by_id(check_sensor)
             .expect("Check sensor not found");
         let check_sensor = Board::create_sensor(bus, *check_sensor);
@@ -212,7 +155,7 @@ impl Board {
     }
 
     fn sensor_by_id(id: &String) -> Option<&'static Sensor> {
-        for sensor in TEMP_SENSORS {
+        for sensor in ALL_SENSORS {
             if id.eq_ignore_ascii_case(sensor.id) {
                 return Some(sensor);
             }
@@ -256,9 +199,6 @@ impl CsvDataProvider for Board {
             self.heater.read_target_temp_raw(),
             self.heater.read_target_sensor(),
             self.heater.read_duty_raw(),
-            HEATER_V_HIGH.read_raw(self.bus),
-            HEATER_V_LOW.read_raw(self.bus),
-            HEATER_CURR.read_raw(self.bus),
         ]);
         let raw_data: [ReadResult<u16>; 24] = raw_data.try_into().expect("Wrong number of sensors");
         return Some(BoardRawData { raw_data });
@@ -276,15 +216,14 @@ impl CsvDataProvider for Board {
             return None
         }
 
+        let sensors: [_; 20] = self.read_sensors_display().try_into()
+            .expect("Too many sensors");
         return Some(BoardDisplayData {
-            temp_sensors: self.read_sensors_display().try_into().expect("Too many sensors"),
+            sensors,
             heater_mode: self.heater.read_mode(),
             target_temp: self.heater.read_target_temp(),
             target_sensor: self.get_target_sensor(),
             pwm_freq: self.heater.read_duty(),
-            heater_v_high: HEATER_V_HIGH.read_temp(self.bus),
-            heater_v_low: HEATER_V_LOW.read_temp(self.bus),
-            heater_curr: HEATER_CURR.read_temp(self.bus),
         });
     }
 }
@@ -294,14 +233,11 @@ pub struct BoardRawData {
 }
 
 pub struct BoardDisplayData {
-    pub temp_sensors: [ReadResult<f32>; 17],
+    pub sensors: [ReadResult<f32>; 20],
     pub heater_mode: ReadResult<HeaterMode>,
     pub target_temp: ReadResult<f32>,
     pub target_sensor: ReadResult<Sensor>,
     pub pwm_freq: ReadResult<u8>,
-    pub heater_v_high: ReadResult<f32>,
-    pub heater_v_low: ReadResult<f32>,
-    pub heater_curr: ReadResult<f32>,
 }
 
 pub trait CsvDataProvider {

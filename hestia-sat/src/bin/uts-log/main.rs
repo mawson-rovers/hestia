@@ -35,13 +35,13 @@ fn loop_logger_for_day() {
 }
 
 fn create_loggers(config: &Config, start_date: &DateTime<Utc>) -> Vec<LogWriter> {
-    let boards = config.create_boards();
-
     match &config.log_path {
         Some(log_path) => {
             vec![
-                LogWriter::create_file_writer(&log_path, boards.clone(), start_date, false),
-                LogWriter::create_file_writer(&log_path, boards.clone(), start_date, true),
+                LogWriter::create_file_writer(&log_path, config.create_boards(),
+                                              start_date, false),
+                LogWriter::create_file_writer(&log_path, config.create_boards(),
+                                              start_date, true),
             ]
         }
         None => {

@@ -17,7 +17,7 @@ impl LogWriter {
         LogWriter { writer, is_new: true, boards, read_raw }
     }
 
-    pub fn create_file_writer<'a>(path: &String, boards: Vec<Board>, start_date: &DateTime<Utc>,
+    pub fn create_file_writer(path: &String, boards: Vec<Board>, start_date: &DateTime<Utc>,
                                   read_raw: bool) -> LogWriter {
         let log_path = Path::new(&path);
         fs::create_dir_all(log_path)

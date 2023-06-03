@@ -121,13 +121,13 @@ pub const CSV_HEADERS: [&'static str; CSV_FIELD_COUNT] = [
     "J14",
     "J15",
     "J16",
+    "heater_v_high",
+    "heater_v_low",
+    "heater_curr",
     "heater_mode",
     "target_temp",
     "target_sensor",
     "pwm_duty",
-    "heater_v_high",
-    "heater_v_low",
-    "heater_curr",
 ];
 
 pub struct CsvWriter {
@@ -162,14 +162,11 @@ impl CsvWriter {
     //noinspection DuplicatedCode
     pub fn write_display_data(&mut self, timestamp: DateTime<Utc>, board: &Board, board_data: BoardDisplayData) {
         let mut data: Vec<CsvData> = vec![timestamp.into(), board.into()];
-        data.extend_from_slice(&board_data.temp_sensors.map(|d| d.into()));
+        data.extend_from_slice(&board_data.sensors.map(|d| d.into()));
         data.extend(Some::<CsvData>(board_data.heater_mode.into()));
         data.extend(Some::<CsvData>(board_data.target_temp.into()));
         data.extend(Some::<CsvData>(board_data.target_sensor.into()));
         data.extend(Some::<CsvData>(board_data.pwm_freq.into()));
-        data.extend(Some::<CsvData>(board_data.heater_v_high.into()));
-        data.extend(Some::<CsvData>(board_data.heater_v_low.into()));
-        data.extend(Some::<CsvData>(board_data.heater_curr.into()));
         let data: [CsvData; 26] = data.try_into().expect("Array sizes didn't match");
         self.write_data(data).unwrap_or_else(|e| eprint!("Failed to write to log file: {:?}", e));
     }

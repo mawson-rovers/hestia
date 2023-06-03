@@ -71,7 +71,7 @@ enum Command {
 
         /// duty cycle (0-255)
         duty: u8,
-    }
+    },
 }
 
 #[derive(Subcommand)]
@@ -187,6 +187,7 @@ fn show_status(board: Board) {
         let heater_mode = data.heater_mode
             .map(|m| m.to_string())
             .unwrap_or(String::from("#err"));
+        let [.., heater_v_high, heater_v_low, heater_curr] = data.sensors;
         println!("board:{} temp:{} heater:{} target:{:0.2} sensor:{} duty:{} V:{:0.2}/{:0.2} I:{:0.2}",
                  board.bus,
                  target_sensor_temp,
@@ -194,9 +195,9 @@ fn show_status(board: Board) {
                  data.target_temp.unwrap(),
                  board.get_target_sensor().map(|s| s.id).unwrap_or("#err"),
                  board.read_heater_pwm().unwrap(),
-                 data.heater_v_high.unwrap(),
-                 data.heater_v_low.unwrap(),
-                 data.heater_curr.unwrap());
+                 heater_v_high.unwrap(),
+                 heater_v_low.unwrap(),
+                 heater_curr.unwrap());
     } else {
         println!("board:{} #err", board.bus);
     }
