@@ -4,9 +4,6 @@ use strum_macros::Display;
 
 use crate::device::i2c::*;
 use crate::{ReadError, ReadResult};
-use crate::device::ads7828::Ads7828Sensor;
-use crate::device::max31725::Max31725Sensor;
-use crate::device::msp430::{Msp430CurrentSensor, Msp430TempSensor, Msp430VoltageSensor};
 
 pub(crate) const MSP430_ADC_RESOLUTION: u16 = 1 << 12;
 
@@ -64,46 +61,6 @@ impl Sensor {
     pub const fn mounted(id: SensorId, iface: SensorInterface,
                          addr: u8) -> Sensor {
         Sensor { id, iface, addr: I2cAddr(addr), label: "Mounted", pos_x: 0.0, pos_y: 0.0 }
-    }
-
-    pub fn read_temp(&self, bus: I2cBus) -> ReadResult<f32> {
-        match self.iface {
-            SensorInterface::MSP430 => {
-                Msp430TempSensor::new(bus, self.to_string(), self.addr.into()).read_display()
-            },
-            SensorInterface::MSP430Voltage => {
-                Msp430VoltageSensor::new(bus, self.to_string(), self.addr.into()).read_display()
-            },
-            SensorInterface::MSP430Current => {
-                Msp430CurrentSensor::new(bus, self.to_string(), self.addr.into()).read_display()
-            },
-            SensorInterface::ADS7828 => {
-                Ads7828Sensor::new(bus, self.to_string(), self.addr).read_display()
-            },
-            SensorInterface::MAX31725 => {
-                Max31725Sensor::new(bus, self.to_string(), self.addr).read_display()
-            },
-        }
-    }
-
-    pub fn read_raw(&self, bus: I2cBus) -> ReadResult<u16> {
-        match self.iface {
-            SensorInterface::MSP430 => {
-                Msp430TempSensor::new(bus, self.to_string(), self.addr.into()).read_raw()
-            },
-            SensorInterface::MSP430Voltage => {
-                Msp430VoltageSensor::new(bus, self.to_string(), self.addr.into()).read_raw()
-            },
-            SensorInterface::MSP430Current => {
-                Msp430CurrentSensor::new(bus, self.to_string(), self.addr.into()).read_raw()
-            },
-            SensorInterface::ADS7828 => {
-                Ads7828Sensor::new(bus, self.to_string(), self.addr).read_raw()
-            },
-            SensorInterface::MAX31725 => {
-                Max31725Sensor::new(bus, self.to_string(), self.addr).read_raw()
-            },
-        }
     }
 }
 

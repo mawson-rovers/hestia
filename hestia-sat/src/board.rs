@@ -218,10 +218,6 @@ impl CsvDataProvider for Board {
     }
 }
 
-pub struct BoardRawData {
-    pub raw_data: [ReadResult<u16>; 24],
-}
-
 pub struct BoardData {
     pub raw_data: [ReadResult<u16>; 24],
     pub sensors: [ReadResult<f32>; 20],
