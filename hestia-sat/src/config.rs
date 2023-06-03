@@ -1,3 +1,4 @@
+use dotenv::dotenv;
 use serde::Deserialize;
 use crate::board::Board;
 use crate::device::i2c::I2cBus;
@@ -28,6 +29,7 @@ pub struct Config {
 
 impl Config {
     pub fn read() -> Config {
+        dotenv().ok();
         env_logger::init();
         envy::prefixed("UTS_").from_env().unwrap()
     }
