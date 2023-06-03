@@ -153,7 +153,7 @@ pub struct LoggingI2cDevice {
 
 impl std::fmt::Display for LoggingI2cDevice {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "i2c{}/{}", self.device.bus, self.name)
+        write!(f, "i2c-{}/{}", self.device.bus, self.name)
     }
 }
 
@@ -164,7 +164,7 @@ impl LoggingI2cDevice {
 
     pub fn read_register(&self, reg: I2cReg, desc: &str) -> crate::ReadResult<u16> {
         info!("{}: Reading {} from addr {}, reg {}",
-            self.name, desc, self.device.addr, reg);
+            self, desc, self.device.addr, reg);
         match self.device.read_u16(reg) {
             Ok(result) => {
                 debug!("{}: Read value <{}> from {}", self, result, desc);
