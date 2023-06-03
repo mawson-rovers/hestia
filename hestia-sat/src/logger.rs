@@ -6,52 +6,51 @@ use crate::csv::CsvWriter;
 
 pub struct LogWriter {
     writer: CsvWriter,
-    is_new: bool,
+    raw_writer: Option<CsvWriter>,
     boards: Vec<Board>,
-    read_raw: bool,
 }
 
 impl LogWriter {
-    pub fn create_stdout_writer(boards: Vec<Board>, read_raw: bool) -> LogWriter {
+    pub fn create_stdout_writer(boards: Vec<Board>) -> LogWriter {
         let writer = CsvWriter::stdout();
-        LogWriter { writer, is_new: true, boards, read_raw }
+        LogWriter { writer, raw_writer: None, boards }
     }
 
-    pub fn create_file_writer(path: &String, boards: Vec<Board>, start_date: &DateTime<Utc>,
-                                  read_raw: bool) -> LogWriter {
+    pub fn create_file_writer(path: &String, boards: Vec<Board>, start_date: &DateTime<Utc>) -> LogWriter {
         let log_path = Path::new(&path);
         fs::create_dir_all(log_path)
             .expect("Log path does not exist and could not be created: {}");
+        let writer = Self::new_csv_writer(start_date, log_path, false);
+        let raw_writer = Self::new_csv_writer(start_date, log_path, true);
+
+        LogWriter { writer, raw_writer: Some(raw_writer), boards }
+    }
+
+    fn new_csv_writer(start_date: &DateTime<Utc>, log_path: &Path, raw_log: bool) -> CsvWriter {
         let filename = &format!("uts-data-{}{}.csv",
                                 start_date.format("%Y-%m-%d"),
-                                if read_raw { "-raw" } else { "" });
+                                if raw_log { "-raw" } else { "" });
         let file_path = log_path.join(filename);
         eprintln!("Logging {} sensor data to {}...",
-                  if read_raw { "raw" } else { "temp" },
+                  if raw_log { "raw" } else { "temp" },
                   file_path.display());
         let is_new = !file_path.exists();
-        let writer = CsvWriter::file(file_path)
-            .expect("Unable to create log file");
-
-        LogWriter { writer, is_new, boards, read_raw }
+        CsvWriter::file(file_path, is_new).expect("Unable to create log file")
     }
 
     pub fn write_header_if_new(&mut self) {
-        if self.is_new {
-            self.writer.write_headers()
-                .expect("Failed to write header to new CSV file");
+        self.writer.write_headers();
+        if let Some(raw_writer) = &mut self.raw_writer {
+            raw_writer.write_headers();
         }
     }
 
     pub fn write_data(&mut self, timestamp: DateTime<Utc>) {
         for board in &self.boards {
-            if self.read_raw {
-                if let Some(data) = board.read_raw_data() {
-                    self.writer.write_raw_data(timestamp, board, data);
-                }
-            } else {
-                if let Some(data) = board.read_display_data() {
-                    self.writer.write_display_data(timestamp, board, data);
+            if let Some(data) = board.read_data() {
+                self.writer.write_display_data(timestamp, board, &data);
+                if let Some(raw_writer) = &mut self.raw_writer {
+                    raw_writer.write_raw_data(timestamp, board, &data.raw_data);
                 }
             }
         }

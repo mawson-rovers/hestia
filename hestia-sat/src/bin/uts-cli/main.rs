@@ -25,11 +25,7 @@ enum Command {
     /// Log sensor values to stdout.
     ///
     /// Use UTS_I2C_BUS environment variable to configure active boards.
-    Log {
-        // Log raw ADC values instead of converted temperatures, voltages, etc.
-        #[arg(short, long)]
-        raw: bool,
-    },
+    Log,
 
     /// Set heater mode
     Heater {
@@ -96,7 +92,7 @@ pub fn main() {
     let cli = CommandLine::parse();
     match &cli.command {
         Some(command) => match command {
-            Command::Log { raw } => do_log(*raw),
+            Command::Log => do_log(),
             Command::Status => do_status(),
             Command::Heater { board, command } => do_heater(*board, command),
             Command::Target { board, temp } => do_target(*board, *temp),
@@ -180,7 +176,7 @@ fn show_status_all(boards: Vec<Board>) {
 }
 
 fn show_status(board: Board) {
-    if let Some(data) = board.read_display_data() {
+    if let Some(data) = board.read_data() {
         let target_sensor_temp = board.read_target_sensor_temp()
             .map(|v| format!("{:0.2}", v))
             .unwrap_or(String::from("#err"));
@@ -203,11 +199,11 @@ fn show_status(board: Board) {
     }
 }
 
-fn do_log(raw: bool) {
+fn do_log() {
     let config = Config::read();
     let boards = config.create_boards();
 
-    let mut writer = LogWriter::create_stdout_writer(boards, raw);
+    let mut writer = LogWriter::create_stdout_writer(boards);
     writer.write_header_if_new();
     loop {
         let timestamp = Utc::now();

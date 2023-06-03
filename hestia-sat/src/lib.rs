@@ -58,3 +58,14 @@ impl<T> From<ReadResult<T>> for CsvData
         }
     }
 }
+
+impl<T> From<&ReadResult<T>> for CsvData
+    where CsvData: From<T>,
+          T: Copy {
+    fn from(value: &ReadResult<T>) -> Self {
+        match value {
+            Ok(value) => (*value).into(),
+            Err(_) => CsvData::Error
+        }
+    }
+}

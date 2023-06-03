@@ -171,6 +171,17 @@ impl Board {
             .expect("Wrong number of sensors")
     }
 
+    fn read_all_raw(&self) -> [ReadResult<u16>; 24] {
+        let mut raw_data = Vec::from(self.read_sensors_raw());
+        raw_data.append(&mut vec![
+            self.heater.read_mode_raw(),
+            self.heater.read_target_temp_raw(),
+            self.heater.read_target_sensor(),
+            self.heater.read_duty_raw(),
+        ]);
+        raw_data.try_into().expect("Wrong number of sensors")
+    }
+
     fn read_sensors_display(&self) -> Vec<ReadResult<f32>> {
         self.sensors.iter()
             .map(|s| s.read_display())
@@ -181,7 +192,7 @@ impl Board {
 }
 
 impl CsvDataProvider for Board {
-    fn read_raw_data(&self) -> Option<BoardRawData> {
+    fn read_data(&self) -> Option<BoardData> {
         // fail fast if bus isn't found or check sensor is not readable
         if !self.bus.exists() {
             error!("I2C bus device not found: {}", self.bus);
@@ -193,32 +204,11 @@ impl CsvDataProvider for Board {
             return None
         }
 
-        let mut raw_data = Vec::from(self.read_sensors_raw());
-        raw_data.append(&mut vec![
-            self.heater.read_mode_raw(),
-            self.heater.read_target_temp_raw(),
-            self.heater.read_target_sensor(),
-            self.heater.read_duty_raw(),
-        ]);
-        let raw_data: [ReadResult<u16>; 24] = raw_data.try_into().expect("Wrong number of sensors");
-        return Some(BoardRawData { raw_data });
-    }
-
-    fn read_display_data(&self) -> Option<BoardDisplayData> {
-        // fail fast if bus isn't found or check sensor is not readable
-        if !self.bus.exists() {
-            error!("I2C bus device not found: {}", self.bus);
-            return None
-        }
-        let test_read = self.check_sensor.read_raw();
-        if test_read.is_err() {
-            error!("Failed to read check sensor {} on I2C bus {}", self.check_sensor, self.bus);
-            return None
-        }
-
-        let sensors: [_; 20] = self.read_sensors_display().try_into()
-            .expect("Too many sensors");
-        return Some(BoardDisplayData {
+        let raw_data = self.read_all_raw();
+        let sensors: [_; 20] = self.read_sensors_display()
+            .try_into().expect("Too many sensors");
+        return Some(BoardData {
+            raw_data,
             sensors,
             heater_mode: self.heater.read_mode(),
             target_temp: self.heater.read_target_temp(),
@@ -232,7 +222,8 @@ pub struct BoardRawData {
     pub raw_data: [ReadResult<u16>; 24],
 }
 
-pub struct BoardDisplayData {
+pub struct BoardData {
+    pub raw_data: [ReadResult<u16>; 24],
     pub sensors: [ReadResult<f32>; 20],
     pub heater_mode: ReadResult<HeaterMode>,
     pub target_temp: ReadResult<f32>,
@@ -241,7 +232,6 @@ pub struct BoardDisplayData {
 }
 
 pub trait CsvDataProvider {
-    fn read_raw_data(&self) -> Option<BoardRawData>;
-    fn read_display_data(&self) -> Option<BoardDisplayData>;
+    fn read_data(&self) -> Option<BoardData>;
 }
 

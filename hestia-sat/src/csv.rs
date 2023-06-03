@@ -6,8 +6,9 @@ use std::io::Write;
 use std::path::Path;
 
 use chrono::{DateTime, Utc};
-use crate::board::{Board, BoardDisplayData, BoardRawData};
+use crate::board::{Board, BoardData};
 use crate::heater::HeaterMode;
+use crate::ReadResult;
 use crate::sensors::Sensor;
 
 pub enum LineEnding {
@@ -133,40 +134,48 @@ pub const CSV_HEADERS: [&'static str; CSV_FIELD_COUNT] = [
 pub struct CsvWriter {
     writer: Box<dyn Write>,
     line_ending: LineEnding,
+    write_headers: bool,
 }
 
 impl CsvWriter {
     pub fn stdout() -> CsvWriter {
-        CsvWriter { writer: Box::new(io::stdout()), line_ending: LineEnding::LF }
+        CsvWriter { writer: Box::new(io::stdout()),
+            line_ending: LineEnding::LF, write_headers: true }
     }
 
-    pub fn file<P: AsRef<Path>>(path: P) -> io::Result<CsvWriter> {
+    pub fn file<P: AsRef<Path>>(path: P, is_new: bool) -> io::Result<CsvWriter> {
         let file = OpenOptions::new()
             .create(true)
             .append(true)
             .open(path)?;
-        Ok(CsvWriter { writer: Box::new(file), line_ending: LineEnding::CRLF })
+        Ok(CsvWriter { writer: Box::new(file),
+            line_ending: LineEnding::CRLF, write_headers: is_new })
     }
 
-    pub fn write_headers(&mut self) -> io::Result<()> {
-        self.write_line(CSV_HEADERS.map(|s| s.to_string()))
+    pub fn write_headers(&mut self) {
+        if self.write_headers {
+            self.write_line(CSV_HEADERS.map(|s| s.to_string()))
+                .expect("Failed to write header to new CSV file");
+        }
     }
 
-    pub fn write_raw_data(&mut self, timestamp: DateTime<Utc>, board: &Board, board_data: BoardRawData) {
+    pub fn write_raw_data(&mut self, timestamp: DateTime<Utc>, board: &Board,
+                          raw_data: &[ReadResult<u16>; 24]) {
         let mut data: Vec<CsvData> = vec![timestamp.into(), board.into()];
-        data.extend_from_slice(&board_data.raw_data.map(|d| d.into()));
+        data.extend(raw_data.iter().map(|d| CsvData::from(d)));
         let data: [CsvData; 26] = data.try_into().expect("Array sizes didn't match"); 
         self.write_data(data).unwrap_or_else(|e| eprint!("Failed to write to log file: {:?}", e));
     }
     
     //noinspection DuplicatedCode
-    pub fn write_display_data(&mut self, timestamp: DateTime<Utc>, board: &Board, board_data: BoardDisplayData) {
+    pub fn write_display_data(&mut self, timestamp: DateTime<Utc>, board: &Board,
+                              board_data: &BoardData) {
         let mut data: Vec<CsvData> = vec![timestamp.into(), board.into()];
-        data.extend_from_slice(&board_data.sensors.map(|d| d.into()));
-        data.extend(Some::<CsvData>(board_data.heater_mode.into()));
-        data.extend(Some::<CsvData>(board_data.target_temp.into()));
-        data.extend(Some::<CsvData>(board_data.target_sensor.into()));
-        data.extend(Some::<CsvData>(board_data.pwm_freq.into()));
+        data.extend(board_data.sensors.iter().map(|d| CsvData::from(d)));
+        data.extend(Some(CsvData::from(&board_data.heater_mode)));
+        data.extend(Some(CsvData::from(&board_data.target_temp)));
+        data.extend(Some(CsvData::from(&board_data.target_sensor)));
+        data.extend(Some(CsvData::from(&board_data.pwm_freq)));
         let data: [CsvData; 26] = data.try_into().expect("Array sizes didn't match");
         self.write_data(data).unwrap_or_else(|e| eprint!("Failed to write to log file: {:?}", e));
     }

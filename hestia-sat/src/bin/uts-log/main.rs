@@ -1,6 +1,6 @@
 use std::thread;
 use std::time::Duration;
-use chrono::{Datelike, DateTime, Utc};
+use chrono::{Datelike, Utc};
 use uts_ws1::config::Config;
 use uts_ws1::logger::LogWriter;
 
@@ -12,40 +12,22 @@ pub fn main() {
 }
 
 fn loop_logger_for_day() {
-    let config = Config::read();
     let start_date = Utc::now();
-    let mut writers = create_loggers(&config, &start_date);
+    let config = Config::read();
+    let log_path = config.log_path.clone().expect("Set UTS_LOG_PATH to store log output");
 
-    for writer in &mut writers {
-        writer.write_header_if_new();
-    }
+    let mut writer = LogWriter::create_file_writer(
+        &log_path, config.create_boards(), &start_date);
+    writer.write_header_if_new();
 
     loop {
         let timestamp = Utc::now();
-        for writer in &mut writers {
-            writer.write_data(timestamp);
-        }
+        writer.write_data(timestamp);
 
         thread::sleep(Duration::from_secs(config.log_interval as u64));
         if Utc::now().day() != start_date.day() {
             // it's a new day, time to restart
             return;
-        }
-    }
-}
-
-fn create_loggers(config: &Config, start_date: &DateTime<Utc>) -> Vec<LogWriter> {
-    match &config.log_path {
-        Some(log_path) => {
-            vec![
-                LogWriter::create_file_writer(&log_path, config.create_boards(),
-                                              start_date, false),
-                LogWriter::create_file_writer(&log_path, config.create_boards(),
-                                              start_date, true),
-            ]
-        }
-        None => {
-            panic!("Set UTS_LOG_PATH to store log output")
         }
     }
 }
