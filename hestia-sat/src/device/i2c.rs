@@ -25,6 +25,12 @@ impl std::fmt::Display for I2cReg {
     }
 }
 
+impl From<I2cAddr> for I2cReg {
+    fn from(addr: I2cAddr) -> Self {
+        I2cReg(addr.0)
+    }
+}
+
 /// Byte-oriented interface to I2C bus
 #[derive(Debug, Copy, Clone)]
 pub struct I2cBus {
@@ -114,10 +120,12 @@ pub struct I2cDevice {
 }
 
 impl I2cDevice {
+    /// Read little-endian unsigned 16-bit integers from an I2C bus + addr
     pub fn little_endian(bus: I2cBus, addr: I2cAddr) -> Self {
         I2cDevice { bus, byte_order: I2cByteOrder::LittleEndian, addr }
     }
 
+    /// Read big-endian unsigned 16-bit integers from an I2C bus + addr
     pub fn big_endian(bus: I2cBus, addr: I2cAddr) -> Self {
         I2cDevice { bus, byte_order: I2cByteOrder::BigEndian, addr }
     }
@@ -134,15 +142,6 @@ impl I2cDevice {
     }
 }
 
-/// Read a big-endian unsigned 16-bit integer from an I2C bus + address + register
-pub fn i2c_read_u16_be(bus: I2cBus, addr: I2cAddr, reg: I2cReg) -> io::Result<u16> {
-    I2cDevice { bus, addr, byte_order: I2cByteOrder::BigEndian }.read_u16(reg)
-}
-
-/// Read a little-endian unsigned 16-bit integer from an I2C bus + address + register
-pub fn i2c_read_u16_le(bus: I2cBus, addr: I2cAddr, reg: I2cReg) -> io::Result<u16> {
-    I2cDevice { bus, addr, byte_order: I2cByteOrder::LittleEndian }.read_u16(reg)
-}
 
 /// Wrapper around I2cDevice that provides logging about what is going on, with a read/write API
 /// for named u16 registers.

@@ -1,3 +1,4 @@
+use std::convert::TryInto;
 use std::io;
 use std::fmt::Debug;
 use std::fs::OpenOptions;
@@ -5,7 +6,7 @@ use std::io::Write;
 use std::path::Path;
 
 use chrono::{DateTime, Utc};
-use crate::board::{DisplayData, SensorData};
+use crate::board::{Board, BoardDisplayData, BoardRawData};
 use crate::heater::HeaterMode;
 use crate::sensors::Sensor;
 
@@ -68,6 +69,12 @@ impl From<u16> for CsvData {
     }
 }
 
+impl From<u8> for CsvData {
+    fn from(value: u8) -> Self {
+        CsvData::U16 { value: value as u16 }
+    }
+}
+
 impl From<DateTime<Utc>> for CsvData {
     fn from(value: DateTime<Utc>) -> Self {
         CsvData::Timestamp { value }
@@ -77,6 +84,12 @@ impl From<DateTime<Utc>> for CsvData {
 impl From<HeaterMode> for CsvData {
     fn from(value: HeaterMode) -> Self {
         CsvData::HeaterMode { value }
+    }
+}
+
+impl From<&Board> for CsvData {
+    fn from(board: &Board) -> Self {
+        CsvData::U16 { value: board.bus.id as u16 }
     }
 }
 
@@ -139,68 +152,26 @@ impl CsvWriter {
         self.write_line(CSV_HEADERS.map(|s| s.to_string()))
     }
 
-    //noinspection DuplicatedCode
-    pub fn write_sensor_data(&mut self, data: SensorData) {
-        self.write_data([
-            data.timestamp.into(),
-            data.board_id.into(),
-            data.th1.into(),
-            data.th2.into(),
-            data.th3.into(),
-            data.u4.into(),
-            data.u5.into(),
-            data.u6.into(),
-            data.u7.into(),
-            data.th4.into(),
-            data.th5.into(),
-            data.th6.into(),
-            data.j7.into(),
-            data.j8.into(),
-            data.j12.into(),
-            data.j13.into(),
-            data.j14.into(),
-            data.j15.into(),
-            data.j16.into(),
-            data.heater_mode.into(),
-            data.target_temp.into(),
-            data.target_sensor.into(),
-            data.pwm_freq.into(),
-            data.heater_v_high.into(),
-            data.heater_v_low.into(),
-            data.heater_curr.into(),
-        ]).unwrap_or_else(|e| eprint!("Failed to write to log file: {:?}", e));
+    pub fn write_raw_data(&mut self, timestamp: DateTime<Utc>, board: &Board, board_data: BoardRawData) {
+        let mut data: Vec<CsvData> = vec![timestamp.into(), board.into()];
+        data.extend_from_slice(&board_data.raw_data.map(|d| d.into()));
+        let data: [CsvData; 26] = data.try_into().expect("Array sizes didn't match"); 
+        self.write_data(data).unwrap_or_else(|e| eprint!("Failed to write to log file: {:?}", e));
     }
-
+    
     //noinspection DuplicatedCode
-    pub fn write_display_data(&mut self, data: DisplayData) {
-        self.write_data([
-            data.timestamp.into(),
-            data.board_id.into(),
-            data.th1.into(),
-            data.th2.into(),
-            data.th3.into(),
-            data.u4.into(),
-            data.u5.into(),
-            data.u6.into(),
-            data.u7.into(),
-            data.th4.into(),
-            data.th5.into(),
-            data.th6.into(),
-            data.j7.into(),
-            data.j8.into(),
-            data.j12.into(),
-            data.j13.into(),
-            data.j14.into(),
-            data.j15.into(),
-            data.j16.into(),
-            data.heater_mode.into(),
-            data.target_temp.into(),
-            data.target_sensor.into(),
-            data.pwm_freq.into(),
-            data.heater_v_high.into(),
-            data.heater_v_low.into(),
-            data.heater_curr.into(),
-        ]).unwrap_or_else(|e| eprint!("Failed to write to log file: {:?}", e));
+    pub fn write_display_data(&mut self, timestamp: DateTime<Utc>, board: &Board, board_data: BoardDisplayData) {
+        let mut data: Vec<CsvData> = vec![timestamp.into(), board.into()];
+        data.extend_from_slice(&board_data.temp_sensors.map(|d| d.into()));
+        data.extend(Some::<CsvData>(board_data.heater_mode.into()));
+        data.extend(Some::<CsvData>(board_data.target_temp.into()));
+        data.extend(Some::<CsvData>(board_data.target_sensor.into()));
+        data.extend(Some::<CsvData>(board_data.pwm_freq.into()));
+        data.extend(Some::<CsvData>(board_data.heater_v_high.into()));
+        data.extend(Some::<CsvData>(board_data.heater_v_low.into()));
+        data.extend(Some::<CsvData>(board_data.heater_curr.into()));
+        let data: [CsvData; 26] = data.try_into().expect("Array sizes didn't match");
+        self.write_data(data).unwrap_or_else(|e| eprint!("Failed to write to log file: {:?}", e));
     }
 
     pub fn write_data(&mut self, data: [CsvData; CSV_FIELD_COUNT]) -> io::Result<()> {

@@ -1,7 +1,7 @@
 use std::fs;
 use std::path::Path;
 use chrono::{DateTime, Utc};
-use crate::board::Board;
+use crate::board::{Board, CsvDataProvider};
 use crate::csv::CsvWriter;
 
 pub struct LogWriter {
@@ -46,12 +46,12 @@ impl LogWriter {
     pub fn write_data(&mut self, timestamp: DateTime<Utc>) {
         for board in &self.boards {
             if self.read_raw {
-                if let Some(data) = board.read_sensor_data(timestamp) {
-                    self.writer.write_sensor_data(data);
+                if let Some(data) = board.read_raw_data() {
+                    self.writer.write_raw_data(timestamp, board, data);
                 }
             } else {
-                if let Some(data) = board.read_display_data(timestamp) {
-                    self.writer.write_display_data(data);
+                if let Some(data) = board.read_display_data() {
+                    self.writer.write_display_data(timestamp, board, data);
                 }
             }
         }

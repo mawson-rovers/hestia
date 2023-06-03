@@ -15,7 +15,8 @@ pub trait Heater {
     fn read_mode_raw(&self) -> ReadResult<u16>;
     fn write_mode(&self, mode: HeaterMode);
 
-    fn read_duty(&self) -> ReadResult<u16>;
+    fn read_duty(&self) -> ReadResult<u8>;
+    fn read_duty_raw(&self) -> ReadResult<u16>;
     fn write_duty(&self, duty: u8);
 
     fn read_target_temp(&self) -> ReadResult<f32>;

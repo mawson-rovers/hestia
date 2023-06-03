@@ -3,7 +3,7 @@ use std::time::Duration;
 use chrono::Utc;
 use clap::{Parser, Subcommand};
 use log::error;
-use uts_ws1::board::Board;
+use uts_ws1::board::{Board, CsvDataProvider};
 use uts_ws1::config::Config;
 use uts_ws1::heater::HeaterMode;
 use uts_ws1::logger::LogWriter;
@@ -137,8 +137,7 @@ fn single_board(board: u8) -> Board {
         i2c_bus: vec![board],
         ..Config::read()
     }.create_boards();
-    assert_eq!(boards.len(), 1, "Only one board");
-    boards[0].clone()
+    boards.into_iter().next().expect("Only one board")
 }
 
 fn do_heater(board_id: u8, command: &HeaterCommand) {
@@ -181,7 +180,7 @@ fn show_status_all(boards: Vec<Board>) {
 }
 
 fn show_status(board: Board) {
-    if let Some(data) = board.read_display_data(Utc::now()) {
+    if let Some(data) = board.read_display_data() {
         let target_sensor_temp = board.read_target_sensor_temp()
             .map(|v| format!("{:0.2}", v))
             .unwrap_or(String::from("#err"));
@@ -189,7 +188,7 @@ fn show_status(board: Board) {
             .map(|m| m.to_string())
             .unwrap_or(String::from("#err"));
         println!("board:{} temp:{} heater:{} target:{:0.2} sensor:{} duty:{} V:{:0.2}/{:0.2} I:{:0.2}",
-                 data.board_id,
+                 board.bus,
                  target_sensor_temp,
                  heater_mode,
                  data.target_temp.unwrap(),

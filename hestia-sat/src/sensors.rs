@@ -1,15 +1,14 @@
 use std::fmt;
 use std::fmt::Formatter;
-use log::{debug, warn};
 use strum_macros::Display;
 
-use crate::i2c::*;
+use crate::device::i2c::*;
 use crate::{ReadError, ReadResult};
+use crate::device::ads7828::Ads7828Sensor;
+use crate::device::max31725::Max31725Sensor;
+use crate::device::msp430::{Msp430CurrentSensor, Msp430TempSensor, Msp430VoltageSensor};
 
-const MSP430_I2C_ADDR: I2cAddr = I2cAddr(0x08);
 pub(crate) const MSP430_ADC_RESOLUTION: u16 = 1 << 12;
-const MSP430_ADC_V_REF: f32 = 3.35; // measured via multimeter with VCC at 5.0V
-const MSP430_V_DIVIDER_FACTOR: f32 = 2.0;
 
 // disconnected MSP430 ADC produces low erroneous values
 const ADC_MIN_VALUE: u16 = 0x0010;
@@ -21,12 +20,6 @@ const NB21K00103_REF_TEMP_K: f32 = 25.0 + ZERO_CELSIUS_IN_KELVIN;
 const INV_NB21K00103_REF_TEMP_K: f32 = 1.0 / NB21K00103_REF_TEMP_K;
 const NB21K00103_B_VALUE: f32 = 3630.0;
 const INV_NB21K00103_B_VALUE: f32 = 1.0 / NB21K00103_B_VALUE;
-
-const ADS7828_I2C_ADDR: I2cAddr = I2cAddr(0x4A); // revert to 0x48 for board v1
-pub(crate) const ADS7828_ADC_RESOLUTION: u16 = 1 << 12;
-
-const MAX31725_REG_TEMP: I2cReg = I2cReg(0x00);
-const MAX31725_CF_LSB: f32 = 0.00390625;
 
 #[derive(Display, Copy, Clone, Debug)]
 pub enum SensorInterface {
@@ -55,6 +48,11 @@ impl fmt::Display for Sensor {
     }
 }
 
+pub trait ReadableSensor: fmt::Display {
+    fn read_raw(&self) -> ReadResult<u16>;
+    fn read_display(&self) -> ReadResult<f32>;
+}
+
 impl Sensor {
     pub const fn new(id: SensorId, iface: SensorInterface,
                      addr: u8, label: &'static str,
@@ -70,116 +68,43 @@ impl Sensor {
 
     pub fn read_temp(&self, bus: I2cBus) -> ReadResult<f32> {
         match self.iface {
-            SensorInterface::MSP430 => self.read_msp430_temp(bus),
-            SensorInterface::ADS7828 => self.read_ads7828_temp(bus),
-            SensorInterface::MAX31725 => self.read_max31725_temp(bus),
-            SensorInterface::MSP430Voltage => self.read_msp430_voltage(bus),
-            SensorInterface::MSP430Current => self.read_msp430_current(bus),
+            SensorInterface::MSP430 => {
+                Msp430TempSensor::new(bus, self.to_string(), self.addr.into()).read_display()
+            },
+            SensorInterface::MSP430Voltage => {
+                Msp430VoltageSensor::new(bus, self.to_string(), self.addr.into()).read_display()
+            },
+            SensorInterface::MSP430Current => {
+                Msp430CurrentSensor::new(bus, self.to_string(), self.addr.into()).read_display()
+            },
+            SensorInterface::ADS7828 => {
+                Ads7828Sensor::new(bus, self.to_string(), self.addr).read_display()
+            },
+            SensorInterface::MAX31725 => {
+                Max31725Sensor::new(bus, self.to_string(), self.addr).read_display()
+            },
         }
     }
 
     pub fn read_raw(&self, bus: I2cBus) -> ReadResult<u16> {
         match self.iface {
-            SensorInterface::MSP430 => self.read_msp430_raw(bus),
-            SensorInterface::ADS7828 => self.read_ads7828_raw(bus),
-            SensorInterface::MAX31725 => self.read_max31725_raw(bus),
-            SensorInterface::MSP430Voltage => self.read_msp430_raw(bus),
-            SensorInterface::MSP430Current => self.read_msp430_raw(bus),
-        }
-    }
-
-    fn read_ads7828_temp(&self, bus: I2cBus) -> ReadResult<f32> {
-        match self.read_ads7828_raw(bus) {
-            Ok(adc_val) => {
-                debug!("i2c{}: Read value <{}> from ADS7828, addr 0x{:02x}",
-                    bus.id, adc_val, self.addr.0);
-                adc_val_to_temp(adc_val, ADS7828_ADC_RESOLUTION)
+            SensorInterface::MSP430 => {
+                Msp430TempSensor::new(bus, self.to_string(), self.addr.into()).read_raw()
             },
-            Err(e) => {
-                warn!("i2c{}: Could not read ADS7828 sensor 0x{:02x}: {}",
-                    bus.id, self.addr.0, e);
-                Err(e)
-            }
-        }
-    }
-
-    fn read_ads7828_raw(&self, bus: I2cBus) -> ReadResult<u16> {
-        let adc_cmd = adc7828_command(self.addr);
-        debug!("i2c{}: Converted addr 0x{:02x} to ADS7828 command: {:b}",
-            bus.id, self.addr.0, adc_cmd.0);
-        Ok(i2c_read_u16_be(bus, ADS7828_I2C_ADDR, adc_cmd)?)
-    }
-
-    fn read_max31725_temp(&self, bus: I2cBus) -> ReadResult<f32> {
-        match self.read_max31725_raw(bus) {
-            Ok(t) => {
-                debug!("i2c{}: Read value <{}> from MAX31725, addr 0x{:02x}",
-                    bus.id, t, self.addr.0);
-                Ok(f32::from(t as i16) * MAX31725_CF_LSB)
+            SensorInterface::MSP430Voltage => {
+                Msp430VoltageSensor::new(bus, self.to_string(), self.addr.into()).read_raw()
             },
-            Err(e) => {
-                warn!("i2c{}: Could not read MAX31725 sensor 0x{:02x}: {}",
-                    bus.id, self.addr.0, e);
-                Err(e)
-            }
-        }
-    }
-
-    fn read_max31725_raw(&self, bus: I2cBus) -> ReadResult<u16> {
-        Ok(i2c_read_u16_be(bus, self.addr, MAX31725_REG_TEMP)?)
-    }
-
-    fn read_msp430_temp(&self, bus: I2cBus) -> ReadResult<f32> {
-        match self.read_msp430_raw(bus) {
-            Ok(adc_val) => {
-                debug!("i2c{}: Read value <{}> from MSP430, addr 0x{:02x}",
-                    bus.id, adc_val, self.addr.0);
-                adc_val_to_temp(adc_val, MSP430_ADC_RESOLUTION)
+            SensorInterface::MSP430Current => {
+                Msp430CurrentSensor::new(bus, self.to_string(), self.addr.into()).read_raw()
             },
-            Err(e) => {
-                warn!("i2c{}: Could not read MSP430 input 0x{:02x}: {:?}",
-                    bus.id, self.addr.0, e);
-                Err(e)
+            SensorInterface::ADS7828 => {
+                Ads7828Sensor::new(bus, self.to_string(), self.addr).read_raw()
+            },
+            SensorInterface::MAX31725 => {
+                Max31725Sensor::new(bus, self.to_string(), self.addr).read_raw()
             },
         }
     }
-
-    fn read_msp430_raw(&self, bus: I2cBus) -> ReadResult<u16> {
-        let reg = I2cReg(self.addr.0);
-        match i2c_read_u16_le(bus, MSP430_I2C_ADDR, reg) {
-            Ok(adc_val) => {
-                debug!("i2c{}: Read value <{}> from MSP430, addr 0x{:02x}",
-                    bus.id, adc_val, self.addr.0);
-                Ok(adc_val)
-            },
-            Err(e) => {
-                warn!("i2c{}: Could not read MSP430 input 0x{:02x}: {:?}",
-                    bus.id, self.addr.0, e);
-                Err(e.into())
-            },
-        }
-    }
-
-    fn read_msp430_voltage(&self, bus: I2cBus) -> ReadResult<f32> {
-        let adc_val = self.read_msp430_raw(bus)? as f32;
-        Ok(adc_val / (MSP430_ADC_RESOLUTION as f32) * MSP430_ADC_V_REF * MSP430_V_DIVIDER_FACTOR)
-    }
-
-    fn read_msp430_current(&self, bus: I2cBus) -> ReadResult<f32> {
-        let adc_val = self.read_msp430_raw(bus)? as f32;
-        Ok(adc_val / (MSP430_ADC_RESOLUTION as f32) * MSP430_ADC_V_REF)
-    }
-}
-
-fn adc7828_command(addr: I2cAddr) -> I2cReg {
-    // set SD = 1, PD0 = 1 (see ADS7828 datasheet, p11)
-    I2cReg(0x84 | (ads7828_channel_select(addr.0) << 4))
-}
-
-fn ads7828_channel_select(addr: u8) -> u8 {
-    // implement crazy channel select - top bit is odd/even, low bits are floor(addr/2)
-    // see ADS7828 datasheet for more details
-    ((addr & 0x01) << 2) | (addr >> 1)
 }
 
 fn adc_range_check(adc_val: u16) -> ReadResult<u16> {
@@ -202,12 +127,4 @@ pub(crate) fn temp_to_adc_val(temp: f32) -> u16 {
     assert!(temp > -55.0 && temp < 150.0, "temp out of range");
     (MSP430_ADC_RESOLUTION as f32 / (f32::exp((1.0 / (temp + ZERO_CELSIUS_IN_KELVIN) - INV_NB21K00103_REF_TEMP_K) *
                  NB21K00103_B_VALUE) + 1.0)) as u16
-}
-
-trait I2cRegister {
-    fn read(&self) -> u16;
-}
-
-trait SensorValue: std::fmt::Display {
-    fn raw(&self) -> u16;
 }

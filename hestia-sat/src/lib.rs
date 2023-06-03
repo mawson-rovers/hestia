@@ -12,9 +12,8 @@ pub mod heater;
 pub mod logger;
 
 // private modules
-mod msp430;
-mod i2c;
 mod sensors;
+mod device;
 
 
 /// Errors reading from the payload - usually can be logged and ignored
