@@ -1,7 +1,7 @@
 use std::fmt::{Display, Formatter};
 use crate::device::i2c::*;
 use crate::ReadResult;
-use crate::sensors::ReadableSensor;
+use crate::sensors::{ReadableSensor, SensorReading};
 
 const MAX31725_REG_TEMP: I2cReg = I2cReg(0x00);
 const MAX31725_CF_LSB: f32 = 0.00390625;
@@ -30,11 +30,9 @@ impl Display for Max31725Sensor {
 }
 
 impl ReadableSensor for Max31725Sensor {
-    fn read_raw(&self) -> ReadResult<u16> {
-        self.device.read_register(MAX31725_REG_TEMP, "temp")
-    }
-
-    fn read_display(&self) -> ReadResult<f32> {
-        Ok(f32::from(self.read_raw()? as i16) * MAX31725_CF_LSB)
+    fn read(&self) -> ReadResult<SensorReading> {
+        let raw_value = self.device.read_register(MAX31725_REG_TEMP, "temp")?;
+        let display_value = f32::from(raw_value as i16) * MAX31725_CF_LSB;
+        Ok(SensorReading::new(raw_value, display_value))
     }
 }

@@ -45,9 +45,20 @@ impl fmt::Display for Sensor {
     }
 }
 
+#[derive(Copy, Clone)]
+pub struct SensorReading {
+    pub raw_value: u16,
+    pub display_value: f32,
+}
+
+impl SensorReading {
+    pub fn new(raw_value: u16, display_value: f32) -> Self {
+        SensorReading { raw_value, display_value }
+    }
+}
+
 pub trait ReadableSensor: fmt::Display {
-    fn read_raw(&self) -> ReadResult<u16>;
-    fn read_display(&self) -> ReadResult<f32>;
+    fn read(&self) -> ReadResult<SensorReading>;
 }
 
 impl Sensor {

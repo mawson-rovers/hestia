@@ -8,7 +8,7 @@ use crate::device::ads7828::Ads7828Sensor;
 use crate::device::i2c::I2cBus;
 use crate::device::max31725::Max31725Sensor;
 use crate::device::msp430::{Msp430, Msp430CurrentSensor, Msp430TempSensor, Msp430VoltageSensor};
-use crate::sensors::{ReadableSensor, Sensor, SensorInterface};
+use crate::sensors::{ReadableSensor, Sensor, SensorInterface, SensorReading};
 
 const TH1: Sensor = Sensor::new("TH1", SensorInterface::MSP430, 0x01,
                                 "Centre", -42.0135, 43.18);
@@ -139,7 +139,7 @@ impl Board {
     pub fn read_target_sensor_temp(&self) -> ReadResult<f32> {
         let sensor = self.get_target_sensor()?;
         let sensor = Board::create_sensor(&self.bus, sensor);
-        sensor.read_display()
+        sensor.read().map(|s| s.display_value)
     }
 
     pub fn write_target_sensor(&self, target_sensor: u8) {
@@ -163,31 +163,10 @@ impl Board {
         None
     }
 
-    fn read_sensors_raw(&self) -> [ReadResult<u16>; 20] {
+    fn read_sensors(&self) -> Vec<ReadResult<SensorReading>> {
         self.sensors.iter()
-            .map(|s| s.read_raw())
-            .collect::<Vec<ReadResult<u16>>>()
-            .try_into()
-            .expect("Wrong number of sensors")
-    }
-
-    fn read_all_raw(&self) -> [ReadResult<u16>; 24] {
-        let mut raw_data = Vec::from(self.read_sensors_raw());
-        raw_data.append(&mut vec![
-            self.heater.read_mode_raw(),
-            self.heater.read_target_temp_raw(),
-            self.heater.read_target_sensor(),
-            self.heater.read_duty_raw(),
-        ]);
-        raw_data.try_into().expect("Wrong number of sensors")
-    }
-
-    fn read_sensors_display(&self) -> Vec<ReadResult<f32>> {
-        self.sensors.iter()
-            .map(|s| s.read_display())
-            .collect::<Vec<ReadResult<f32>>>()
-            .try_into()
-            .expect("Wrong number of sensors")
+            .map(|s| s.read())
+            .collect::<Vec<ReadResult<SensorReading>>>()
     }
 }
 
@@ -198,15 +177,35 @@ impl CsvDataProvider for Board {
             error!("I2C bus device not found: {}", self.bus);
             return None
         }
-        let test_read = self.check_sensor.read_raw();
+        let test_read = self.check_sensor.read();
         if test_read.is_err() {
             error!("Failed to read check sensor {} on I2C bus {}", self.check_sensor, self.bus);
             return None
         }
 
-        let raw_data = self.read_all_raw();
-        let sensors: [_; 20] = self.read_sensors_display()
-            .try_into().expect("Too many sensors");
+        let sensors = self.read_sensors();
+        let mut raw_data: Vec<ReadResult<u16>> = Vec::with_capacity(sensors.len() + 4);
+        let mut display_data: Vec<ReadResult<f32>> = Vec::with_capacity(sensors.len());
+        for reading in sensors {
+            match reading {
+                Ok(reading) => {
+                    raw_data.push(Ok(reading.raw_value));
+                    display_data.push(Ok(reading.display_value));
+                }
+                Err(e) => {
+                    raw_data.push(Err(e.clone()));
+                    display_data.push(Err(e.clone()));
+                }
+            }
+        }
+        raw_data.append(&mut vec![
+            self.heater.read_mode_raw(),
+            self.heater.read_target_temp_raw(),
+            self.heater.read_target_sensor(),
+            self.heater.read_duty_raw(),
+        ]);
+        let raw_data: [_; 24] = raw_data.try_into().expect("Oversize");
+        let sensors: [_; 20] = display_data.try_into().expect("Oversize");
         return Some(BoardData {
             raw_data,
             sensors,

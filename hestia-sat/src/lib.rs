@@ -1,4 +1,5 @@
 use std::convert::From;
+use std::sync::Arc;
 
 // use cubeos_error::Error;
 use failure::Fail;
@@ -17,7 +18,7 @@ mod device;
 
 
 /// Errors reading from the payload - usually can be logged and ignored
-#[derive(Debug, Fail)]
+#[derive(Debug, Fail, Clone)]
 pub enum ReadError {
     /// No error
     #[fail(display = "No error")]
@@ -27,7 +28,7 @@ pub enum ReadError {
     ValueOutOfRange,
     /// I2C Error
     #[fail(display = "I2C Error")]
-    I2CError(std::io::Error),
+    I2CError(Arc<std::io::Error>),
 }
 
 /// Convert ReadErrors to cubeos_error::Error::ServiceError(u8)
@@ -43,7 +44,7 @@ pub enum ReadError {
 
 impl From<std::io::Error> for ReadError {
     fn from(io_err: std::io::Error) -> ReadError {
-        ReadError::I2CError(io_err)
+        ReadError::I2CError(Arc::new(io_err))
     }
 }
 

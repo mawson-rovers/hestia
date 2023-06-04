@@ -2,7 +2,7 @@ use std::fmt::{Display, Formatter};
 use log::debug;
 use crate::device::i2c::*;
 use crate::ReadResult;
-use crate::sensors::{adc_val_to_temp, ReadableSensor};
+use crate::sensors::{adc_val_to_temp, ReadableSensor, SensorReading};
 
 const ADS7828_I2C_ADDR: I2cAddr = I2cAddr(0x4A); // revert to 0x48 for board v1
 pub(crate) const ADS7828_ADC_RESOLUTION: u16 = 1 << 12;
@@ -47,11 +47,9 @@ impl Display for Ads7828Sensor {
 }
 
 impl ReadableSensor for Ads7828Sensor {
-    fn read_raw(&self) -> ReadResult<u16> {
-        self.device.read_register(self.reg, &*self.name)
-    }
-
-    fn read_display(&self) -> ReadResult<f32> {
-        adc_val_to_temp(self.read_raw()?, ADS7828_ADC_RESOLUTION)
+    fn read(&self) -> ReadResult<SensorReading> {
+        let raw_value = self.device.read_register(self.reg, &*self.name)?;
+        let display_value = adc_val_to_temp(raw_value, ADS7828_ADC_RESOLUTION)?;
+        Ok(SensorReading::new(raw_value, display_value))
     }
 }

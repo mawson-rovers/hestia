@@ -5,7 +5,7 @@ use crate::heater::{Heater, HeaterMode};
 use crate::device::i2c::*;
 use crate::{ReadResult, sensors};
 use crate::ReadError::ValueOutOfRange;
-use crate::sensors::{adc_val_to_temp, ReadableSensor};
+use crate::sensors::{adc_val_to_temp, ReadableSensor, SensorReading};
 
 const MSP430_I2C_ADDR: I2cAddr = I2cAddr(0x08);
 const MSP430_READ_HEATER_MODE: I2cReg = I2cReg(0x20);
@@ -123,13 +123,10 @@ impl Display for Msp430TempSensor {
 }
 
 impl ReadableSensor for Msp430TempSensor {
-    fn read_raw(&self) -> ReadResult<u16> {
-        self.device.read_register(self.reg, &*self.name)
-    }
-
-    fn read_display(&self) -> ReadResult<f32> {
-        let adc_val = self.read_raw()?;
-        adc_val_to_temp(adc_val, MSP430_ADC_RESOLUTION)
+    fn read(&self) -> ReadResult<SensorReading> {
+        let raw_value = self.device.read_register(self.reg, &*self.name)?;
+        let display_value = adc_val_to_temp(raw_value, MSP430_ADC_RESOLUTION)?;
+        Ok(SensorReading::new(raw_value, display_value))
     }
 }
 
@@ -154,13 +151,11 @@ impl Display for Msp430VoltageSensor {
 }
 
 impl ReadableSensor for Msp430VoltageSensor {
-    fn read_raw(&self) -> ReadResult<u16> {
-        self.device.read_register(self.reg, &*self.name)
-    }
-
-    fn read_display(&self) -> ReadResult<f32> {
-        let adc_val = self.read_raw()? as f32;
-        Ok(adc_val / (MSP430_ADC_RESOLUTION as f32) * MSP430_ADC_V_REF * MSP430_V_DIVIDER_FACTOR)
+    fn read(&self) -> ReadResult<SensorReading> {
+        let raw_value = self.device.read_register(self.reg, &*self.name)?;
+        let display_value = raw_value as f32 / (MSP430_ADC_RESOLUTION as f32) *
+            MSP430_ADC_V_REF * MSP430_V_DIVIDER_FACTOR;
+        Ok(SensorReading::new(raw_value, display_value))
     }
 }
 
@@ -185,12 +180,9 @@ impl Display for Msp430CurrentSensor {
 }
 
 impl ReadableSensor for Msp430CurrentSensor {
-    fn read_raw(&self) -> ReadResult<u16> {
-        self.device.read_register(self.reg, &*self.name)
-    }
-
-    fn read_display(&self) -> ReadResult<f32> {
-        let adc_val = self.read_raw()? as f32;
-        Ok(adc_val / (MSP430_ADC_RESOLUTION as f32) * MSP430_ADC_V_REF)
+    fn read(&self) -> ReadResult<SensorReading> {
+        let raw_value = self.device.read_register(self.reg, &*self.name)?;
+        let display_value = raw_value as f32 / (MSP430_ADC_RESOLUTION as f32) * MSP430_ADC_V_REF;
+        Ok(SensorReading::new(raw_value, display_value))
     }
 }
