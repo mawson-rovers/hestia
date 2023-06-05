@@ -8,7 +8,7 @@ use crate::device::ads7828::Ads7828Sensor;
 use crate::device::i2c::I2cBus;
 use crate::device::max31725::Max31725Sensor;
 use crate::device::msp430::{Msp430, Msp430CurrentSensor, Msp430TempSensor, Msp430VoltageSensor};
-use crate::sensors::{ReadableSensor, Sensor, SensorInterface, SensorReading};
+use crate::sensors::{ReadableSensor, Sensor, SensorDisplayValue, SensorInterface, SensorReading};
 
 const TH1: Sensor = Sensor::new("TH1", SensorInterface::MSP430, 0x01,
                                 "Centre", -42.0135, 43.18);
@@ -139,7 +139,9 @@ impl Board {
     pub fn read_target_sensor_temp(&self) -> ReadResult<f32> {
         let sensor = self.get_target_sensor()?;
         let sensor = Board::create_sensor(&self.bus, sensor);
-        sensor.read().map(|s| s.display_value)
+        match sensor.read()?.display_value {
+            SensorDisplayValue::F32(temp) => Ok(temp),
+        }
     }
 
     pub fn write_target_sensor(&self, target_sensor: u8) {
@@ -190,7 +192,9 @@ impl CsvDataProvider for Board {
             match reading {
                 Ok(reading) => {
                     raw_data.push(Ok(reading.raw_value));
-                    display_data.push(Ok(reading.display_value));
+                    match reading.display_value {
+                        SensorDisplayValue::F32(temp) => display_data.push(Ok(temp)),
+                    }
                 }
                 Err(e) => {
                     raw_data.push(Err(e.clone()));

@@ -48,12 +48,28 @@ impl fmt::Display for Sensor {
 #[derive(Copy, Clone)]
 pub struct SensorReading {
     pub raw_value: u16,
-    pub display_value: f32,
+    pub display_value: SensorDisplayValue,
+}
+
+#[derive(Copy, Clone)]
+pub enum SensorDisplayValue {
+    F32(f32)
 }
 
 impl SensorReading {
     pub fn new(raw_value: u16, display_value: f32) -> Self {
-        SensorReading { raw_value, display_value }
+        SensorReading { raw_value, display_value: SensorDisplayValue::F32(display_value) }
+    }
+
+    pub fn get_raw_values(readings: Vec<ReadResult<SensorReading>>) -> Vec<ReadResult<u16>> {
+        let mut result = Vec::with_capacity(readings.len());
+        for reading in readings {
+            result.push(match reading {
+                Ok(reading) => Ok(reading.raw_value),
+                Err(e) => Err(e.clone()),
+            });
+        }
+        result
     }
 }
 
