@@ -135,6 +135,11 @@ void I2C_Slave_ProcessCMD(unsigned char *message_rx, uint16_t length) {
     if (cmd == COMMAND_WRITE_HEATER_MODE) {
         // Set the heater mode
         heater_mode = package[0];
+        if (heater_mode == HEATER_MODE_PWM) {
+            P1SEL &= ~HEATER_PIN;                     // P1.7 disable TA2 option
+        } else if (heater_mode == HEATER_MODE_PID) {
+            P1SEL |= HEATER_PIN;                      // P1.7 enable TA2 option
+        }
     } else if (cmd == COMMAND_WRITE_TARGET_TEMP) {
         if (length >= 2) {
             set_point = (package[1] << 8) + package[0];
