@@ -181,7 +181,7 @@ impl LoggingI2cDevice {
     /// debug if it succeeds.
     pub fn write_register(&self, reg: I2cReg, desc: &str, data: u16) -> () {
         info!("{}: Setting {} to value <{}> (addr {}, reg {})",
-            self.name, desc, self.device.addr, reg, data);
+            self, desc, self.device.addr, reg, data);
         match self.device.write_u16(reg, data) {
             Ok(_) => {
                 debug!("{}: Set {} to value <{}>", self, desc, data);
