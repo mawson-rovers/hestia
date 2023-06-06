@@ -3,7 +3,6 @@ use std::path::Path;
 use chrono::{DateTime, Utc};
 use crate::board::{Board, CsvDataProvider};
 use crate::csv::CsvWriter;
-use crate::sensors::SensorReading;
 
 pub struct LogWriter {
     writer: CsvWriter,
