@@ -30,7 +30,7 @@ impl Display for Max31725Sensor {
 }
 
 impl ReadableSensor for Max31725Sensor {
-    fn read(&self) -> ReadResult<SensorReading> {
+    fn read(&self) -> ReadResult<SensorReading<f32>> {
         let raw_value = self.device.read_register(MAX31725_REG_TEMP, "temp")?;
         let display_value = f32::from(raw_value as i16) * MAX31725_CF_LSB;
         Ok(SensorReading::new(raw_value, display_value))

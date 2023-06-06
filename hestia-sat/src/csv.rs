@@ -9,7 +9,7 @@ use chrono::{DateTime, Utc};
 use crate::board::{Board, BoardData};
 use crate::heater::HeaterMode;
 use crate::ReadResult;
-use crate::sensors::Sensor;
+use crate::sensors::{Sensor, SensorReading};
 
 pub enum LineEnding {
     LF,
@@ -100,6 +100,13 @@ impl From<Sensor> for CsvData {
     }
 }
 
+impl<T> From<SensorReading<T>> for CsvData
+    where CsvData: From<T>, T: std::fmt::Display {
+    fn from(value: SensorReading<T>) -> Self {
+        CsvData::from(value.display_value)
+    }
+}
+
 pub const CSV_FIELD_COUNT: usize = 26;
 
 pub const CSV_HEADERS: [&'static str; CSV_FIELD_COUNT] = [
@@ -167,7 +174,6 @@ impl CsvWriter {
         self.write_data(data).unwrap_or_else(|e| eprint!("Failed to write to log file: {:?}", e));
     }
     
-    //noinspection DuplicatedCode
     pub fn write_display_data(&mut self, timestamp: DateTime<Utc>, board: &Board,
                               board_data: &BoardData) {
         let mut data: Vec<CsvData> = vec![timestamp.into(), board.into()];

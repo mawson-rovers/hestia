@@ -188,7 +188,7 @@ fn show_status(board: Board) {
                  board.bus,
                  target_sensor_temp,
                  heater_mode,
-                 data.target_temp.unwrap(),
+                 data.target_temp.unwrap().display_value,
                  board.get_target_sensor().map(|s| s.id).unwrap_or("#err"),
                  board.read_heater_pwm().unwrap(),
                  heater_v_high.unwrap(),

@@ -47,7 +47,7 @@ impl Display for Ads7828Sensor {
 }
 
 impl ReadableSensor for Ads7828Sensor {
-    fn read(&self) -> ReadResult<SensorReading> {
+    fn read(&self) -> ReadResult<SensorReading<f32>> {
         let raw_value = self.device.read_register(self.reg, &*self.name)?;
         let display_value = adc_val_to_temp(raw_value, ADS7828_ADC_RESOLUTION)?;
         Ok(SensorReading::new(raw_value, display_value))

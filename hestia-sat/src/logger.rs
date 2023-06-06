@@ -3,6 +3,7 @@ use std::path::Path;
 use chrono::{DateTime, Utc};
 use crate::board::{Board, CsvDataProvider};
 use crate::csv::CsvWriter;
+use crate::sensors::SensorReading;
 
 pub struct LogWriter {
     writer: CsvWriter,
@@ -50,7 +51,7 @@ impl LogWriter {
             if let Some(data) = board.read_data() {
                 self.writer.write_display_data(timestamp, board, &data);
                 if let Some(raw_writer) = &mut self.raw_writer {
-                    raw_writer.write_raw_data(timestamp, board, &data.raw_data);
+                    raw_writer.write_raw_data(timestamp, board, &data.get_raw_data());
                 }
             }
         }

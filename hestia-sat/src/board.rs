@@ -2,19 +2,19 @@ use std::convert::TryInto;
 use std::rc::Rc;
 use log::error;
 
-use crate::{ReadError, ReadResult};
+use crate::{ReadResult};
 use crate::heater::{Heater, HeaterMode};
 use crate::device::ads7828::Ads7828Sensor;
 use crate::device::i2c::I2cBus;
 use crate::device::max31725::Max31725Sensor;
 use crate::device::msp430::{Msp430, Msp430CurrentSensor, Msp430TempSensor, Msp430VoltageSensor};
-use crate::sensors::{ReadableSensor, Sensor, SensorDisplayValue, SensorInterface, SensorReading};
+use crate::sensors::{ReadableSensor, Sensor, SensorInterface, SensorReading};
 
-const TH1: Sensor = Sensor::new("TH1", SensorInterface::MSP430, 0x01,
+pub const TH1: Sensor = Sensor::new("TH1", SensorInterface::MSP430, 0x01,
                                 "Centre", -42.0135, 43.18);
-const TH2: Sensor = Sensor::new("TH2", SensorInterface::MSP430, 0x02,
+pub const TH2: Sensor = Sensor::new("TH2", SensorInterface::MSP430, 0x02,
                                 "Top-left of heater", -35.7124, 54.61);
-const TH3: Sensor = Sensor::new("TH3", SensorInterface::MSP430, 0x03,
+pub const TH3: Sensor = Sensor::new("TH3", SensorInterface::MSP430, 0x03,
                                 "Bottom-right of heater", -53.88, 33.496);
 
 const U4: Sensor = Sensor::new("U4", SensorInterface::MAX31725, 0x48,
@@ -33,8 +33,8 @@ const TH5: Sensor = Sensor::new("TH5", SensorInterface::ADS7828, 0x01,
 const TH6: Sensor = Sensor::new("TH6", SensorInterface::ADS7828, 0x02,
                                 "Bottom-left of heater", 33.274, 30.226);
 
-const J7: Sensor = Sensor::mounted("J7", SensorInterface::MSP430, 0x04);
-const J8: Sensor = Sensor::mounted("J8", SensorInterface::MSP430, 0x05);
+pub const J7: Sensor = Sensor::mounted("J7", SensorInterface::MSP430, 0x04);
+pub const J8: Sensor = Sensor::mounted("J8", SensorInterface::MSP430, 0x05);
 
 const J12: Sensor = Sensor::mounted("J12", SensorInterface::ADS7828, 0x03);
 const J13: Sensor = Sensor::mounted("J13", SensorInterface::ADS7828, 0x04);
@@ -108,7 +108,7 @@ impl Board {
         }
     }
 
-    pub fn read_heater_mode(&self) -> ReadResult<HeaterMode> {
+    pub fn read_heater_mode(&self) -> ReadResult<SensorReading<HeaterMode>> {
         self.heater.read_mode()
     }
 
@@ -116,7 +116,7 @@ impl Board {
         self.heater.write_mode(mode)
     }
 
-    pub fn read_target_temp(&self) -> ReadResult<f32> {
+    pub fn read_target_temp(&self) -> ReadResult<SensorReading<f32>> {
         self.heater.read_target_temp()
     }
 
@@ -125,30 +125,20 @@ impl Board {
     }
 
     pub fn get_target_sensor(&self) -> ReadResult<Sensor> {
-        let sensor_id = self.heater.read_target_sensor()?;
-        match sensor_id {
-            0 => Ok(TH1),
-            1 => Ok(TH2),
-            2 => Ok(TH3),
-            3 => Ok(J7),
-            4 => Ok(J8),
-            _ => Err(ReadError::ValueOutOfRange),
-        }
+        self.heater.read_target_sensor().map(|v| v.display_value)
     }
 
-    pub fn read_target_sensor_temp(&self) -> ReadResult<f32> {
+    pub fn read_target_sensor_temp(&self) -> ReadResult<SensorReading<f32>> {
         let sensor = self.get_target_sensor()?;
         let sensor = Board::create_sensor(&self.bus, sensor);
-        match sensor.read()?.display_value {
-            SensorDisplayValue::F32(temp) => Ok(temp),
-        }
+        sensor.read()
     }
 
     pub fn write_target_sensor(&self, target_sensor: u8) {
         self.heater.write_target_sensor(target_sensor)
     }
 
-    pub fn read_heater_pwm(&self) -> ReadResult<u8> {
+    pub fn read_heater_pwm(&self) -> ReadResult<SensorReading<u8>> {
         self.heater.read_duty()
     }
 
@@ -165,10 +155,10 @@ impl Board {
         None
     }
 
-    fn read_sensors(&self) -> Vec<ReadResult<SensorReading>> {
+    fn read_sensors(&self) -> Vec<ReadResult<SensorReading<f32>>> {
         self.sensors.iter()
             .map(|s| s.read())
-            .collect::<Vec<ReadResult<SensorReading>>>()
+            .collect::<Vec<ReadResult<SensorReading<f32>>>>()
     }
 }
 
@@ -186,48 +176,43 @@ impl CsvDataProvider for Board {
         }
 
         let sensors = self.read_sensors();
-        let mut raw_data: Vec<ReadResult<u16>> = Vec::with_capacity(sensors.len() + 4);
-        let mut display_data: Vec<ReadResult<f32>> = Vec::with_capacity(sensors.len());
-        for reading in sensors {
-            match reading {
-                Ok(reading) => {
-                    raw_data.push(Ok(reading.raw_value));
-                    match reading.display_value {
-                        SensorDisplayValue::F32(temp) => display_data.push(Ok(temp)),
-                    }
-                }
-                Err(e) => {
-                    raw_data.push(Err(e.clone()));
-                    display_data.push(Err(e.clone()));
-                }
-            }
-        }
-        raw_data.append(&mut vec![
-            self.heater.read_mode_raw(),
-            self.heater.read_target_temp_raw(),
-            self.heater.read_target_sensor(),
-            self.heater.read_duty_raw(),
-        ]);
-        let raw_data: [_; 24] = raw_data.try_into().expect("Oversize");
-        let sensors: [_; 20] = display_data.try_into().expect("Oversize");
+        let sensors: [_; 20] = sensors.try_into().expect("Oversize");
         return Some(BoardData {
-            raw_data,
             sensors,
             heater_mode: self.heater.read_mode(),
             target_temp: self.heater.read_target_temp(),
-            target_sensor: self.get_target_sensor(),
+            target_sensor: self.heater.read_target_sensor(),
             pwm_freq: self.heater.read_duty(),
         });
     }
 }
 
 pub struct BoardData {
-    pub raw_data: [ReadResult<u16>; 24],
-    pub sensors: [ReadResult<f32>; 20],
-    pub heater_mode: ReadResult<HeaterMode>,
-    pub target_temp: ReadResult<f32>,
-    pub target_sensor: ReadResult<Sensor>,
-    pub pwm_freq: ReadResult<u8>,
+    pub sensors: [ReadResult<SensorReading<f32>>; 20],
+    pub heater_mode: ReadResult<SensorReading<HeaterMode>>,
+    pub target_temp: ReadResult<SensorReading<f32>>,
+    pub target_sensor: ReadResult<SensorReading<Sensor>>,
+    pub pwm_freq: ReadResult<SensorReading<u8>>,
+}
+
+impl BoardData {
+    pub fn get_raw_data(self) -> [ReadResult<u16>; 24] {
+        let readings = &self.sensors;
+        let mut result = Vec::with_capacity(24);
+        for reading in readings {
+            result.push(match reading {
+                Ok(reading) => Ok(reading.raw_value),
+                Err(e) => Err(e.clone()),
+            });
+        }
+        result.append(&mut vec![
+            self.heater_mode.map(|v| v.raw_value),
+            self.target_temp.map(|v| v.raw_value),
+            self.target_sensor.map(|v| v.raw_value),
+            self.pwm_freq.map(|v| v.raw_value),
+        ]);
+        result.try_into().expect("Sizes didn't match")
+    }
 }
 
 pub trait CsvDataProvider {

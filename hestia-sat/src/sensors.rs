@@ -45,36 +45,29 @@ impl fmt::Display for Sensor {
     }
 }
 
-#[derive(Copy, Clone)]
-pub struct SensorReading {
+#[derive(Debug, Copy, Clone)]
+pub struct SensorReading<T>
+    where T: fmt::Display {
     pub raw_value: u16,
-    pub display_value: SensorDisplayValue,
+    pub display_value: T,
 }
 
-#[derive(Copy, Clone)]
-pub enum SensorDisplayValue {
-    F32(f32)
-}
-
-impl SensorReading {
-    pub fn new(raw_value: u16, display_value: f32) -> Self {
-        SensorReading { raw_value, display_value: SensorDisplayValue::F32(display_value) }
+impl<T> SensorReading<T>
+    where T: fmt::Display {
+    pub fn new(raw_value: u16, display_value: T) -> Self {
+        SensorReading { raw_value, display_value }
     }
+}
 
-    pub fn get_raw_values(readings: Vec<ReadResult<SensorReading>>) -> Vec<ReadResult<u16>> {
-        let mut result = Vec::with_capacity(readings.len());
-        for reading in readings {
-            result.push(match reading {
-                Ok(reading) => Ok(reading.raw_value),
-                Err(e) => Err(e.clone()),
-            });
-        }
-        result
+impl<T> fmt::Display for SensorReading<T>
+    where T: fmt::Display {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        self.display_value.fmt(f)
     }
 }
 
 pub trait ReadableSensor: fmt::Display {
-    fn read(&self) -> ReadResult<SensorReading>;
+    fn read(&self) -> ReadResult<SensorReading<f32>>;
 }
 
 impl Sensor {

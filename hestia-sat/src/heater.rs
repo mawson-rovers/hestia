@@ -1,4 +1,5 @@
 use crate::ReadResult;
+use crate::sensors::{Sensor, SensorReading};
 
 #[repr(u16)]
 #[derive(Debug, Copy, Clone)]
@@ -11,19 +12,16 @@ pub enum HeaterMode {
 }
 
 pub trait Heater {
-    fn read_mode(&self) -> ReadResult<HeaterMode>;
-    fn read_mode_raw(&self) -> ReadResult<u16>;
+    fn read_mode(&self) -> ReadResult<SensorReading<HeaterMode>>;
     fn write_mode(&self, mode: HeaterMode);
 
-    fn read_duty(&self) -> ReadResult<u8>;
-    fn read_duty_raw(&self) -> ReadResult<u16>;
+    fn read_duty(&self) -> ReadResult<SensorReading<u8>>;
     fn write_duty(&self, duty: u8);
 
-    fn read_target_temp(&self) -> ReadResult<f32>;
-    fn read_target_temp_raw(&self) -> ReadResult<u16>;
+    fn read_target_temp(&self) -> ReadResult<SensorReading<f32>>;
     fn write_target_temp(&self, temp: f32);
 
-    fn read_target_sensor(&self) -> ReadResult<u16>;
+    fn read_target_sensor(&self) -> ReadResult<SensorReading<Sensor>>;
     fn write_target_sensor(&self, target_sensor: u8);
 }
 
