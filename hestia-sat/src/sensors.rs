@@ -45,31 +45,6 @@ impl fmt::Display for Sensor {
     }
 }
 
-#[derive(Debug, Copy, Clone)]
-pub struct SensorReading<T>
-    where T: fmt::Display {
-    pub raw_value: u16,
-    pub display_value: T,
-}
-
-impl<T> SensorReading<T>
-    where T: fmt::Display {
-    pub fn new(raw_value: u16, display_value: T) -> Self {
-        SensorReading { raw_value, display_value }
-    }
-}
-
-impl<T> fmt::Display for SensorReading<T>
-    where T: fmt::Display {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        self.display_value.fmt(f)
-    }
-}
-
-pub trait ReadableSensor: fmt::Display {
-    fn read(&self) -> ReadResult<SensorReading<f32>>;
-}
-
 impl Sensor {
     pub const fn new(id: SensorId, iface: SensorInterface,
                      addr: u8, label: &'static str,

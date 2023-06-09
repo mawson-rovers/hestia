@@ -1,7 +1,7 @@
 use std::fmt::{Display, Formatter};
 use crate::device::i2c::*;
+use crate::reading::{ReadableSensor, SensorReading};
 use crate::ReadResult;
-use crate::sensors::{ReadableSensor, SensorReading};
 
 const MAX31725_REG_TEMP: I2cReg = I2cReg(0x00);
 const MAX31725_CF_LSB: f32 = 0.00390625;

@@ -1,8 +1,9 @@
 use std::fmt::{Display, Formatter};
 use log::debug;
 use crate::device::i2c::*;
+use crate::reading::{ReadableSensor, SensorReading};
 use crate::ReadResult;
-use crate::sensors::{adc_val_to_temp, ReadableSensor, SensorReading};
+use crate::sensors::{adc_val_to_temp};
 
 const ADS7828_I2C_ADDR: I2cAddr = I2cAddr(0x4A); // revert to 0x48 for board v1
 pub(crate) const ADS7828_ADC_RESOLUTION: u16 = 1 << 12;

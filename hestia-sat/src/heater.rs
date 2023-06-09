@@ -1,8 +1,10 @@
+use serde::{Deserialize, Serialize};
+use crate::reading::SensorReading;
 use crate::ReadResult;
-use crate::sensors::{Sensor, SensorReading};
+use crate::sensors::Sensor;
 
 #[repr(u16)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub enum HeaterMode {
     OFF = 0x00,
     /// temperature controlled

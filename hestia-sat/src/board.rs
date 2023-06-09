@@ -8,7 +8,8 @@ use crate::device::ads7828::Ads7828Sensor;
 use crate::device::i2c::I2cBus;
 use crate::device::max31725::Max31725Sensor;
 use crate::device::msp430::{Msp430, Msp430CurrentSensor, Msp430TempSensor, Msp430VoltageSensor};
-use crate::sensors::{ReadableSensor, Sensor, SensorInterface, SensorReading};
+use crate::reading::{ReadableSensor, SensorReading};
+use crate::sensors::{Sensor, SensorInterface};
 
 pub const TH1: Sensor = Sensor::new("TH1", SensorInterface::MSP430, 0x01,
                                 "Centre", -42.0135, 43.18);
@@ -46,7 +47,7 @@ const HEATER_V_HIGH: Sensor = Sensor::mounted("heater_v_high", SensorInterface::
 const HEATER_V_LOW: Sensor = Sensor::mounted("heater_v_low", SensorInterface::MSP430Voltage, 0x06);
 const HEATER_CURR: Sensor = Sensor::mounted("heater_curr", SensorInterface::MSP430Current, 0x07);
 
-static ALL_SENSORS: &[Sensor; 20] = &[
+pub static ALL_SENSORS: &[Sensor; 20] = &[
     TH1,
     TH2,
     TH3,

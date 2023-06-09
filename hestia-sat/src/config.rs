@@ -9,7 +9,7 @@ fn default_check_sensor() -> String { "U7".to_string() }
 
 fn default_log_interval() -> u16 { 5 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct Config {
     /// Log file directory
     pub log_path: Option<String>,

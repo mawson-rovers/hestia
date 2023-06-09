@@ -11,9 +11,10 @@ pub mod config;
 pub mod csv;
 pub mod heater;
 pub mod logger;
+pub mod reading;
+pub mod sensors;
 
 // private modules
-mod sensors;
 mod device;
 
 

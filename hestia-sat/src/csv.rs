@@ -8,8 +8,9 @@ use std::path::Path;
 use chrono::{DateTime, Utc};
 use crate::board::{Board, BoardData};
 use crate::heater::HeaterMode;
+use crate::reading::SensorReading;
 use crate::ReadResult;
-use crate::sensors::{Sensor, SensorReading};
+use crate::sensors::Sensor;
 
 pub enum LineEnding {
     LF,
@@ -48,7 +49,7 @@ pub enum CsvData {
 impl From<CsvData> for String {
     fn from(value: CsvData) -> Self {
         match value {
-            CsvData::F32 { value } => format!("{:0.4}", value),
+            CsvData::F32 { value } => format!("{:0.2}", value),
             CsvData::U16 { value } => format!("{}", value),
             CsvData::Timestamp { value } => format!("{}", value.format("%Y-%m-%d %T.%6f")),
             CsvData::Error => String::from(""), // errors are logged to stderr, not the CSV file

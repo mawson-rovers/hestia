@@ -6,7 +6,8 @@ use crate::device::i2c::*;
 use crate::{ReadResult, sensors};
 use crate::board::{TH1, TH2, TH3, J7, J8};
 use crate::ReadError::ValueOutOfRange;
-use crate::sensors::{adc_val_to_temp, ReadableSensor, Sensor, SensorReading};
+use crate::reading::{ReadableSensor, SensorReading};
+use crate::sensors::{adc_val_to_temp, Sensor};
 
 const MSP430_I2C_ADDR: I2cAddr = I2cAddr(0x08);
 const MSP430_READ_HEATER_MODE: I2cReg = I2cReg(0x20);
