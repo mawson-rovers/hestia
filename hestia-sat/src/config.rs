@@ -9,6 +9,8 @@ fn default_check_sensor() -> String { "U7".to_string() }
 
 fn default_log_interval() -> u16 { 5 }
 
+fn default_http_port() -> u16 { 5000 }
+
 #[derive(Deserialize, Debug, Clone)]
 pub struct Config {
     /// Log file directory
@@ -25,6 +27,10 @@ pub struct Config {
     /// Duration between logging output in seconds
     #[serde(default = "default_log_interval")]
     pub log_interval: u16,
+
+    /// Port used for HTTP dashboard
+    #[serde(default = "default_http_port")]
+    pub http_port: u16,
 }
 
 impl Config {

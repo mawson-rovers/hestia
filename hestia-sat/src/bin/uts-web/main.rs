@@ -47,10 +47,12 @@ fn pretty_json<T>(result: &T) -> HttpResponse
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    let config = Config::read();
     let app_data = web::Data::new(AppState {
         app_name: String::from("Hestia control panel"),
-        config: Config::read(),
+        config: config.clone(),
     });
+    let addr = ("0.0.0.0", config.http_port);
     let server = HttpServer::new(move || {
         App::new()
             .wrap(middleware::Compress::default())
@@ -61,8 +63,8 @@ async fn main() -> std::io::Result<()> {
                     .service(get_status)
                     .service(get_data))
     })
-        .bind(("0.0.0.0", 5001))?
+        .bind(addr)?
         .run();
-    eprintln!("uts-web: listening on port 5001...");
+    eprintln!("uts-web: listening on {:?}...", addr);
     server.await
 }
