@@ -163,7 +163,7 @@ impl Board {
     }
 }
 
-impl CsvDataProvider for Board {
+impl BoardDataProvider for Board {
     fn read_data(&self) -> Option<BoardData> {
         // fail fast if bus isn't found or check sensor is not readable
         if !self.bus.exists() {
@@ -216,7 +216,7 @@ impl BoardData {
     }
 }
 
-pub trait CsvDataProvider {
+pub trait BoardDataProvider {
     fn read_data(&self) -> Option<BoardData>;
 }
 

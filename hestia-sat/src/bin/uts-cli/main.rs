@@ -3,7 +3,7 @@ use std::time::Duration;
 use chrono::Utc;
 use clap::{Parser, Subcommand};
 use log::error;
-use uts_ws1::board::{Board, CsvDataProvider};
+use uts_ws1::board::{Board, BoardDataProvider};
 use uts_ws1::config::Config;
 use uts_ws1::heater::HeaterMode;
 use uts_ws1::logger::LogWriter;

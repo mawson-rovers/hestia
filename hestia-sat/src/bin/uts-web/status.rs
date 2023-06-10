@@ -3,7 +3,7 @@ use std::iter::zip;
 use linked_hash_map::LinkedHashMap;
 use serde::{Deserialize, Serialize, Serializer};
 use serde::ser::SerializeMap;
-use uts_ws1::board::{Board, BoardData, CsvDataProvider, HEATER_CURR, HEATER_V_HIGH, HEATER_V_LOW};
+use uts_ws1::board::{Board, BoardData, BoardDataProvider, HEATER_CURR, HEATER_V_HIGH, HEATER_V_LOW};
 use uts_ws1::heater::HeaterMode;
 use uts_ws1::reading::SensorReading;
 use uts_ws1::{board, ReadResult};
