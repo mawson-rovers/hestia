@@ -1,9 +1,12 @@
-#!/bin/sh
+#!/bin/bash
 
 DEST=$1
 FILE=$2
 if [ -z "$DEST" ] || [ -z "$FILE" ]; then
-  echo "Usage: $0 file host:path/"
+  echo "Usage: $0 host:path/ file"
   exit 1
 fi
-scp "$FILE" "$DEST"
+PATH=$(dirname "$FILE")
+
+set -x # echo commands from now on
+/usr/bin/scp "$PATH"/{uts-cli,uts-log,uts-web} "$DEST"
