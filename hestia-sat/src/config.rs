@@ -1,7 +1,6 @@
 use dotenv::dotenv;
 use serde::Deserialize;
 use crate::board::Board;
-use crate::device::i2c::I2cBus;
 
 fn default_i2c_bus() -> Vec<u8> { vec![1, 2] }
 
@@ -41,8 +40,8 @@ impl Config {
     }
 
     pub fn create_boards(&self) -> Vec<Board> {
-        let buses: Vec<I2cBus> = self.i2c_bus.clone().into_iter()
-            .map(I2cBus::from).collect();
-        buses.iter().map(|bus| Board::init(bus, &self.check_sensor)).collect()
+        self.i2c_bus.iter().map(|&bus| {
+            Board::init(&bus.into(), &self.check_sensor)
+        }).collect()
     }
 }
