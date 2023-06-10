@@ -110,7 +110,11 @@ void process_cmd_tx(unsigned char cmd) {
     } else if (cmd == COMMAND_READ_TARGET_SENSOR) {
         transmit_uint(control_sensor);
     } else if (cmd == COMMAND_READ_PWM_FREQ) {
-        transmit_uint(current_pwm);
+        if (heater_mode == HEATER_MODE_PID) {
+            transmit_uint(CCR2);
+        } else {
+            transmit_uint(current_pwm);
+        }
     } else {
         // Unknown command
     }
