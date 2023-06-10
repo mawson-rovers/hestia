@@ -43,9 +43,9 @@ const J14: Sensor = Sensor::mounted("J14", SensorInterface::ADS7828, 0x05);
 const J15: Sensor = Sensor::mounted("J15", SensorInterface::ADS7828, 0x06);
 const J16: Sensor = Sensor::mounted("J16", SensorInterface::ADS7828, 0x07);
 
-const HEATER_V_HIGH: Sensor = Sensor::mounted("heater_v_high", SensorInterface::MSP430Voltage, 0x08);
-const HEATER_V_LOW: Sensor = Sensor::mounted("heater_v_low", SensorInterface::MSP430Voltage, 0x06);
-const HEATER_CURR: Sensor = Sensor::mounted("heater_curr", SensorInterface::MSP430Current, 0x07);
+pub const HEATER_V_HIGH: Sensor = Sensor::circuit("heater_v_high", SensorInterface::MSP430Voltage, 0x08);
+pub const HEATER_V_LOW: Sensor = Sensor::circuit("heater_v_low", SensorInterface::MSP430Voltage, 0x06);
+pub const HEATER_CURR: Sensor = Sensor::circuit("heater_curr", SensorInterface::MSP430Current, 0x07);
 
 pub static ALL_SENSORS: &[Sensor; 20] = &[
     TH1,

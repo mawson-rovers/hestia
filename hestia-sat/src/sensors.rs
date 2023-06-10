@@ -57,6 +57,12 @@ impl Sensor {
                          addr: u8) -> Sensor {
         Sensor { id, iface, addr: I2cAddr(addr), label: "Mounted", pos_x: 0.0, pos_y: 0.0 }
     }
+
+    /// circuit sensors have no position and a location of "Circuit"
+    pub const fn circuit(id: SensorId, iface: SensorInterface,
+                         addr: u8) -> Sensor {
+        Sensor { id, iface, addr: I2cAddr(addr), label: "Circuit", pos_x: 0.0, pos_y: 0.0 }
+    }
 }
 
 fn adc_range_check(adc_val: u16) -> ReadResult<u16> {
