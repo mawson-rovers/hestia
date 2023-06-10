@@ -1,0 +1,17 @@
+[Unit]
+Description=UTS payload logger
+
+[Service]
+User=debian
+Group=debian
+Environment=UTS_LOG_PATH=/home/debian/data/uts/logs
+Environment=UTS_I2C_BUS=2
+Environment=RUST_LOG=warn
+Environment=TZ=UTC
+WorkingDirectory=/home/debian/opt/hestia-sat
+ExecStart=/home/debian/opt/hestia-sat/uts-log
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
