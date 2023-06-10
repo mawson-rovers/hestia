@@ -9,4 +9,4 @@ fi
 PATH=$(dirname "$FILE")
 
 set -x # echo commands from now on
-/usr/bin/scp "$PATH"/{uts-cli,uts-log,uts-web} "$DEST"
+/usr/bin/rsync -utvz -e /usr/bin/ssh "$PATH"/{uts-cli,uts-log,uts-web} "$DEST"
