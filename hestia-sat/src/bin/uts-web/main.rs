@@ -1,6 +1,7 @@
 use actix_web::{App, get, HttpResponse, HttpServer, middleware, Responder, web};
 use actix_web::error::JsonPayloadError;
 use actix_web::http::header;
+use log::info;
 use serde::Serialize;
 use data::SystemTimeTempData;
 use uts_ws1::config::Config;
@@ -74,6 +75,6 @@ async fn main() -> std::io::Result<()> {
     })
         .bind(addr)?
         .run();
-    eprintln!("uts-web: listening on {:?}...", addr);
+    info!("uts-web listening on {:?}...", addr);
     server.await
 }
