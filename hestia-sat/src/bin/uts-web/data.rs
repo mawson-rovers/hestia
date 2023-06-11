@@ -26,11 +26,15 @@ impl TimeTempData {
         Self { timestamp, temp }
     }
 
+    pub fn new_f32(timestamp: DateTime<Utc>, temp: f32) -> Self {
+        Self { timestamp, temp: format!("{:0.2}", temp) }
+    }
+
     fn singleton(timestamp: DateTime<Utc>, temp: Option<f32>) -> LinkedList<Self> {
         match temp {
             None => LinkedList::new(),
             Some(temp) => LinkedList::from([
-                TimeTempData { timestamp, temp: format!("{:0.2}", temp) }
+                Self::new_f32(timestamp, temp)
             ]),
         }
     }

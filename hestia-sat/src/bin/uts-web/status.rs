@@ -98,8 +98,12 @@ fn calculate_power(sensor_values: &LinkedHashMap<String, Option<f32>>) -> Option
     let v_high: f32 = sensor_values.get(HEATER_V_HIGH.id)?.clone()?;
     let v_low: f32 = sensor_values.get(HEATER_V_LOW.id)?.clone()?;
     let curr: f32 = sensor_values.get(HEATER_CURR.id)?.clone()?;
+    Some(heater_power(v_high, v_low, curr))
+}
+
+pub fn heater_power(v_high: f32, v_low: f32, curr: f32) -> f32 {
     let voltage_drop = (v_high - v_low).max(0.0);
-    Some(voltage_drop * curr)
+    voltage_drop * curr
 }
 
 fn to_sensor_info<const N: usize>(sensors: &[Sensor; N]) -> LinkedHashMap<String, SensorInfo> {

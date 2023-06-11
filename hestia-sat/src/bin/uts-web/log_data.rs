@@ -1,12 +1,15 @@
+use std::collections::HashSet;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::iter::zip;
 use std::path::PathBuf;
 use chrono::{TimeZone, Utc};
 use log::{debug, info, warn};
+use uts_ws1::board;
 use uts_ws1::config::Config;
 use uts_ws1::csv::TIMESTAMP_FORMAT;
 use crate::data::{SystemTimeTempData, TimeTempData};
+use crate::status;
 
 pub trait LogReader {
     fn read_logs(&self) -> SystemTimeTempData;
@@ -32,18 +35,10 @@ impl LogReader for Config {
                 line.split(",").map(|s| s.to_string()).collect()
             }
         };
+        let sensor_whitelist = sensors_to_include();
         debug!("Starting processing lines");
         for (i, line) in lines_iter.enumerate() {
-            let values: Vec<String> = line.split(",").map(str::to_string).collect();
-            debug!("Got some values: {:?}", values);
-            let timestamp = Utc.datetime_from_str(&values[0], TIMESTAMP_FORMAT).unwrap();
-            let board_id = &values[1];
-            for (sensor_id, value) in zip(&headers[2..], &values[2..]) {
-                if value.len() > 0 {
-                    result.add(board_id.clone(), sensor_id.clone(),
-                               TimeTempData::new(timestamp, value.clone()));
-                }
-            }
+            process_line(line, &headers, &sensor_whitelist, &mut result);
             if i >= 1500 { // include up to 2 hours of data
                 break;
             }
@@ -51,6 +46,44 @@ impl LogReader for Config {
         debug!("Finished processing lines");
         result
     }
+}
+
+fn process_line(line: String, headers: &Vec<String>, sensor_whitelist: &HashSet<String>, result: &mut SystemTimeTempData) {
+    let values: Vec<String> = line.split(",").map(str::to_string).collect();
+    debug!("Read CSV values: {:?}", values);
+    let timestamp = Utc.datetime_from_str(&values[0], TIMESTAMP_FORMAT).unwrap();
+    let board_id = &values[1];
+    for (sensor_id, value) in zip(&headers[2..], &values[2..]) {
+        if sensor_whitelist.contains(sensor_id) && value.len() > 0 {
+            result.add(board_id.clone(), sensor_id.clone(),
+                       TimeTempData::new(timestamp, value.clone()));
+        }
+    }
+
+    // calculate heater power and add it too
+    let (mut v_high, mut v_low, mut curr) = (None::<f32>, None::<f32>, None::<f32>);
+    for (sensor_id, value) in zip(&headers[2..], &values[2..]) {
+        if sensor_id == "heater_v_high" { v_high = value.parse().ok() }
+        if sensor_id == "heater_v_low" { v_low = value.parse().ok() }
+        if sensor_id == "heater_curr" { curr = value.parse().ok() }
+    }
+    match (v_high, v_low, curr) {
+        (Some(v_high), Some(v_low), Some(curr)) => {
+            let power = status::heater_power(v_high, v_low, curr);
+            result.add(board_id.clone(), String::from("heater_power"),
+                       TimeTempData::new_f32(timestamp, power));
+        }
+        _ => {}
+    }
+}
+
+fn sensors_to_include() -> HashSet<String> {
+    let mut result = HashSet::new();
+    for sensor in board::ALL_SENSORS {
+        result.insert(sensor.id.into());
+    }
+    result.insert(String::from("target_temp"));
+    result
 }
 
 fn open_last_log_file(log_path: Option<String>) -> Option<BufReader<File>> {
