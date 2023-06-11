@@ -5,9 +5,11 @@ use serde::Serialize;
 use data::SystemTimeTempData;
 use uts_ws1::config::Config;
 use status::SystemStatus;
+use log_data::LogReader;
 
-mod status;
 mod data;
+mod log_data;
+mod status;
 
 struct AppState {
     app_name: String,
@@ -30,6 +32,12 @@ async fn get_status(state: web::Data<AppState>) -> impl Responder {
 async fn get_data(state: web::Data<AppState>) -> impl Responder {
     let status = SystemStatus::read(&state.config);
     let data = SystemTimeTempData::from(status);
+    pretty_json(&data)
+}
+
+#[get("/log_data")]
+async fn get_log_data(state: web::Data<AppState>) -> impl Responder {
+    let data = &state.config.read_logs();
     pretty_json(&data)
 }
 
@@ -61,7 +69,8 @@ async fn main() -> std::io::Result<()> {
             .service(
                 web::scope("/api")
                     .service(get_status)
-                    .service(get_data))
+                    .service(get_data)
+                    .service(get_log_data))
     })
         .bind(addr)?
         .run();

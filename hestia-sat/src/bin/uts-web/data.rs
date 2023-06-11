@@ -6,9 +6,9 @@ use serde::ser::SerializeSeq;
 use crate::status::{BoardStatus, SystemStatus};
 
 #[derive(Debug, Clone)]
-struct TimeTempData {
+pub struct TimeTempData {
     timestamp: DateTime<Utc>,
-    temp: f32,
+    temp: String,
 }
 
 impl Serialize for TimeTempData {
@@ -16,17 +16,21 @@ impl Serialize for TimeTempData {
         where S: Serializer {
         let mut seq = serializer.serialize_seq(Some(2))?;
         seq.serialize_element(&self.timestamp.format("%Y-%m-%d %T.%6f").to_string())?;
-        seq.serialize_element(&format!("{:0.2}", self.temp))?;
+        seq.serialize_element(&self.temp)?;
         seq.end()
     }
 }
 
 impl TimeTempData {
+    pub fn new(timestamp: DateTime<Utc>, temp: String) -> Self {
+        Self { timestamp, temp }
+    }
+
     fn singleton(timestamp: DateTime<Utc>, temp: Option<f32>) -> LinkedList<Self> {
         match temp {
             None => LinkedList::new(),
             Some(temp) => LinkedList::from([
-                TimeTempData { timestamp, temp }
+                TimeTempData { timestamp, temp: format!("{:0.2}", temp) }
             ]),
         }
     }
@@ -43,6 +47,15 @@ impl Serialize for BoardTimeTempData {
 }
 
 impl BoardTimeTempData {
+    fn new() -> Self {
+        BoardTimeTempData(LinkedHashMap::new())
+    }
+
+    pub fn add(&mut self, sensor_id: String, data: TimeTempData) {
+        let entry = self.0.entry(sensor_id).or_insert(LinkedList::new());
+        entry.push_back(data);
+    }
+
     fn from(timestamp: DateTime<Utc>, status: BoardStatus) -> Self {
         let mut result = LinkedHashMap::<String, LinkedList<TimeTempData>>::with_capacity(
             status.sensor_values.len());
@@ -76,5 +89,16 @@ impl From<SystemStatus> for SystemTimeTempData {
             });
         }
         SystemTimeTempData(result)
+    }
+}
+
+impl SystemTimeTempData {
+    pub fn new() -> Self {
+        Self(LinkedHashMap::new())
+    }
+
+    pub fn add(&mut self, board_id: String, sensor_id: String, data: TimeTempData) {
+        let entry = self.0.entry(board_id).or_insert(BoardTimeTempData::new());
+        entry.add(sensor_id, data);
     }
 }

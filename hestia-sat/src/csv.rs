@@ -46,12 +46,14 @@ pub enum CsvData {
     Error,
 }
 
+pub const TIMESTAMP_FORMAT: &'static str = "%Y-%m-%d %T.%6f";
+
 impl From<CsvData> for String {
     fn from(value: CsvData) -> Self {
         match value {
             CsvData::F32 { value } => format!("{:0.2}", value),
             CsvData::U16 { value } => format!("{}", value),
-            CsvData::Timestamp { value } => format!("{}", value.format("%Y-%m-%d %T.%6f")),
+            CsvData::Timestamp { value } => format!("{}", value.format(TIMESTAMP_FORMAT)),
             CsvData::Error => String::from(""), // errors are logged to stderr, not the CSV file
             CsvData::HeaterMode { value } => format!("{}", value),
             CsvData::Sensor { value } => format!("{}", value),
