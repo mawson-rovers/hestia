@@ -1,4 +1,4 @@
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Local, TimeZone, Utc};
 use linked_hash_map::LinkedHashMap;
 use std::collections::LinkedList;
 use serde::{Serialize, Serializer};
@@ -7,7 +7,7 @@ use crate::status::{BoardStatus, SystemStatus};
 
 #[derive(Debug, Clone)]
 pub struct TimeTempData {
-    timestamp: DateTime<Utc>,
+    timestamp: DateTime<Local>,
     temp: String,
 }
 
@@ -23,11 +23,12 @@ impl Serialize for TimeTempData {
 
 impl TimeTempData {
     pub fn new(timestamp: DateTime<Utc>, temp: String) -> Self {
+        let timestamp = Local.from_utc_datetime(&timestamp.naive_local());
         Self { timestamp, temp }
     }
 
     pub fn new_f32(timestamp: DateTime<Utc>, temp: f32) -> Self {
-        Self { timestamp, temp: format!("{:0.2}", temp) }
+        Self::new(timestamp, format!("{:0.2}", temp))
     }
 
     fn singleton(timestamp: DateTime<Utc>, temp: Option<f32>) -> LinkedList<Self> {
