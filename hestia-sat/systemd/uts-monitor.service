@@ -3,7 +3,7 @@ Description=UTS monitor
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/systemctl restart uts-log uts-web
+ExecStart=/bin/systemctl restart uts-log uts-web
 
 [Path]
 PathChanged=/home/debian/opt/hestia-sat/uts-log
