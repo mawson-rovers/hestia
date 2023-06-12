@@ -1098,7 +1098,7 @@
     (property "Value" "10uH" (at 177.8 92.075 90)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Footprint" "Inductor_SMD:L_Coilcraft_LPS5030" (at 179.07 90.805 0)
+    (property "Footprint" "Hestia:SRP5030C" (at 179.07 90.805 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "~" (at 179.07 90.805 0)

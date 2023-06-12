@@ -2197,7 +2197,7 @@
     (property "Value" "BAT54S" (at 58.42 51.435 90)
       (effects (font (size 1.27 1.27)) (justify left))
     )
-    (property "Footprint" "Package_TO_SOT_SMD:SOT-23" (at 59.055 49.53 0)
+    (property "Footprint" "Package_TO_SOT_SMD:SOT-323_SC-70_Handsoldering" (at 59.055 49.53 0)
       (effects (font (size 1.27 1.27)) (justify left) hide)
     )
     (property "Datasheet" "https://www.diodes.com/assets/Datasheets/ds11005.pdf" (at 62.23 54.483 0)
