@@ -1,13 +1,15 @@
 use actix_cors::Cors;
-use actix_web::{App, get, HttpResponse, HttpServer, middleware, Responder, web};
+use actix_web::{App, get, post, HttpResponse, HttpServer, middleware, Responder, web};
 use actix_web::error::JsonPayloadError;
 use actix_web::http::header;
+use actix_web::web::Redirect;
 use log::info;
 use serde::Serialize;
 use data::SystemTimeTempData;
 use uts_ws1::config::Config;
 use status::SystemStatus;
 use log_data::LogReader;
+use crate::status::BoardStatusUpdate;
 
 mod data;
 mod log_data;
@@ -28,6 +30,27 @@ async fn get_index(state: web::Data<AppState>) -> String {
 async fn get_status(state: web::Data<AppState>) -> impl Responder {
     let status = SystemStatus::read(&state.config);
     pretty_json(&status)
+}
+
+#[post("/status")]
+async fn post_status(state: web::Data<AppState>, update: web::Json<BoardStatusUpdate>)
+    -> impl Responder {
+    let update = update.into_inner();
+    let boards = state.config.create_boards();
+    let board = &boards[update.board_id as usize];
+    if let Some(heater_mode) = update.heater_mode {
+        board.write_heater_mode(heater_mode);
+    }
+    if let Some(heater_duty) = update.heater_duty {
+        board.write_heater_pwm(heater_duty);
+    }
+    if let Some(target_temp) = update.target_temp {
+        board.write_target_temp(target_temp);
+    }
+    if let Some(target_sensor) = update.target_sensor {
+        board.write_target_sensor(target_sensor);
+    }
+    Redirect::to("/api/status").see_other()
 }
 
 #[get("/data")]
@@ -79,6 +102,7 @@ async fn main() -> std::io::Result<()> {
             .service(
                 web::scope("/api")
                     .service(get_status)
+                    .service(post_status)
                     .service(get_data)
                     .service(get_log_data))
     })

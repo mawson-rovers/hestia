@@ -3,7 +3,7 @@ use std::rc::Rc;
 use log::error;
 
 use crate::{ReadResult};
-use crate::heater::{Heater, HeaterMode};
+use crate::heater::{Heater, HeaterMode, TargetSensor};
 use crate::device::ads7828::Ads7828Sensor;
 use crate::device::i2c::I2cBus;
 use crate::device::max31725::Max31725Sensor;
@@ -135,7 +135,7 @@ impl Board {
         sensor.read()
     }
 
-    pub fn write_target_sensor(&self, target_sensor: u8) {
+    pub fn write_target_sensor(&self, target_sensor: TargetSensor) {
         self.heater.write_target_sensor(target_sensor)
     }
 

@@ -4,7 +4,7 @@ use linked_hash_map::LinkedHashMap;
 use serde::{Deserialize, Serialize, Serializer};
 use serde::ser::SerializeMap;
 use uts_ws1::board::{Board, BoardData, BoardDataProvider, HEATER_CURR, HEATER_V_HIGH, HEATER_V_LOW};
-use uts_ws1::heater::HeaterMode;
+use uts_ws1::heater::{HeaterMode, TargetSensor};
 use uts_ws1::reading::SensorReading;
 use uts_ws1::{board, ReadResult};
 use uts_ws1::config::Config;
@@ -156,3 +156,13 @@ impl SystemStatus {
         self.0.insert(board.bus.id.to_string(), data);
     }
 }
+
+#[derive(Deserialize)]
+pub(crate) struct BoardStatusUpdate {
+    pub board_id: u8,
+    pub heater_mode: Option<HeaterMode>,
+    pub heater_duty: Option<u8>,
+    pub target_temp: Option<f32>,
+    pub target_sensor: Option<TargetSensor>,
+}
+

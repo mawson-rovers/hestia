@@ -1,7 +1,7 @@
 use std::convert::TryInto;
 use std::fmt::{Display, Formatter};
 use log::warn;
-use crate::heater::{Heater, HeaterMode};
+use crate::heater::{Heater, HeaterMode, TargetSensor};
 use crate::device::i2c::*;
 use crate::{ReadResult, sensors};
 use crate::board::{TH1, TH2, TH3, J7, J8};
@@ -100,7 +100,7 @@ impl Heater for Msp430 {
 
     }
 
-    fn write_target_sensor(&self, target_sensor: u8) {
+    fn write_target_sensor(&self, target_sensor: TargetSensor) {
         self.write_register(MSP430_WRITE_HEATER_TARGET_SENSOR, "target sensor",
                             target_sensor as u16)
     }

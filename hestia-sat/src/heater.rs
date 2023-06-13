@@ -1,3 +1,4 @@
+use std::convert::TryFrom;
 use serde::{Deserialize, Serialize};
 use crate::reading::SensorReading;
 use crate::ReadResult;
@@ -13,6 +14,16 @@ pub enum HeaterMode {
     PWM = 0x02,
 }
 
+#[repr(u16)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
+pub enum TargetSensor {
+    TH1 = 0x00,
+    TH2 = 0x01,
+    TH3 = 0x02,
+    J7  = 0x03,
+    J8  = 0x04,
+}
+
 pub trait Heater {
     fn read_mode(&self) -> ReadResult<SensorReading<HeaterMode>>;
     fn write_mode(&self, mode: HeaterMode);
@@ -24,7 +35,7 @@ pub trait Heater {
     fn write_target_temp(&self, temp: f32);
 
     fn read_target_sensor(&self) -> ReadResult<SensorReading<Sensor>>;
-    fn write_target_sensor(&self, target_sensor: u8);
+    fn write_target_sensor(&self, target_sensor: TargetSensor);
 }
 
 impl std::fmt::Display for HeaterMode {
@@ -37,7 +48,7 @@ impl std::fmt::Display for HeaterMode {
     }
 }
 
-impl std::convert::TryFrom<u16> for HeaterMode {
+impl TryFrom<u16> for HeaterMode {
     type Error = ();
 
     fn try_from(v: u16) -> Result<Self, Self::Error> {
@@ -46,6 +57,19 @@ impl std::convert::TryFrom<u16> for HeaterMode {
             x if x == HeaterMode::PID as u16 => Ok(HeaterMode::PID),
             x if x == HeaterMode::PWM as u16 => Ok(HeaterMode::PWM),
             _ => Err(()),
+        }
+    }
+}
+
+impl From<String> for TargetSensor {
+    fn from(value: String) -> Self {
+        match value.to_uppercase().as_str() {
+            "TH1" => TargetSensor::TH1,
+            "TH2" => TargetSensor::TH2,
+            "TH3" => TargetSensor::TH3,
+            "J7" => TargetSensor::J7,
+            "J8" => TargetSensor::J8,
+            _ => panic!("Unsupported target sensor: {}", value),
         }
     }
 }

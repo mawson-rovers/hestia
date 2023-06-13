@@ -2,10 +2,9 @@ use std::thread;
 use std::time::Duration;
 use chrono::Utc;
 use clap::{Parser, Subcommand};
-use log::error;
 use uts_ws1::board::{Board, BoardDataProvider};
 use uts_ws1::config::Config;
-use uts_ws1::heater::HeaterMode;
+use uts_ws1::heater::{HeaterMode, TargetSensor};
 use uts_ws1::logger::LogWriter;
 
 #[derive(Parser)]
@@ -56,7 +55,7 @@ enum Command {
         board: u8,
 
         /// Target sensor: TH1, TH2, TH3, J7 or J8
-        target_sensor: String,
+        target_sensor: TargetSensor,
     },
 
     /// Set PWM duty cycle
@@ -96,7 +95,7 @@ pub fn main() {
             Command::Status => do_status(),
             Command::Heater { board, command } => do_heater(*board, command),
             Command::Target { board, temp } => do_target(*board, *temp),
-            Command::TargetSensor { board, target_sensor } => do_target_sensor(*board, target_sensor),
+            Command::TargetSensor { board, target_sensor } => do_target_sensor(*board, *target_sensor),
             Command::Duty { board, duty } => do_your_duty(*board, *duty),
         },
         None => do_status()
@@ -109,16 +108,9 @@ fn do_your_duty(board: u8, duty: u8) {
     show_status(board);
 }
 
-fn do_target_sensor(board: u8, target_sensor: &String) {
+fn do_target_sensor(board: u8, target_sensor: TargetSensor) {
     let board = single_board(board);
-    match target_sensor.to_uppercase().as_str() {
-        "TH1" => board.write_target_sensor(0),
-        "TH2" => board.write_target_sensor(1),
-        "TH3" => board.write_target_sensor(2),
-        "J7" => board.write_target_sensor(3),
-        "J8" => board.write_target_sensor(4),
-        _ => error!("Unsupported target sensor: {}", target_sensor),
-    }
+    board.write_target_sensor(target_sensor);
     show_status(board);
 }
 
