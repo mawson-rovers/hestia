@@ -59,6 +59,9 @@ impl BoardTimeTempData {
     pub fn add(&mut self, sensor_id: String, data: TimeTempData) {
         let entry = self.0.entry(sensor_id).or_insert(LinkedList::new());
         entry.push_back(data);
+        if entry.len() > 1500 {  // include up to 2 hours of data
+            entry.pop_front();
+        }
     }
 
     fn from(timestamp: DateTime<Utc>, status: BoardStatus) -> Self {

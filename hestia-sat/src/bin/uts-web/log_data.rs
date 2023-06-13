@@ -37,11 +37,8 @@ impl LogReader for Config {
         };
         let sensor_whitelist = sensors_to_include();
         debug!("Starting processing lines");
-        for (i, line) in lines_iter.enumerate() {
+        for line in lines_iter {
             process_line(line, &headers, &sensor_whitelist, &mut result);
-            if i >= 1500 { // include up to 2 hours of data
-                break;
-            }
         }
         debug!("Finished processing lines");
         result
