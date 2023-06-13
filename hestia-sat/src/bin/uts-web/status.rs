@@ -8,12 +8,13 @@ use uts_ws1::heater::HeaterMode;
 use uts_ws1::reading::SensorReading;
 use uts_ws1::{board, ReadResult};
 use uts_ws1::config::Config;
-use uts_ws1::sensors::Sensor;
+use uts_ws1::sensors::{Sensor, SensorInterface};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SensorInfo {
     id: String,
     label: String,
+    unit: String,
     iface: String,
     addr: String,
     pos_x: f32,
@@ -112,6 +113,13 @@ fn to_sensor_info<const N: usize>(sensors: &[Sensor; N]) -> LinkedHashMap<String
         sensor_info.insert(sensor.id.to_string(), SensorInfo {
             id: sensor.id.to_string(),
             label: sensor.label.to_string(),
+            unit: match sensor.iface {
+                SensorInterface::MSP430 |
+                SensorInterface::ADS7828 |
+                SensorInterface::MAX31725 => String::from("°C"),
+                SensorInterface::MSP430Voltage => String::from("V"),
+                SensorInterface::MSP430Current => String::from("A"),
+            },
             iface: sensor.iface.to_string(),
             addr: sensor.addr.to_string(),
             pos_x: sensor.pos_x,
