@@ -1,3 +1,4 @@
+use actix_cors::Cors;
 use actix_web::{App, get, HttpResponse, HttpServer, middleware, Responder, web};
 use actix_web::error::JsonPayloadError;
 use actix_web::http::header;
@@ -63,8 +64,16 @@ async fn main() -> std::io::Result<()> {
     });
     let addr = ("0.0.0.0", config.http_port);
     let server = HttpServer::new(move || {
+        let cors = Cors::default()
+            .allowed_origin("http://localhost:8080")
+            .allowed_origin("https://uts.dashboard.space")
+            .allowed_methods(vec!["GET", "POST"])
+            .allow_any_header()
+            .max_age(3600);
+
         App::new()
             .wrap(middleware::Compress::default())
+            .wrap(cors)
             .app_data(app_data.clone())
             .service(get_index)
             .service(
