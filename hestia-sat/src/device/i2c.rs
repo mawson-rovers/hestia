@@ -5,7 +5,7 @@ use std::path::Path;
 
 use byteorder::ByteOrder;
 use i2c_linux::I2c;
-use log::{debug, info, warn};
+use log::{debug, warn};
 
 #[derive(Debug, Copy, Clone)]
 pub struct I2cAddr(pub u8);
@@ -163,7 +163,7 @@ impl LoggingI2cDevice {
     }
 
     pub fn read_register(&self, reg: I2cReg, desc: &str) -> crate::ReadResult<u16> {
-        info!("{}: Reading {} from addr {}, reg {}",
+        debug!("{}: Reading {} from addr {}, reg {}",
             self, desc, self.device.addr, reg);
         match self.device.read_u16(reg) {
             Ok(result) => {
@@ -180,7 +180,7 @@ impl LoggingI2cDevice {
     /// Writes a value to the I2C register on the device. Logs a warning if it fails,
     /// debug if it succeeds.
     pub fn write_register(&self, reg: I2cReg, desc: &str, data: u16) -> () {
-        info!("{}: Setting {} to value <{}> (addr {}, reg {})",
+        debug!("{}: Setting {} to value <{}> (addr {}, reg {})",
             self, desc, self.device.addr, reg, data);
         match self.device.write_u16(reg, data) {
             Ok(_) => {
