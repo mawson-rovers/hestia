@@ -71,7 +71,7 @@ impl BoardStatus {
         }
         let heater_mode = from_reading(data.heater_mode);
         let heater_duty = from_reading(data.pwm_freq);
-        let target_temp = from_reading(data.target_temp);
+        let target_temp = from_reading(data.target_temp).map(|t| t.round());
         let target_sensor = from_reading(data.target_sensor).map(|s| s.to_string());
         let target_sensor_temp = get_sensor_value(&target_sensor, &sensor_values);
         let heater_power = calculate_power(&sensor_values);
