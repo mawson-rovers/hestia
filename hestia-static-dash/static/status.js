@@ -5,6 +5,8 @@
     const heaterMode = document.getElementById('heater-mode');
     const heaterDuty = document.getElementById('heater-duty');
     const targetTemp = document.getElementById('target-temp');
+    const targetSensor = document.getElementById('target-sensor');
+    const targetSensorLabel = document.getElementById('target-sensor-label');
     const boardChartElement = document.getElementById('board-chart');
 
     function updateStatus(data) {
@@ -18,6 +20,8 @@
         }
         heaterDuty.value = "heater_duty" in data ? data["heater_duty"] : "n/a";
         targetTemp.value = "target_temp" in data ? data["target_temp"] : "n/a";
+        targetSensor.value = "target_sensor" in data ? data["target_sensor"] : "n/a";
+        targetSensorLabel.innerText = targetSensor.value;
 
         if (!window.boardChart) {
             window.boardChart = newBoardChart(boardChartElement, data['sensor_info']);

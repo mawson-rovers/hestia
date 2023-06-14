@@ -31,6 +31,9 @@
         <div class="row">
             <div class="column column-20"><label for="core-temperature">Core temperature (°C)</label></div>
             <div class="column column-20"><input disabled id="core-temperature" size="10" value="n/a"></div>
+            <div class="column column-60">
+                <span id="target-sensor-label">n/a</span>
+            </div>
         </div>
         <div class="row">
             <div class="column column-20"><label for="heater-mode">Heater mode</label></div>
@@ -69,18 +72,18 @@
             <div class="column column-20"><label for="target-sensor">Target sensor</label></div>
             <div class="column column-20"><input disabled id="target-sensor" size="10" value="n/a"></div>
             <div class="column column-60">
-                <button class="set-target-sensor" data-temp="TH1">TH1</button>
-                <button class="set-target-sensor" data-temp="TH2">TH2</button>
-                <button class="set-target-sensor" data-temp="TH3">TH3</button>
-                <button class="set-target-sensor" data-temp="J7">J7</button>
-                <button class="set-target-sensor" data-temp="J8">J8</button>
+                <button class="set-target-sensor" data-sensor="TH1">TH1</button>
+                <button class="set-target-sensor" data-sensor="TH2">TH2</button>
+                <button class="set-target-sensor" data-sensor="TH3">TH3</button>
+                <button class="set-target-sensor" data-sensor="J7">J7</button>
+                <button class="set-target-sensor" data-sensor="J8">J8</button>
             </div>
         </div>
     </section>
 
     <section id="chart-section">
         <div style="display: flex; justify-content: space-between; width: 800px">
-            <h3>Temperature chart</h3>
+            <h3>Sensor readings</h3>
             <div class="duration-selector" style="font-size: 14px">
                 <a href="#d10" data-duration-mins="10">10 mins</a> •
                 <a href="#d30" data-duration-mins="30">30 mins</a> •
