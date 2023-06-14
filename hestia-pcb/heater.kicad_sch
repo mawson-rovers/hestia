@@ -1961,7 +1961,7 @@
     (property "Value" "SW_Push_Open" (at 130.81 80.0099 90)
       (effects (font (size 1.27 1.27)) (justify right))
     )
-    (property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" (at 124.46 78.74 0)
+    (property "Footprint" "Hestia:Thermal Switch" (at 124.46 78.74 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "~" (at 124.46 78.74 0)
