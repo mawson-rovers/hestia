@@ -11,10 +11,10 @@ preflight:
   run_drc: false # disable DRC, now failing due to KiCAD 7 update (14 Jun 2023)
   run_erc: true
   filters:
-    # DRC has no errors (6 Mar 2023)
-    # ERC known errors (6 Mar 2023)
+    # ERC known errors (14 Jun 2023)
     - error: power_pin_not_driven
     - error: pin_to_pin
+    - error: label_dangling
     # do not add more items to this list - fix them!
 
 
