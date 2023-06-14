@@ -1,0 +1,9 @@
+[Unit]
+Description=UTS log monitor
+
+[Service]
+Type=oneshot
+ExecStart=/bin/systemctl restart uts-log
+
+[Install]
+WantedBy=multi-user.target

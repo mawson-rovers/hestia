@@ -1,0 +1,5 @@
+[Path]
+PathChanged=/home/debian/uts/bin/uts-web
+
+[Install]
+WantedBy=multi-user.target
