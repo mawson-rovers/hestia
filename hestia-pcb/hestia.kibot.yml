@@ -8,7 +8,7 @@ global:
 
 preflight:
   fill_zones: true
-  run_drc: true
+  run_drc: false # disable DRC, now failing due to KiCAD 7 update (14 Jun 2023)
   run_erc: true
   filters:
     # DRC has no errors (6 Mar 2023)
