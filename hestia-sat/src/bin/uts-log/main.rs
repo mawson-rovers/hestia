@@ -5,19 +5,19 @@ use uts_ws1::config::Config;
 use uts_ws1::logger::LogWriter;
 
 pub fn main() {
+    let config = Config::read();
     loop {
         // restarts each new day
-        loop_logger_for_day()
+        loop_logger_for_day(&config);
     }
 }
 
-fn loop_logger_for_day() {
+fn loop_logger_for_day(config: &Config) {
     let start_date = Utc::now();
-    let config = Config::read();
-    let log_path = config.log_path.clone().expect("Set UTS_LOG_PATH to store log output");
+    let log_path = config.log_path.as_ref().expect("Set UTS_LOG_PATH to store log output");
 
     let mut writer = LogWriter::create_file_writer(
-        &log_path, config.create_boards(), &start_date);
+        log_path, config.create_boards(), &start_date);
     writer.write_header_if_new();
 
     loop {

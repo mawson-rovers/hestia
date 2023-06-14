@@ -35,7 +35,7 @@ pub struct Config {
 impl Config {
     pub fn read() -> Config {
         dotenv().ok();
-        env_logger::init();
+        let _ = env_logger::try_init(); // don't fail if called multiple times
         envy::prefixed("UTS_").from_env().unwrap()
     }
 
