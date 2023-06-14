@@ -1,0 +1,10 @@
+[Unit]
+Description=Enable I2C-1 pins
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/config-pin p9.17 i2c
+ExecStart=/usr/bin/config-pin p9.18 i2c
+
+[Install]
+WantedBy=multi-user.target
