@@ -29,11 +29,6 @@
     }
 
     function newBoardChart(ctx, data) {
-        const tempFormat = new Intl.NumberFormat('en-US', {
-            style: 'unit',
-            unit: 'celsius',
-            maximumSignificantDigits: 2
-        });
         let mounted = 0;
         return new Chart(ctx, {
             type: 'scatter',
