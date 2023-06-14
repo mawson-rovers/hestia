@@ -1,6 +1,7 @@
 use std::fs;
 use std::path::Path;
 use chrono::{DateTime, Utc};
+use log::info;
 use crate::board::{Board, BoardDataProvider};
 use crate::csv::CsvWriter;
 
@@ -31,7 +32,7 @@ impl LogWriter {
                                 start_date.format("%Y-%m-%d"),
                                 if raw_log { "-raw" } else { "" });
         let file_path = log_path.join(filename);
-        eprintln!("Logging {} sensor data to {}...",
+        info!("Logging {} sensor data to {}...",
                   if raw_log { "raw" } else { "temp" },
                   file_path.display());
         let is_new = !file_path.exists();

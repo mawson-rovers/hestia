@@ -6,7 +6,7 @@ User=debian
 Group=debian
 Environment=UTS_LOG_PATH=/home/debian/uts/logs
 Environment=UTS_I2C_BUS=1,2
-Environment=RUST_LOG=warn
+Environment=RUST_LOG=info
 Environment=RUST_BACKTRACE=1
 Environment=TZ=UTC
 WorkingDirectory=/home/debian/uts/bin

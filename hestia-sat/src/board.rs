@@ -78,26 +78,25 @@ pub struct Board {
 }
 
 impl Board {
-    pub fn init(bus: &I2cBus, check_sensor: &String) -> Self {
-        let sensors = Board::get_readable_sensors(bus, ALL_SENSORS);
+    pub fn init(bus: u8, check_sensor: &String) -> Self {
+        let sensors = Board::get_readable_sensors(bus.into(), ALL_SENSORS);
         let check_sensor = Board::sensor_by_id(check_sensor)
             .expect("Check sensor not found");
-        let check_sensor = Board::create_sensor(bus, *check_sensor);
-        let msp430 = Msp430::new(bus.clone());
+        let check_sensor = Board::create_sensor(bus.into(), *check_sensor);
+        let msp430 = Msp430::new(bus.into());
         Board {
-            bus: bus.clone(),
+            bus: bus.into(),
             heater: Rc::new(msp430),
             sensors,
             check_sensor,
         }
     }
 
-    fn get_readable_sensors(bus: &I2cBus, sensors: &[Sensor]) -> Vec<Box<dyn ReadableSensor>> {
-        sensors.iter().map(move |s| Board::create_sensor(bus, *s)).collect()
+    fn get_readable_sensors(bus: I2cBus, sensors: &[Sensor]) -> Vec<Box<dyn ReadableSensor>> {
+        sensors.iter().map(|s| Board::create_sensor(bus, *s)).collect()
     }
 
-    fn create_sensor(bus: &I2cBus, s: Sensor) -> Box<dyn ReadableSensor> {
-        let bus = bus.clone();
+    fn create_sensor(bus: I2cBus, s: Sensor) -> Box<dyn ReadableSensor> {
         let name = s.to_string();
         let reg = s.addr.into();
         match s.iface {
@@ -131,7 +130,7 @@ impl Board {
 
     pub fn read_target_sensor_temp(&self) -> ReadResult<SensorReading<f32>> {
         let sensor = self.get_target_sensor()?;
-        let sensor = Board::create_sensor(&self.bus, sensor);
+        let sensor = Board::create_sensor(self.bus, sensor);
         sensor.read()
     }
 

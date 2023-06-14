@@ -1,4 +1,5 @@
 use dotenv::dotenv;
+use log::info;
 use serde::Deserialize;
 use crate::board::Board;
 
@@ -40,8 +41,11 @@ impl Config {
     }
 
     pub fn create_boards(&self) -> Vec<Board> {
-        self.i2c_bus.iter().map(|&bus| {
-            Board::init(&bus.into(), &self.check_sensor)
-        }).collect()
+        let result: Vec<Board> = self.i2c_bus.iter().map(|&bus| {
+            Board::init(bus, &self.check_sensor)
+        }).collect();
+        info!("Reading from {} boards: {:?}", result.len(),
+            result.iter().map(|b| b.bus.path()).collect::<Vec<String>>());
+        result
     }
 }
