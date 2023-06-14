@@ -3,7 +3,7 @@ use actix_web::{App, get, post, HttpResponse, HttpServer, middleware, Responder,
 use actix_web::error::JsonPayloadError;
 use actix_web::http::header;
 use actix_web::web::Redirect;
-use log::info;
+use log::{error, info};
 use serde::Serialize;
 use data::SystemTimeTempData;
 use uts_ws1::config::Config;
@@ -37,18 +37,22 @@ async fn post_status(state: web::Data<AppState>, update: web::Json<BoardStatusUp
     -> impl Responder {
     let update = update.into_inner();
     let boards = state.config.create_boards();
-    let board = &boards[update.board_id as usize];
-    if let Some(heater_mode) = update.heater_mode {
-        board.write_heater_mode(heater_mode);
-    }
-    if let Some(heater_duty) = update.heater_duty {
-        board.write_heater_pwm(heater_duty);
-    }
-    if let Some(target_temp) = update.target_temp {
-        board.write_target_temp(target_temp);
-    }
-    if let Some(target_sensor) = update.target_sensor {
-        board.write_target_sensor(target_sensor);
+    let board = boards.iter().find(|b| b.bus.id == update.board_id);
+    if let Some(board) = board {
+        if let Some(heater_mode) = update.heater_mode {
+            board.write_heater_mode(heater_mode);
+        }
+        if let Some(heater_duty) = update.heater_duty {
+            board.write_heater_pwm(heater_duty);
+        }
+        if let Some(target_temp) = update.target_temp {
+            board.write_target_temp(target_temp);
+        }
+        if let Some(target_sensor) = update.target_sensor {
+            board.write_target_sensor(target_sensor);
+        }
+    } else {
+        error!("Board ID not found or configured: {}", update.board_id);
     }
     Redirect::to("/api/status").see_other()
 }
