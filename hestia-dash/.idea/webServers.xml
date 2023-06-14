@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="433cb0d7-47e8-4554-a717-e19ee732d01b" name="beagle">
+        <fileTransfer rootFolder="/home/debian" accessType="SFTP" host="beagle" port="22" sshConfigId="e37e3eb3-f84b-4fa7-955c-3748566fc3ab" sshConfig="beagle" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" isUseRsync="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

@@ -1,0 +1,101 @@
+header {
+    padding: 40px 0;
+    background: #f6f5f4;
+    border-bottom: .1rem solid #ccc;
+}
+
+h1.title {
+    font-size: 36px;
+    line-height: 60px;
+    height: 60px;
+    padding-left: 60px;
+    background-image: url('/static/hestia-logo.png');
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: left 50%;
+    margin-bottom: 0;
+}
+
+section {
+    margin-top: 40px;
+}
+
+/* Custom color for links and buttons */
+a {
+    color: #FF9041;
+    text-decoration: underline;
+}
+
+a:visited {
+    color: #9041FF;
+}
+
+button {
+    background-color: #FF9041;
+    border-color: #FF9041;
+    font-size: 13px;
+    padding: 0 1.0rem;
+}
+
+button.button-clear,
+button.button-outline {
+    background-color: transparent;
+    color: #FF9041;
+}
+
+button.button-clear {
+    border-color: transparent;
+}
+
+ul li {
+    margin-bottom: 0; /* don't space out list items */
+}
+
+#board-chart-container {
+    position: relative;
+    height: 400px;
+    width: 480px; /* leave space on RHS for mounted sensors */
+}
+
+#board-chart-container::before { /* use ::before element so we can set opacity without affecting chart */
+    background-image: url('/static/hestia-board-top.png');
+    background-size: contain;
+    background-position: left center;
+    background-repeat: no-repeat;
+    position: absolute;
+    content: '';
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 376px; /* calculated: image width / height * 400px */
+    opacity: 0.75;
+    z-index: -1; /* ensure background is behind chart */
+}
+
+#board-chart-container.flip::before {
+    background-image: url('/static/hestia-board-bottom.png');
+    transform: scaleX(-1);
+
+}
+
+/* Color palette also here in case needed */
+.sensor0  { color: hsl(211, 36%, 47%); }
+.sensor1  { color: hsl(204, 52%, 75%); }
+.sensor2  { color: hsl(30, 82%, 55%);  }
+.sensor3  { color: hsl(30, 87%, 72%);  }
+.sensor4  { color: hsl(113, 34%, 46%); }
+.sensor5  { color: hsl(109, 43%, 64%); }
+.sensor6  { color: hsl(47, 58%, 44%);  }
+.sensor7  { color: hsl(45, 75%, 65%);  }
+.sensor8  { color: hsl(177, 35%, 43%); }
+.sensor9  { color: hsl(172, 27%, 61%); }
+.sensor10 { color: hsl(359, 64%, 60%); }
+.sensor11 { color: hsl(1, 86%, 78%);   }
+.sensor12 { color: hsl(12, 4%, 44%);   }
+.sensor13 { color: hsl(18, 8%, 68%);   }
+.sensor14 { color: hsl(338, 47%, 62%); }
+.sensor15 { color: hsl(341, 66%, 84%); }
+.sensor16 { color: hsl(315, 23%, 57%); }
+.sensor17 { color: hsl(315, 31%, 72%); }
+.sensor18 { color: hsl(21, 23%, 48%);  }
+.sensor19 { color: hsl(18, 33%, 72%);  }

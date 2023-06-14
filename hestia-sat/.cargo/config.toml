@@ -1,0 +1,6 @@
+[build]
+target = "arm-unknown-linux-gnueabihf"
+
+[target.arm-unknown-linux-gnueabihf]
+linker = "/Users/mryall/bin/arm-linux-gcc" # linker must be on PATH
+runner = "./upload.sh beagle:opt/hestia-sat/"
