@@ -8,7 +8,6 @@ use serde::Serialize;
 use data::SystemTimeTempData;
 use uts_ws1::config::Config;
 use status::SystemStatus;
-use log_data::LogReader;
 use crate::status::BoardStatusUpdate;
 
 mod data;
@@ -55,8 +54,14 @@ async fn get_data(state: web::Data<AppState>) -> impl Responder {
 
 #[get("/log_data")]
 async fn get_log_data(state: web::Data<AppState>) -> impl Responder {
-    let data = &state.config.read_logs();
+    let data = log_data::read_logs(&state.config);
     pretty_json(&data)
+}
+
+#[get("/log_files")]
+async fn get_log_files(state: web::Data<AppState>) -> impl Responder {
+    let log_files: Vec<String> = log_data::list_logs(&state.config);
+    pretty_json(&log_files)
 }
 
 fn pretty_json<T>(result: &T) -> HttpResponse
@@ -97,7 +102,9 @@ async fn main() -> std::io::Result<()> {
                     .service(get_status)
                     .service(post_status)
                     .service(get_data)
-                    .service(get_log_data))
+                    .service(get_log_data)
+                    .service(get_log_files)
+            )
     })
         .bind(addr)?
         .run();

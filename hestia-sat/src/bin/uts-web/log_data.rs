@@ -11,38 +11,32 @@ use uts_ws1::csv::TIMESTAMP_FORMAT;
 use crate::data::{SystemTimeTempData, TimeTempData};
 use crate::status;
 
-pub trait LogReader {
-    fn read_logs(&self) -> SystemTimeTempData;
-}
-
-impl LogReader for Config {
-    fn read_logs(&self) -> SystemTimeTempData {
-        let mut result = SystemTimeTempData::new();
-        let reader = match open_last_log_file(self.log_path.clone()) {
-            None => {
-                warn!("No recent log data to return");
-                return result;
-            }
-            Some(r) => r,
-        };
-        let mut lines_iter = reader.lines().map(|l| l.unwrap());
-        let headers: Vec<String> = match lines_iter.next() {
-            None => {
-                warn!("Couldn't read header line from CSV file");
-                return result;
-            }
-            Some(line) => {
-                line.split(",").map(|s| s.to_string()).collect()
-            }
-        };
-        let sensor_whitelist = sensors_to_include();
-        debug!("Starting processing lines");
-        for line in lines_iter {
-            process_line(line, &headers, &sensor_whitelist, &mut result);
+pub fn read_logs(config: &Config) -> SystemTimeTempData {
+    let mut result = SystemTimeTempData::new();
+    let reader = match open_last_log_file(config.log_path.as_ref()) {
+        None => {
+            warn!("No recent log data to return");
+            return result;
         }
-        debug!("Finished processing lines");
-        result
+        Some(r) => r,
+    };
+    let mut lines_iter = reader.lines().map(|l| l.unwrap());
+    let headers: Vec<String> = match lines_iter.next() {
+        None => {
+            warn!("Couldn't read header line from CSV file");
+            return result;
+        }
+        Some(line) => {
+            line.split(",").map(|s| s.to_string()).collect()
+        }
+    };
+    let sensor_whitelist = sensors_to_include();
+    debug!("Starting processing lines");
+    for line in lines_iter {
+        process_line(line, &headers, &sensor_whitelist, &mut result);
     }
+    debug!("Finished processing lines");
+    result
 }
 
 fn process_line(line: String, headers: &Vec<String>, sensor_whitelist: &HashSet<String>, result: &mut SystemTimeTempData) {
@@ -83,8 +77,8 @@ fn sensors_to_include() -> HashSet<String> {
     result
 }
 
-fn open_last_log_file(log_path: Option<String>) -> Option<BufReader<File>> {
-    let log_file = get_last_log_file(&log_path?)?;
+fn open_last_log_file(log_path: Option<&String>) -> Option<BufReader<File>> {
+    let log_file = get_last_log_file(log_path?)?;
     info!("Opening last log file: {}", log_file.display());
     let file = File::open(log_file).ok()?;
     Some(BufReader::new(file))
@@ -100,3 +94,17 @@ fn get_last_log_file(log_path: &String) -> Option<PathBuf> {
     files.last().cloned()
 }
 
+pub(crate) fn list_logs(config: &Config) -> Vec<String> {
+    let pattern = format!("{}/uts-data-*.csv", config.log_path.as_ref().unwrap());
+    let mut files: Vec<PathBuf> = glob::glob(pattern.as_str())
+        .expect("pattern error")
+        .map(Result::unwrap)
+        .collect();
+    files.sort();
+    files.iter()
+        .map(|f| {
+            // Rust's filename handling is awful :(
+            f.file_name().unwrap().to_string_lossy().to_string()
+        })
+        .collect()
+}
