@@ -22,7 +22,7 @@ struct AppState {
 #[get("/")]
 async fn get_index(state: web::Data<AppState>) -> String {
     let app_name = &state.app_name; // <- get app_name
-    format!("Hello {app_name}!") // <- response with app_name
+    format!("Welcome to {app_name}! Try /api/status or /api/data for more info.")
 }
 
 #[get("/status")]
@@ -80,7 +80,7 @@ fn pretty_json<T>(result: &T) -> HttpResponse
 async fn main() -> std::io::Result<()> {
     let config = Config::read();
     let app_data = web::Data::new(AppState {
-        app_name: String::from("Hestia control panel"),
+        app_name: String::from("Hestia API"),
         config: config.clone(),
     });
     let addr = ("0.0.0.0", config.http_port);
