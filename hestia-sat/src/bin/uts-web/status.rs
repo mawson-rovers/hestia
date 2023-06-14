@@ -166,3 +166,20 @@ pub(crate) struct BoardStatusUpdate {
     pub target_sensor: Option<TargetSensor>,
 }
 
+impl BoardStatusUpdate {
+    pub fn apply(&self, board: &Board) {
+        if let Some(heater_mode) = self.heater_mode {
+            board.write_heater_mode(heater_mode);
+        }
+        if let Some(heater_duty) = self.heater_duty {
+            board.write_heater_pwm(heater_duty);
+        }
+        if let Some(target_temp) = self.target_temp {
+            board.write_target_temp(target_temp);
+        }
+        if let Some(target_sensor) = self.target_sensor {
+            board.write_target_sensor(target_sensor);
+        }
+    }
+}
+

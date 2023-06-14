@@ -39,18 +39,7 @@ async fn post_status(state: web::Data<AppState>, update: web::Json<BoardStatusUp
     let boards = state.config.create_boards();
     let board = boards.iter().find(|b| b.bus.id == update.board_id);
     if let Some(board) = board {
-        if let Some(heater_mode) = update.heater_mode {
-            board.write_heater_mode(heater_mode);
-        }
-        if let Some(heater_duty) = update.heater_duty {
-            board.write_heater_pwm(heater_duty);
-        }
-        if let Some(target_temp) = update.target_temp {
-            board.write_target_temp(target_temp);
-        }
-        if let Some(target_sensor) = update.target_sensor {
-            board.write_target_sensor(target_sensor);
-        }
+        update.apply(board);
     } else {
         error!("Board ID not found or configured: {}", update.board_id);
     }
