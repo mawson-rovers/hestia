@@ -11,7 +11,7 @@ on:
 jobs:
   kibot:
     runs-on: ubuntu-latest
-    container: setsoft/kicad_auto:ki6.0.5_Debian
+    container: ghcr.io/inti-cmnb/kicad7_auto:1.6.1
 
     steps:
     - uses: actions/checkout@v3

@@ -11,5 +11,5 @@ docker run --platform=linux/amd64 -i \
     -v $HOME/Library/Preferences/kicad:/root/.config/kicad \
     -e 'KICAD6_3DMODEL_DIR=/local/kicad/3dmodels' \
     -w /local/src \
-    -t setsoft/kicad_auto:ki6.0.5_Debian \
+    -t ghcr.io/inti-cmnb/kicad7_auto:1.6.1 \
     "$COMMAND"
