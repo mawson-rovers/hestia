@@ -163,6 +163,10 @@ impl Board {
     }
 }
 
+pub trait BoardDataProvider {
+    fn read_data(&self) -> Option<BoardData>;
+}
+
 impl BoardDataProvider for Board {
     fn read_data(&self) -> Option<BoardData> {
         // fail fast if bus isn't found or check sensor is not readable
@@ -214,9 +218,5 @@ impl BoardData {
         ]);
         result.try_into().expect("Sizes didn't match")
     }
-}
-
-pub trait BoardDataProvider {
-    fn read_data(&self) -> Option<BoardData>;
 }
 
