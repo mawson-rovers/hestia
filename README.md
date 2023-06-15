@@ -12,7 +12,7 @@ in early 2024.
 Hestia was the Greek goddess of home and hearth, and similar to that, our Hestia
 board provides a home and warmth to the UTS heatsink.
 
-### Project structure
+## Project structure
 
 This project has four primary modules:
 
@@ -31,7 +31,7 @@ The project also has a **scripts/** folder which is used for automated builds on
 GitHub, and **ws-1/** folder for interface information from our host Waratah Seed
 satellite.
 
-### Project team
+## Project team
 
 The project is led by [Dr Nick Bennett][nick], Senior Lecturer at UTS, with
 software and electronics development managed by [Matt Ryall][matt] from Mawson
@@ -46,3 +46,9 @@ components for the mission.
 The project was funded by [SmartSat CRC](https://smartsatcrc.com), a
 federally-funded Collaborative Research Centre, and the [University of
 Technology, Sydney (UTS)](https://www.uts.edu.au).
+
+## Licensing
+
+Mawson Rovers has made the cubesat payload designs, firmware and software available under [an MIT License](LICENSE).
+
+Please feel free to learn from this code and reuse it on future space missions under the terms of the license. However, we will not be taking external contributions to this code.
