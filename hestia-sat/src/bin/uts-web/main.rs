@@ -69,7 +69,7 @@ fn pretty_json<T>(result: &T) -> HttpResponse
     match serde_json::to_string_pretty(&result) {
         Ok(body) => {
             HttpResponse::Ok()
-                .insert_header((header::CONTENT_TYPE, mime::APPLICATION_JSON))
+                .insert_header((header::CONTENT_TYPE, "application/json; charset=utf-8"))
                 .body(body)
         }
         Err(err) => HttpResponse::from_error(JsonPayloadError::Serialize(err))
