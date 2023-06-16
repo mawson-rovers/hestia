@@ -3,11 +3,15 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::iter::zip;
 use std::path::PathBuf;
+
 use chrono::{TimeZone, Utc};
 use log::{debug, info, warn};
+use serde::Serialize;
+
 use uts_ws1::board;
 use uts_ws1::config::Config;
 use uts_ws1::csv::TIMESTAMP_FORMAT;
+
 use crate::data::{SystemTimeTempData, TimeTempData};
 use crate::status;
 
@@ -94,17 +98,29 @@ fn get_last_log_file(log_path: &String) -> Option<PathBuf> {
     files.last().cloned()
 }
 
-pub(crate) fn list_logs(config: &Config) -> Vec<String> {
+#[derive(Debug, Clone, Serialize)]
+pub struct LogFile {
+    name: String,
+    url: String,
+}
+
+pub(crate) fn list_logs(config: &Config) -> Vec<LogFile> {
     let pattern = format!("{}/uts-data-*.csv", config.log_path.as_ref().unwrap());
     let mut files: Vec<PathBuf> = glob::glob(pattern.as_str())
         .expect("pattern error")
         .map(Result::unwrap)
         .collect();
     files.sort();
+    files.reverse();
     files.iter()
         .map(|f| {
             // Rust's filename handling is awful :(
-            f.file_name().unwrap().to_string_lossy().to_string()
+            let name = f.file_name().unwrap().to_string_lossy().to_string();
+            LogFile { name: name.clone(), url: format!("/api/log/{}", name) }
         })
         .collect()
+}
+
+pub(crate) fn get_log_file(config: &Config, name: &String) -> PathBuf {
+    PathBuf::from(config.log_path.as_ref().unwrap()).join(name)
 }

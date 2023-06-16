@@ -1,4 +1,5 @@
 use actix_cors::Cors;
+use actix_files::NamedFile;
 use actix_web::{App, get, post, HttpResponse, HttpServer, middleware, Responder, web};
 use actix_web::error::JsonPayloadError;
 use actix_web::http::header;
@@ -60,8 +61,15 @@ async fn get_log_data(state: web::Data<AppState>) -> impl Responder {
 
 #[get("/log_files")]
 async fn get_log_files(state: web::Data<AppState>) -> impl Responder {
-    let log_files: Vec<String> = log_data::list_logs(&state.config);
+    let log_files = log_data::list_logs(&state.config);
     pretty_json(&log_files)
+}
+
+#[get("/log/{name}")]
+async fn download_log(state: web::Data<AppState>, path: web::Path<String>) -> impl Responder {
+    let name = path.into_inner();
+    let log_file = log_data::get_log_file(&state.config, &name);
+    NamedFile::open(log_file)
 }
 
 fn pretty_json<T>(result: &T) -> HttpResponse
@@ -104,6 +112,7 @@ async fn main() -> std::io::Result<()> {
                     .service(get_data)
                     .service(get_log_data)
                     .service(get_log_files)
+                    .service(download_log)
             )
     })
         .bind(addr)?

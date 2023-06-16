@@ -122,7 +122,7 @@
     fetch(host + '/api/log_data')
         .then(response => response.json())
         .then(function (data) {
-            data = data["2"];
+            data = data["2"] || {};
             const chart = new Chart(ctx, {
                 type: 'line',
                 responsive: true,
@@ -181,7 +181,7 @@
                 fetch(host + '/api/data')
                     .then((response) => response.json())
                     .then((newData) => {
-                        updateChartData(chart, newData["2"]);
+                        updateChartData(chart, newData["2"] || {});
                         updateChartDuration(chart);
                         chart.update();
                     });
