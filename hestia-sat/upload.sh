@@ -13,3 +13,4 @@ DEST=/home/debian/uts
 set -x # echo commands from now on
 /usr/bin/rsync -utvz -e /usr/bin/ssh "$PATH"/{uts-cli,uts-log,uts-web} "$HOST:$DEST/bin/"
 /usr/bin/rsync -utvzr -e /usr/bin/ssh ./{nginx,systemd} "$HOST:$DEST/"
+/usr/bin/rsync -utvzr -e /usr/bin/ssh ../hestia-static-dash/ "$HOST:$DEST/www/"
