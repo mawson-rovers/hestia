@@ -6251,7 +6251,7 @@
     (property "Datasheet" "~" (at 277.495 154.305 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 3bccce34-5101-4897-bf42-a9b1bf448d0e))
+    (pin "1" (uuid 1c017974-db6f-4658-bc58-f1c50f89f336))
     (instances
       (project "hestia"
         (path "/e63e39d7-6ac0-4ffd-8aa3-1841a4541b55"
