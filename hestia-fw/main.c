@@ -84,8 +84,8 @@ void __attribute__ ((interrupt(TIMERA0_VECTOR))) Timer_A(void)
     ta_count++;
     if (ta_count > 250) {
         ta_count = 0;
-        P5OUT ^= LED_GREEN;     // toggle LED
         if (heater_mode == HEATER_MODE_PID) {
+            P5OUT ^= LED_GREEN;     // toggle PID indicator LED
             unsigned int adc_value = adc_readings[control_sensor];
             if (adc_value >= ADC_MIN_VALUE && adc_value <= ADC_MAX_VALUE) {
                 CCR2 = update_pid(adc_value);
@@ -94,6 +94,7 @@ void __attribute__ ((interrupt(TIMERA0_VECTOR))) Timer_A(void)
             }
         } else {
             CCR2 = 0;
+            P5OUT &= ~(LED_GREEN); // turn off PID indicator LED
         }
     }
 }
