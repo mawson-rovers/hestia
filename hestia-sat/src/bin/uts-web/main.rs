@@ -3,6 +3,7 @@ use actix_files::NamedFile;
 use actix_web::{App, get, post, HttpResponse, HttpServer, middleware, Responder, web};
 use actix_web::error::JsonPayloadError;
 use actix_web::http::header;
+use actix_web::middleware::Condition;
 use actix_web::web::Redirect;
 use log::{error, info};
 use serde::Serialize;
@@ -102,7 +103,7 @@ async fn main() -> std::io::Result<()> {
 
         App::new()
             .wrap(middleware::Compress::default())
-            .wrap(cors)
+            .wrap(Condition::new(config.cors_enable, cors))
             .app_data(app_data.clone())
             .service(get_index)
             .service(

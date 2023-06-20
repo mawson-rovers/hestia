@@ -31,6 +31,10 @@ pub struct Config {
     /// Port used for HTTP dashboard
     #[serde(default = "default_http_port")]
     pub http_port: u16,
+
+    /// Enable CORS for remote API access, defaults to false
+    #[serde(default)]
+    pub cors_enable: bool,
 }
 
 impl Config {
