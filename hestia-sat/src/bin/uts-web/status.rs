@@ -70,7 +70,7 @@ impl BoardStatus {
             sensor_values.insert(String::from(sensor.id), from_reading(value));
         }
         let heater_mode = from_reading(data.heater_mode);
-        let heater_duty = from_reading(data.pwm_freq);
+        let heater_duty = from_reading(data.heater_duty);
         let target_temp = from_reading(data.target_temp).map(|t| t.round());
         let target_sensor = from_reading(data.target_sensor).map(|s| s.to_string());
         let target_sensor_temp = get_sensor_value(&target_sensor, &sensor_values);
@@ -172,7 +172,7 @@ impl BoardStatusUpdate {
             board.write_heater_mode(heater_mode);
         }
         if let Some(heater_duty) = self.heater_duty {
-            board.write_heater_pwm(heater_duty);
+            board.write_heater_duty(heater_duty);
         }
         if let Some(target_temp) = self.target_temp {
             board.write_target_temp(target_temp);

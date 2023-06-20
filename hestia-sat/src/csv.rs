@@ -138,7 +138,7 @@ pub const CSV_HEADERS: [&'static str; CSV_FIELD_COUNT] = [
     "heater_mode",
     "target_temp",
     "target_sensor",
-    "pwm_duty",
+    "heater_duty",
 ];
 
 pub struct CsvWriter {
@@ -184,7 +184,7 @@ impl CsvWriter {
         data.extend(Some(CsvData::from(&board_data.heater_mode)));
         data.extend(Some(CsvData::from(&board_data.target_temp)));
         data.extend(Some(CsvData::from(&board_data.target_sensor)));
-        data.extend(Some(CsvData::from(&board_data.pwm_freq)));
+        data.extend(Some(CsvData::from(&board_data.heater_duty)));
         let data: [CsvData; 26] = data.try_into().expect("Array sizes didn't match");
         self.write_data(data).unwrap_or_else(|e| eprint!("Failed to write to log file: {:?}", e));
     }

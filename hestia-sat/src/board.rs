@@ -138,11 +138,11 @@ impl Board {
         self.heater.write_target_sensor(target_sensor)
     }
 
-    pub fn read_heater_pwm(&self) -> ReadResult<SensorReading<u8>> {
+    pub fn read_heater_duty(&self) -> ReadResult<SensorReading<u8>> {
         self.heater.read_duty()
     }
 
-    pub fn write_heater_pwm(&self, pwm_duty_cycle: u8) {
+    pub fn write_heater_duty(&self, pwm_duty_cycle: u8) {
         self.heater.write_duty(pwm_duty_cycle)
     }
 
@@ -186,7 +186,7 @@ impl BoardDataProvider for Board {
             heater_mode: self.heater.read_mode(),
             target_temp: self.heater.read_target_temp(),
             target_sensor: self.heater.read_target_sensor(),
-            pwm_freq: self.heater.read_duty(),
+            heater_duty: self.heater.read_duty(),
         });
     }
 }
@@ -196,7 +196,7 @@ pub struct BoardData {
     pub heater_mode: ReadResult<SensorReading<HeaterMode>>,
     pub target_temp: ReadResult<SensorReading<f32>>,
     pub target_sensor: ReadResult<SensorReading<Sensor>>,
-    pub pwm_freq: ReadResult<SensorReading<u8>>,
+    pub heater_duty: ReadResult<SensorReading<u8>>,
 }
 
 impl BoardData {
@@ -213,7 +213,7 @@ impl BoardData {
             self.heater_mode.map(|v| v.raw_value),
             self.target_temp.map(|v| v.raw_value),
             self.target_sensor.map(|v| v.raw_value),
-            self.pwm_freq.map(|v| v.raw_value),
+            self.heater_duty.map(|v| v.raw_value),
         ]);
         result.try_into().expect("Sizes didn't match")
     }

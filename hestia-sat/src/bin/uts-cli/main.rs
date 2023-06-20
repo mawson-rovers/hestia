@@ -104,7 +104,7 @@ pub fn main() {
 
 fn do_your_duty(board: u8, duty: u8) {
     let board = single_board(board);
-    board.write_heater_pwm(duty);
+    board.write_heater_duty(duty);
     show_status(board);
 }
 
@@ -182,7 +182,7 @@ fn show_status(board: Board) {
                  heater_mode,
                  data.target_temp.unwrap().display_value,
                  board.get_target_sensor().map(|s| s.id).unwrap_or("#err"),
-                 board.read_heater_pwm().unwrap(),
+                 board.read_heater_duty().unwrap(),
                  heater_v_high.unwrap(),
                  heater_v_low.unwrap(),
                  heater_curr.unwrap());
