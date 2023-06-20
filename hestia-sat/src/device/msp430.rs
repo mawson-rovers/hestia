@@ -65,14 +65,13 @@ impl Heater for Msp430 {
                             mode as u16)
     }
 
-    fn read_duty(&self) -> ReadResult<SensorReading<u8>> {
-        let raw_value = self.read_register(MSP430_READ_HEATER_PWM_DUTY_CYCLE, "PWM duty")?;
-        Ok(SensorReading::new(raw_value, raw_value as u8))
+    fn read_duty(&self) -> ReadResult<SensorReading<u16>> {
+        let raw_value = self.read_register(MSP430_READ_HEATER_PWM_DUTY_CYCLE, "heater duty")?;
+        Ok(SensorReading::new(raw_value, raw_value))
     }
 
-    fn write_duty(&self, duty: u8) {
-        self.write_register(MSP430_WRITE_HEATER_PWM_DUTY_CYCLE, "PWM duty",
-                            duty as u16)
+    fn write_duty(&self, duty: u16) {
+        self.write_register(MSP430_WRITE_HEATER_PWM_DUTY_CYCLE, "heater duty", duty)
     }
 
     fn read_target_temp(&self) -> ReadResult<SensorReading<f32>> {

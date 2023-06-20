@@ -138,11 +138,11 @@ impl Board {
         self.heater.write_target_sensor(target_sensor)
     }
 
-    pub fn read_heater_duty(&self) -> ReadResult<SensorReading<u8>> {
+    pub fn read_heater_duty(&self) -> ReadResult<SensorReading<u16>> {
         self.heater.read_duty()
     }
 
-    pub fn write_heater_duty(&self, pwm_duty_cycle: u8) {
+    pub fn write_heater_duty(&self, pwm_duty_cycle: u16) {
         self.heater.write_duty(pwm_duty_cycle)
     }
 
@@ -196,7 +196,7 @@ pub struct BoardData {
     pub heater_mode: ReadResult<SensorReading<HeaterMode>>,
     pub target_temp: ReadResult<SensorReading<f32>>,
     pub target_sensor: ReadResult<SensorReading<Sensor>>,
-    pub heater_duty: ReadResult<SensorReading<u8>>,
+    pub heater_duty: ReadResult<SensorReading<u16>>,
 }
 
 impl BoardData {

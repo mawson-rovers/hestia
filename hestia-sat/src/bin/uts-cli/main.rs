@@ -64,8 +64,8 @@ enum Command {
         #[arg(short, long, required = true)]
         board: u8,
 
-        /// duty cycle (0-255)
-        duty: u8,
+        /// duty cycle (0-255 for PWM, 0-1000 for PID)
+        duty: u16,
     },
 }
 
@@ -102,7 +102,7 @@ pub fn main() {
     }
 }
 
-fn do_your_duty(board: u8, duty: u8) {
+fn do_your_duty(board: u8, duty: u16) {
     let board = single_board(board);
     board.write_heater_duty(duty);
     show_status(board);

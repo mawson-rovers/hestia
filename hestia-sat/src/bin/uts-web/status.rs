@@ -161,7 +161,7 @@ impl SystemStatus {
 pub(crate) struct BoardStatusUpdate {
     pub board_id: u8,
     pub heater_mode: Option<HeaterMode>,
-    pub heater_duty: Option<u8>,
+    pub heater_duty: Option<u16>,
     pub target_temp: Option<f32>,
     pub target_sensor: Option<TargetSensor>,
 }
