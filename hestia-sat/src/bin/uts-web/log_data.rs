@@ -24,7 +24,8 @@ pub fn read_logs(config: &Config) -> SystemTimeTempData {
         }
         Some(r) => r,
     };
-    let mut lines_iter = reader.lines().map(|l| l.unwrap_or(String::from("")));
+    let mut lines_iter = reader.lines().map(|l|
+        l.unwrap_or_else(|_| String::from("")));
     let headers: Vec<String> = match lines_iter.next() {
         None => {
             warn!("Couldn't read header line from CSV file");
@@ -35,18 +36,19 @@ pub fn read_logs(config: &Config) -> SystemTimeTempData {
         }
     };
     let sensor_whitelist = sensors_to_include();
-    debug!("Starting processing lines");
+    info!("Starting processing lines");
     for (index, line) in zip(2.., lines_iter) {
         process_line(index, line, &headers, &sensor_whitelist, &mut result);
     }
-    debug!("Finished processing lines");
+    info!("Finished processing lines");
     result
 }
 
-fn process_line(index: usize, line: String, headers: &Vec<String>, sensor_whitelist: &HashSet<String>, result: &mut SystemTimeTempData) {
-    let values: Vec<String> = line.split(",").map(str::to_string).collect();
+fn process_line(index: usize, line: String, headers: &Vec<String>,
+                sensor_whitelist: &HashSet<String>, result: &mut SystemTimeTempData) {
+    let values: Vec<&str> = line.split(",").collect();
     debug!("Read CSV values: {:?}", values);
-    let timestamp = match Utc.datetime_from_str(&values[0], TIMESTAMP_FORMAT) {
+    let timestamp = match Utc.datetime_from_str(values[0], TIMESTAMP_FORMAT) {
         Ok(value) => value,
         Err(_) => {
             // don't print the bogus data, in case it corrupts the log file too
@@ -54,27 +56,43 @@ fn process_line(index: usize, line: String, headers: &Vec<String>, sensor_whitel
             return
         }
     };
-    let board_id = &values[1];
+    // pull out some additional data for calculated fields
+    let (mut v_high, mut v_low, mut curr) = (None::<f32>, None::<f32>, None::<f32>);
+    let (mut mode, mut duty) = (None::<&str>, None::<u16>);
+
+    let board_id = values[1];
     for (sensor_id, value) in zip(&headers[2..], &values[2..]) {
         if sensor_whitelist.contains(sensor_id) && value.len() > 0 {
-            result.add(board_id.clone(), sensor_id.clone(),
-                       TimeTempData::new(timestamp, value.clone()));
+            result.add(board_id, sensor_id,
+                       TimeTempData::new(timestamp, value));
         }
-    }
-
-    // calculate heater power and add it too
-    let (mut v_high, mut v_low, mut curr) = (None::<f32>, None::<f32>, None::<f32>);
-    for (sensor_id, value) in zip(&headers[2..], &values[2..]) {
         if sensor_id == "heater_v_high" { v_high = value.parse().ok() }
         if sensor_id == "heater_v_low" { v_low = value.parse().ok() }
         if sensor_id == "heater_curr" { curr = value.parse().ok() }
+        if sensor_id == "heater_mode" { mode = Some(value) }
+        if sensor_id == "heater_duty" { duty = value.parse().ok() }
     }
+
+    // calculate heater power and add it too
     match (v_high, v_low, curr) {
         (Some(v_high), Some(v_low), Some(curr)) => {
             let power = status::heater_power(v_high, v_low, curr);
-            result.add(board_id.clone(), String::from("heater_power"),
+            result.add(board_id, "heater_power",
                        TimeTempData::new_f32(timestamp, power));
         }
+        _ => {}
+    }
+
+    // add derived value for heater_duty between 0.0 and 1.0, depending on mode
+    match (mode, duty) {
+        (Some("PID"), Some(duty)) => {
+            result.add(board_id, "heater_duty",
+                       TimeTempData::new_f32(timestamp, f32::from(duty) / 1000.0));
+        },
+        (_, Some(duty)) => {
+            result.add(board_id, "heater_duty",
+                       TimeTempData::new_f32(timestamp, f32::from(duty) / 255.0));
+        },
         _ => {}
     }
 }

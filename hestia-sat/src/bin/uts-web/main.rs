@@ -75,7 +75,7 @@ async fn download_log(state: web::Data<AppState>, path: web::Path<String>) -> im
 
 fn pretty_json<T>(result: &T) -> HttpResponse
     where T: Serialize {
-    match serde_json::to_string_pretty(&result) {
+    match serde_json::to_string_pretty(result) {
         Ok(body) => {
             HttpResponse::Ok()
                 .insert_header((header::CONTENT_TYPE, "application/json; charset=utf-8"))

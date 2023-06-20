@@ -22,13 +22,13 @@ impl Serialize for TimeTempData {
 }
 
 impl TimeTempData {
-    pub fn new(timestamp: DateTime<Utc>, temp: String) -> Self {
+    pub fn new(timestamp: DateTime<Utc>, temp: &str) -> Self {
         let timestamp = Local.from_utc_datetime(&timestamp.naive_local());
-        Self { timestamp, temp }
+        Self { timestamp, temp: String::from(temp) }
     }
 
     pub fn new_f32(timestamp: DateTime<Utc>, temp: f32) -> Self {
-        Self::new(timestamp, format!("{:0.2}", temp))
+        Self::new(timestamp, format!("{:0.2}", temp).as_str())
     }
 
     fn singleton(timestamp: DateTime<Utc>, temp: Option<f32>) -> LinkedList<Self> {
@@ -71,6 +71,7 @@ impl BoardTimeTempData {
             result.insert(sensor_id.clone(), TimeTempData::singleton(timestamp, value));
         }
         result.insert("target_temp".into(), TimeTempData::singleton(timestamp, status.target_temp));
+        result.insert("heater_duty".into(), TimeTempData::singleton(timestamp, status.heater_duty));
         result.insert("heater_power".into(), TimeTempData::singleton(timestamp, status.heater_power));
         BoardTimeTempData(result)
     }
@@ -105,8 +106,8 @@ impl SystemTimeTempData {
         Self(LinkedHashMap::new())
     }
 
-    pub fn add(&mut self, board_id: String, sensor_id: String, data: TimeTempData) {
-        let entry = self.0.entry(board_id).or_insert(BoardTimeTempData::new());
-        entry.add(sensor_id, data);
+    pub fn add(&mut self, board_id: &str, sensor_id: &str, data: TimeTempData) {
+        let entry = self.0.entry(board_id.into()).or_insert(BoardTimeTempData::new());
+        entry.add(sensor_id.into(), data);
     }
 }

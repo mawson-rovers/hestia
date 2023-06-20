@@ -33,7 +33,9 @@ pub(crate) struct BoardStatus {
     #[serde(serialize_with = "serialize_f32")]
     pub target_temp: Option<f32>,
     pub target_sensor: Option<String>,
-    pub heater_duty: Option<u8>,
+
+    #[serde(serialize_with = "serialize_f32")]
+    pub heater_duty: Option<f32>,
 
     #[serde(serialize_with = "serialize_f32")]
     pub heater_power: Option<f32>,
@@ -71,6 +73,11 @@ impl BoardStatus {
         }
         let heater_mode = from_reading(data.heater_mode);
         let heater_duty = from_reading(data.heater_duty);
+        let heater_duty = match (heater_mode, heater_duty) {
+            (Some(HeaterMode::PID), Some(duty)) => Some(f32::from(duty) / 1000.0),
+            (_, Some(duty)) => Some(f32::from(duty) / 255.0),
+            _ => None
+        };
         let target_temp = from_reading(data.target_temp).map(|t| t.round());
         let target_sensor = from_reading(data.target_sensor).map(|s| s.to_string());
         let target_sensor_temp = get_sensor_value(&target_sensor, &sensor_values);
