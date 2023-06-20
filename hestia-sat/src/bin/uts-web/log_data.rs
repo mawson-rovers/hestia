@@ -24,7 +24,7 @@ pub fn read_logs(config: &Config) -> SystemTimeTempData {
         }
         Some(r) => r,
     };
-    let mut lines_iter = reader.lines().map(|l| l.unwrap());
+    let mut lines_iter = reader.lines().map(|l| l.unwrap_or(String::from("")));
     let headers: Vec<String> = match lines_iter.next() {
         None => {
             warn!("Couldn't read header line from CSV file");
@@ -36,17 +36,24 @@ pub fn read_logs(config: &Config) -> SystemTimeTempData {
     };
     let sensor_whitelist = sensors_to_include();
     debug!("Starting processing lines");
-    for line in lines_iter {
-        process_line(line, &headers, &sensor_whitelist, &mut result);
+    for (index, line) in zip(2.., lines_iter) {
+        process_line(index, line, &headers, &sensor_whitelist, &mut result);
     }
     debug!("Finished processing lines");
     result
 }
 
-fn process_line(line: String, headers: &Vec<String>, sensor_whitelist: &HashSet<String>, result: &mut SystemTimeTempData) {
+fn process_line(index: usize, line: String, headers: &Vec<String>, sensor_whitelist: &HashSet<String>, result: &mut SystemTimeTempData) {
     let values: Vec<String> = line.split(",").map(str::to_string).collect();
     debug!("Read CSV values: {:?}", values);
-    let timestamp = Utc.datetime_from_str(&values[0], TIMESTAMP_FORMAT).unwrap();
+    let timestamp = match Utc.datetime_from_str(&values[0], TIMESTAMP_FORMAT) {
+        Ok(value) => value,
+        Err(_) => {
+            // don't print the bogus data, in case it corrupts the log file too
+            warn!("Ignoring line {} with invalid timestamp", index);
+            return
+        }
+    };
     let board_id = &values[1];
     for (sensor_id, value) in zip(&headers[2..], &values[2..]) {
         if sensor_whitelist.contains(sensor_id) && value.len() > 0 {
