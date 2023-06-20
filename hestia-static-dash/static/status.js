@@ -10,17 +10,13 @@
     const boardChartElement = document.getElementById('board-chart');
 
     function updateStatus(data) {
-        data = data["2"] || {};
-        coreTemperature.value = "target_sensor_temp" in data ? data["target_sensor_temp"] : "n/a";
-        heaterPower.value = "heater_power" in data ? data["heater_power"] : "n/a";
-        if ('heater_mode' in data) {
-            heaterMode.value = data['heater_mode'];
-        } else {
-            heaterMode.value = "n/a";
-        }
-        heaterDuty.value = "heater_duty" in data ? data["heater_duty"] : "n/a";
-        targetTemp.value = "target_temp" in data ? data["target_temp"] : "n/a";
-        targetSensor.value = "target_sensor" in data ? data["target_sensor"] : "n/a";
+        data = data["1"] || data["2"] || {};
+        coreTemperature.value = data["target_sensor_temp"] ?? "n/a";
+        heaterPower.value = data["heater_power"] ?? "n/a";
+        heaterMode.value = data['heater_mode'] ?? "n/a";
+        heaterDuty.value = data["heater_duty"] ?? "n/a";
+        targetTemp.value = data["target_temp"] ?? "n/a";
+        targetSensor.value = data["target_sensor"] ?? "n/a";
         targetSensorLabel.innerText = targetSensor.value;
 
         if (!window.boardChart && data['sensor_info']) {
