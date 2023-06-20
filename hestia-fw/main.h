@@ -1,15 +1,18 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+#define HESTIA_VERSION 110  // 3 digits -> major, minor, rev
+
 // GPIO PINS
 #define LED_YELLOW BIT2  // P5.2
 #define LED_GREEN  BIT3  // P5.3
-#define LED_BLUE   BIT4  // P5.4
+#define LED_BLUE   BIT4  // P5.4 - only in board version 200+
 #define HEATER_PIN BIT7  // P1.7
 
 // I2C commands
 #define COMMAND_READ_SENSOR_LOW      0x01
 #define COMMAND_READ_SENSOR_HIGH     0x08
+#define COMMAND_READ_BOARD_VERSION   0x10
 #define COMMAND_READ_HEATER_MODE     0x20
 #define COMMAND_READ_TARGET_TEMP     0x21
 #define COMMAND_READ_TARGET_SENSOR   0x22

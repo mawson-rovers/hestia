@@ -104,6 +104,8 @@ void process_cmd_tx(unsigned char cmd) {
         // set active adc to read from
         unsigned int sensor = cmd - 1;
         transmit_uint(adc_readings[sensor]);
+    } else if (cmd == COMMAND_READ_BOARD_VERSION) {
+        transmit_uint(HESTIA_VERSION);
     } else if (cmd == COMMAND_READ_HEATER_MODE) {
         transmit_uint(heater_mode);
     } else if (cmd == COMMAND_READ_TARGET_TEMP) {
@@ -135,7 +137,7 @@ void I2C_Slave_ProcessCMD(unsigned char *message_rx, uint16_t length) {
     uint8_t cmd = message_rx[0];
     unsigned char *package = message_rx + 1; // ignore the command
 
-    P5OUT ^= LED_BLUE;
+    P5OUT ^= (HESTIA_VERSION < 200) ? LED_YELLOW : LED_BLUE;
 
     if (cmd == COMMAND_WRITE_HEATER_MODE) {
         // Set the heater mode
@@ -171,10 +173,10 @@ void heater_process() {
         // CCR2 = current_pwm;                                 // CCR2 PWM duty cycle 0%
         if (current_pwm > counter) {
             P1OUT |= HEATER_PIN;
-            P5OUT |= LED_YELLOW;    // LED_2 on
+            if (HESTIA_VERSION < 200) P5OUT |= LED_GREEN;    // LED_2 on
         } else {
             P1OUT &= ~HEATER_PIN;
-            P5OUT &= ~LED_YELLOW;   // LED_2 off
+            if (HESTIA_VERSION < 200) P5OUT &= ~LED_GREEN;   // LED_2 off
         }
         counter++;
         if (counter > 255) {
@@ -183,7 +185,7 @@ void heater_process() {
     } else {
         // just turn everything off
         P1OUT &= ~HEATER_PIN;
-        P5OUT &= ~LED_YELLOW;   // LED_2 off
+        if (HESTIA_VERSION < 200) P5OUT &= ~LED_GREEN;   // LED_2 off
     }
 }
 
