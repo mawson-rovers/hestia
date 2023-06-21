@@ -85,7 +85,7 @@ void __attribute__ ((interrupt(TIMERA0_VECTOR))) Timer_A(void)
     if (ta_count > 250) {
         ta_count = 0;
         if (heater_mode == HEATER_MODE_PID) {
-            P5OUT ^= LED_GREEN;     // toggle PID indicator LED
+            P5OUT ^= LED_YELLOW;     // toggle PID indicator LED
             unsigned int adc_value = adc_readings[control_sensor];
             if (adc_value >= ADC_MIN_VALUE && adc_value <= ADC_MAX_VALUE) {
                 CCR2 = update_pid(adc_value);
@@ -94,7 +94,7 @@ void __attribute__ ((interrupt(TIMERA0_VECTOR))) Timer_A(void)
             }
         } else {
             CCR2 = 0;
-            P5OUT &= ~(LED_GREEN); // turn off PID indicator LED
+            P5OUT &= ~(LED_YELLOW); // turn off PID indicator LED
         }
     }
 }
@@ -137,7 +137,7 @@ void I2C_Slave_ProcessCMD(unsigned char *message_rx, uint16_t length) {
     uint8_t cmd = message_rx[0];
     unsigned char *package = message_rx + 1; // ignore the command
 
-    P5OUT ^= (HESTIA_VERSION < 200) ? LED_YELLOW : LED_BLUE;
+    P5OUT ^= (HESTIA_VERSION < 200) ? LED_GREEN : LED_BLUE;
 
     if (cmd == COMMAND_WRITE_HEATER_MODE) {
         // Set the heater mode
@@ -173,19 +173,21 @@ void heater_process() {
         // CCR2 = current_pwm;                                 // CCR2 PWM duty cycle 0%
         if (current_pwm > counter) {
             P1OUT |= HEATER_PIN;
-            if (HESTIA_VERSION < 200) P5OUT |= LED_GREEN;    // LED_2 on
+            if (HESTIA_VERSION < 200) P5OUT |= LED_YELLOW;    // LED on
         } else {
             P1OUT &= ~HEATER_PIN;
-            if (HESTIA_VERSION < 200) P5OUT &= ~LED_GREEN;   // LED_2 off
+            if (HESTIA_VERSION < 200) P5OUT &= ~LED_YELLOW;   // LED off
         }
         counter++;
         if (counter > 255) {
             counter = 0;
         }
+    } else if (heater_mode == HEATER_MODE_PID) {
+        // do nothing - PID timer will take care of heater pin and LEDs
     } else {
-        // just turn everything off
+        // turn everything off
         P1OUT &= ~HEATER_PIN;
-        if (HESTIA_VERSION < 200) P5OUT &= ~LED_GREEN;   // LED_2 off
+        if (HESTIA_VERSION < 200) P5OUT &= ~LED_YELLOW;   // LED off
     }
 }
 
