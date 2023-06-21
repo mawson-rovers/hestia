@@ -101,22 +101,17 @@ pub struct Board {
     pub bus: I2cBus,
     pub heater: Rc<dyn Heater>,
     pub sensors: Vec<Box<dyn ReadableSensor>>,
-    pub check_sensor: Box<dyn ReadableSensor>,
 }
 
 impl Board {
-    pub fn init(version: BoardVersion, bus: u8, check_sensor: &String) -> Self {
+    pub fn init(version: BoardVersion, bus: u8) -> Self {
         let sensors = Board::get_readable_sensors(version, bus.into(), ALL_SENSORS);
-        let check_sensor = Board::sensor_by_id(check_sensor)
-            .expect("Check sensor not found");
-        let check_sensor = Board::create_sensor(version, bus.into(), *check_sensor);
         let msp430 = Msp430::new(bus.into());
         Board {
             version,
             bus: bus.into(),
             heater: Rc::new(msp430),
             sensors,
-            check_sensor,
         }
     }
 
@@ -179,15 +174,6 @@ impl Board {
         self.heater.write_duty(pwm_duty_cycle)
     }
 
-    fn sensor_by_id(id: &String) -> Option<&'static Sensor> {
-        for sensor in ALL_SENSORS {
-            if id.eq_ignore_ascii_case(sensor.id) {
-                return Some(sensor);
-            }
-        }
-        None
-    }
-
     fn read_sensors(&self) -> Vec<ReadResult<SensorReading<f32>>> {
         self.sensors.iter()
             .map(|s| s.read())
@@ -201,19 +187,18 @@ pub trait BoardDataProvider {
 
 impl BoardDataProvider for Board {
     fn read_data(&self) -> Option<BoardData> {
-        // fail fast if bus isn't found or check sensor is not readable
+        // fail fast if bus isn't found
         if !self.bus.exists() {
             error!("I2C bus device not found: {}", self.bus);
-            return None
-        }
-        let test_read = self.check_sensor.read();
-        if test_read.is_err() {
-            error!("Failed to read check sensor {} on I2C bus {}", self.check_sensor, self.bus);
-            return None
+            return None;
         }
 
         let sensors = self.read_sensors();
-        let sensors: [_; 20] = sensors.try_into().expect("Oversize");
+        if sensors.iter().all(|rr| rr.is_err()) {
+            return None;
+        }
+
+        let sensors: [_; 20] = sensors.try_into().expect("invalid sensor reading count");
         return Some(BoardData {
             sensors,
             heater_mode: self.heater.read_mode(),

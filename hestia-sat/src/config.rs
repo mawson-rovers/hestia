@@ -5,8 +5,6 @@ use crate::board::{Board, BoardVersion};
 
 fn default_i2c_bus() -> Vec<u8> { vec![1, 2] }
 
-fn default_check_sensor() -> String { "U7".to_string() }
-
 fn default_log_interval() -> u16 { 5 }
 
 fn default_http_port() -> u16 { 5000 }
@@ -25,10 +23,6 @@ pub struct Config {
     /// Board version, used for switching some address settings
     #[serde(default = "default_board_version")]
     pub board_version: BoardVersion,
-
-    /// Sensor that will be checked for the board to be alive
-    #[serde(default = "default_check_sensor")]
-    pub check_sensor: String,
 
     /// Duration between logging output in seconds
     #[serde(default = "default_log_interval")]
@@ -52,7 +46,7 @@ impl Config {
 
     pub fn create_boards(&self) -> Vec<Board> {
         let result: Vec<Board> = self.i2c_bus.iter().map(|&bus| {
-            Board::init(self.board_version, bus, &self.check_sensor)
+            Board::init(self.board_version, bus)
         }).collect();
         info!("Reading from {} {} boards: {:?}", result.len(), self.board_version,
             result.iter().map(|b| b.bus.path()).collect::<Vec<String>>());
