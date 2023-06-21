@@ -1,6 +1,7 @@
 use std::convert::TryInto;
 use std::rc::Rc;
 use log::error;
+use serde::Deserialize;
 
 use crate::{ReadResult};
 use crate::heater::{Heater, HeaterMode, TargetSensor};
@@ -8,8 +9,33 @@ use crate::device::ads7828::Ads7828Sensor;
 use crate::device::i2c::I2cBus;
 use crate::device::max31725::Max31725Sensor;
 use crate::device::msp430::{Msp430, Msp430CurrentSensor, Msp430TempSensor, Msp430VoltageSensor};
-use crate::reading::{ReadableSensor, SensorReading};
+use crate::reading::{DisabledSensor, ReadableSensor, SensorReading};
 use crate::sensors::{Sensor, SensorInterface};
+
+
+#[derive(Debug, Copy, Clone, Deserialize)]
+pub enum BoardVersion {
+    V1_1 = 110,
+    V2 = 200,
+}
+
+impl BoardVersion {
+    fn is_sensor_enabled(&self, sensor: &Sensor) -> bool {
+        match self {
+            BoardVersion::V1_1 => sensor.id != U4.id,
+            BoardVersion::V2 => true,
+        }
+    }
+}
+
+impl std::fmt::Display for BoardVersion {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            BoardVersion::V1_1 => f.write_str("v1.1"),
+            BoardVersion::V2 => f.write_str("v2")
+        }
+    }
+}
 
 pub const TH1: Sensor = Sensor::new("TH1", SensorInterface::MSP430, 0x01,
                                 "Centre", -42.0135, 43.18);
@@ -71,6 +97,7 @@ pub static ALL_SENSORS: &[Sensor; 20] = &[
 ];
 
 pub struct Board {
+    pub version: BoardVersion,
     pub bus: I2cBus,
     pub heater: Rc<dyn Heater>,
     pub sensors: Vec<Box<dyn ReadableSensor>>,
@@ -78,13 +105,14 @@ pub struct Board {
 }
 
 impl Board {
-    pub fn init(bus: u8, check_sensor: &String) -> Self {
-        let sensors = Board::get_readable_sensors(bus.into(), ALL_SENSORS);
+    pub fn init(version: BoardVersion, bus: u8, check_sensor: &String) -> Self {
+        let sensors = Board::get_readable_sensors(version, bus.into(), ALL_SENSORS);
         let check_sensor = Board::sensor_by_id(check_sensor)
             .expect("Check sensor not found");
-        let check_sensor = Board::create_sensor(bus.into(), *check_sensor);
+        let check_sensor = Board::create_sensor(version, bus.into(), *check_sensor);
         let msp430 = Msp430::new(bus.into());
         Board {
+            version,
             bus: bus.into(),
             heater: Rc::new(msp430),
             sensors,
@@ -92,18 +120,23 @@ impl Board {
         }
     }
 
-    fn get_readable_sensors(bus: I2cBus, sensors: &[Sensor]) -> Vec<Box<dyn ReadableSensor>> {
-        sensors.iter().map(|s| Board::create_sensor(bus, *s)).collect()
+    fn get_readable_sensors(version: BoardVersion, bus: I2cBus, sensors: &[Sensor]) -> Vec<Box<dyn ReadableSensor>> {
+        sensors.iter()
+            .map(|s| Board::create_sensor(version, bus, *s))
+            .collect()
     }
 
-    fn create_sensor(bus: I2cBus, s: Sensor) -> Box<dyn ReadableSensor> {
+    fn create_sensor(version: BoardVersion, bus: I2cBus, s: Sensor) -> Box<dyn ReadableSensor> {
         let name = s.to_string();
         let reg = s.addr.into();
+        if !version.is_sensor_enabled(&s) {
+            return Box::new(DisabledSensor::new(name))
+        }
         match s.iface {
             SensorInterface::MSP430 => Box::new(Msp430TempSensor::new(bus, name, reg)),
             SensorInterface::MSP430Voltage => Box::new(Msp430VoltageSensor::new(bus, name, reg)),
             SensorInterface::MSP430Current => Box::new(Msp430CurrentSensor::new(bus, name, reg)),
-            SensorInterface::ADS7828 => Box::new(Ads7828Sensor::new(bus, name, s.addr)),
+            SensorInterface::ADS7828 => Box::new(Ads7828Sensor::new(version, bus, name, s.addr)),
             SensorInterface::MAX31725 => Box::new(Max31725Sensor::new(bus, name, s.addr)),
         }
     }
@@ -130,7 +163,7 @@ impl Board {
 
     pub fn read_target_sensor_temp(&self) -> ReadResult<SensorReading<f32>> {
         let sensor = self.get_target_sensor()?;
-        let sensor = Board::create_sensor(self.bus, sensor);
+        let sensor = Board::create_sensor(self.version, self.bus, sensor);
         sensor.read()
     }
 

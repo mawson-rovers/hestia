@@ -1,11 +1,13 @@
 use std::fmt::{Display, Formatter};
 use log::debug;
+use crate::board::BoardVersion;
 use crate::device::i2c::*;
 use crate::reading::{ReadableSensor, SensorReading};
 use crate::ReadResult;
 use crate::sensors::{adc_val_to_temp};
 
-const ADS7828_I2C_ADDR: I2cAddr = I2cAddr(0x4A); // revert to 0x48 for board v1
+const ADS7828_I2C_ADDR_V1: I2cAddr = I2cAddr(0x48);
+const ADS7828_I2C_ADDR_V2: I2cAddr = I2cAddr(0x4A);
 pub(crate) const ADS7828_ADC_RESOLUTION: u16 = 1 << 12;
 
 /// ADS7828 is a discrete multiplexing ADC on the Hestia board.
@@ -18,12 +20,16 @@ pub struct Ads7828Sensor {
 }
 
 impl Ads7828Sensor {
-    pub fn new(bus: I2cBus, name: String, addr: I2cAddr) -> Self {
+    pub fn new(version: BoardVersion, bus: I2cBus, name: String, reg: I2cAddr) -> Self {
         let name = format!("ads7828/{}", name);
+        let addr = match version {
+            BoardVersion::V1_1 => ADS7828_I2C_ADDR_V1,
+            BoardVersion::V2 => ADS7828_I2C_ADDR_V2,
+        };
         let device = LoggingI2cDevice::new(
-            name.clone(), I2cDevice::big_endian(bus, ADS7828_I2C_ADDR));
-        let reg = Self::adc7828_command(addr);
-        debug!("{}: Converted addr {} to ADS7828 command: {:b}", name, addr, reg.0);
+            name.clone(), I2cDevice::big_endian(bus, addr));
+        let reg = Self::adc7828_command(reg);
+        debug!("{}: Converted addr {} to ADS7828 command: {:b}", name, reg, reg.0);
         Ads7828Sensor { device, name, reg }
     }
 
@@ -38,7 +44,6 @@ impl Ads7828Sensor {
         // see ADS7828 datasheet for more details
         ((addr & 0x01) << 2) | (addr >> 1)
     }
-
 }
 
 impl Display for Ads7828Sensor {

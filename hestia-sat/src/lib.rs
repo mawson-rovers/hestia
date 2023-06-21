@@ -24,12 +24,18 @@ pub enum ReadError {
     /// No error
     #[fail(display = "No error")]
     None,
+
     /// Value out of acceptable range
     #[fail(display = "Value out of range error")]
     ValueOutOfRange,
+
     /// I2C Error
     #[fail(display = "I2C Error")]
     I2CError(Arc<std::io::Error>),
+
+    /// Sensor is disabled
+    #[fail(display = "Disabled")]
+    Disabled,
 }
 
 /// Convert ReadErrors to cubeos_error::Error::ServiceError(u8)

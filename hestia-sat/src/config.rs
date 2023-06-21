@@ -1,7 +1,7 @@
 use dotenv::dotenv;
 use log::info;
 use serde::Deserialize;
-use crate::board::Board;
+use crate::board::{Board, BoardVersion};
 
 fn default_i2c_bus() -> Vec<u8> { vec![1, 2] }
 
@@ -11,6 +11,8 @@ fn default_log_interval() -> u16 { 5 }
 
 fn default_http_port() -> u16 { 5000 }
 
+fn default_board_version() -> BoardVersion { BoardVersion::V2 }
+
 #[derive(Deserialize, Debug, Clone)]
 pub struct Config {
     /// Log file directory
@@ -19,6 +21,10 @@ pub struct Config {
     /// List of active I2C bus numbers
     #[serde(default = "default_i2c_bus")]
     pub i2c_bus: Vec<u8>,
+
+    /// Board version, used for switching some address settings
+    #[serde(default = "default_board_version")]
+    pub board_version: BoardVersion,
 
     /// Sensor that will be checked for the board to be alive
     #[serde(default = "default_check_sensor")]
@@ -46,9 +52,9 @@ impl Config {
 
     pub fn create_boards(&self) -> Vec<Board> {
         let result: Vec<Board> = self.i2c_bus.iter().map(|&bus| {
-            Board::init(bus, &self.check_sensor)
+            Board::init(self.board_version, bus, &self.check_sensor)
         }).collect();
-        info!("Reading from {} boards: {:?}", result.len(),
+        info!("Reading from {} {} boards: {:?}", result.len(), self.board_version,
             result.iter().map(|b| b.bus.path()).collect::<Vec<String>>());
         result
     }
