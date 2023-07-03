@@ -131,6 +131,14 @@
         });
     });
 
+    document.querySelectorAll(".set-custom-heater-duty").forEach(el => {
+        const customDuty = document.getElementById("custom-heater-duty");
+        el.addEventListener('click', () => {
+            let duty = Math.floor(Number(customDuty.value) * 255);
+            postStatusUpdate({ 'heater_duty': duty });
+        });
+    });
+
     // target temperature buttons
     document.querySelectorAll(".set-target-temp").forEach(el => {
         el.addEventListener('click', () => {
