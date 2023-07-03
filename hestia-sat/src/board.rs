@@ -1,6 +1,6 @@
 use std::convert::TryInto;
 use std::rc::Rc;
-use log::error;
+use log::{debug, error};
 use serde::Deserialize;
 
 use crate::{ReadResult};
@@ -125,6 +125,7 @@ impl Board {
         let name = s.to_string();
         let reg = s.addr.into();
         if !version.is_sensor_enabled(&s) {
+            debug!("Disabling sensor: {}", s);
             return Box::new(DisabledSensor::new(name))
         }
         match s.iface {
