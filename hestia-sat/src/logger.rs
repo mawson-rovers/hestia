@@ -36,7 +36,7 @@ impl LogWriter {
                   if raw_log { "raw" } else { "temp" },
                   file_path.display());
         let is_new = !file_path.exists();
-        CsvWriter::file(file_path, is_new).expect("Unable to create log file")
+        CsvWriter::file(file_path, is_new)
     }
 
     pub fn write_header_if_new(&mut self) {
