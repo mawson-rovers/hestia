@@ -36,3 +36,18 @@ impl ReadableSensor for Max31725Sensor {
         Ok(SensorReading::new(raw_value, display_value))
     }
 }
+
+#[cfg(test)]
+#[cfg(not(target_os = "linux"))]
+mod tests {
+    use crate::device::i2c::{I2cAddr, I2cBus};
+    use crate::device::max31725::Max31725Sensor;
+    use crate::reading::ReadableSensor;
+
+    #[test]
+    fn test_max31725_temp_conversion() {
+        let sensor = Max31725Sensor::new(I2cBus::from(2), String::from("MAX31725"), I2cAddr(0x48));
+        assert_eq!(25.5625, sensor.read().unwrap().display_value);
+        assert_eq!((25 << 8) + (0x48 << 1), sensor.read().unwrap().raw_value);
+    }
+}
