@@ -176,12 +176,13 @@ fn show_status(board: Board) {
             .map(|m| m.to_string())
             .unwrap_or(String::from("#err"));
         let [.., heater_v_high, heater_v_low, heater_curr] = data.sensors;
-        println!("board:{} {} temp:{} heater:{} target:{:0.2} sensor:{} duty:{} V:{:0.2}/{:0.2} I:{:0.2}",
+        println!("board:{} {} temp:{} heater:{} target:{} sensor:{} duty:{} V:{:0.2}/{:0.2} I:{:0.2}",
                  board.bus,
                  board.version,
                  target_sensor_temp,
                  heater_mode,
-                 data.target_temp.unwrap().display_value,
+                 data.target_temp.map(|t| format!("{:0.2}", t.display_value))
+                     .unwrap_or(String::from("#err")),
                  board.get_target_sensor().map(|s| s.id).unwrap_or("#err"),
                  board.read_heater_duty().unwrap(),
                  heater_v_high.unwrap(),
