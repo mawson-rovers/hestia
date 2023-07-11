@@ -1,11 +1,14 @@
 extern crate i2c_linux;
 
 use std::io;
+use byteorder::ByteOrder;
+use log::{debug, warn};
+
+#[cfg(target_os = "linux")]
 use std::path::Path;
 
-use byteorder::ByteOrder;
+#[cfg(target_os = "linux")]
 use i2c_linux::I2c;
-use log::{debug, warn};
 
 #[derive(Debug, Copy, Clone)]
 pub struct I2cAddr(pub u8);
@@ -43,6 +46,7 @@ impl From<u8> for I2cBus {
     }
 }
 
+#[cfg(target_os = "linux")]
 impl I2cBus {
     pub fn path(&self) -> String {
         format!("/dev/i2c-{}", self.id)

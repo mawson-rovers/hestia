@@ -1,5 +1,5 @@
 [build]
-target = "arm-unknown-linux-gnueabihf"
+target = ["arm-unknown-linux-gnueabihf", "aarch64-apple-darwin"]
 
 [target.arm-unknown-linux-gnueabihf]
 linker = "/Users/mryall/bin/arm-linux-gcc" # linker must be on PATH
