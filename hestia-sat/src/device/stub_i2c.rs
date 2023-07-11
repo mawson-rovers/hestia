@@ -2,7 +2,6 @@ use std::io;
 use byteorder::{BigEndian, LittleEndian, ByteOrder};
 use crate::device::i2c::{I2cAddr, I2cBus, I2cReg};
 
-#[cfg(not(target_os = "linux"))]
 impl I2cBus {
     pub fn path(&self) -> String {
         format!("i2c-stub-{}", self.id)
