@@ -28,12 +28,12 @@ impl Ads7828Sensor {
         };
         let device = LoggingI2cDevice::new(
             name.clone(), I2cDevice::big_endian(bus, addr));
-        let reg = Self::adc7828_command(reg);
+        let reg = Self::ads7828_command(reg);
         debug!("{}: Converted addr {} to ADS7828 command: {:b}", name, reg, reg.0);
         Ads7828Sensor { device, name, reg }
     }
 
-    fn adc7828_command(addr: I2cAddr) -> I2cReg {
+    pub(crate) fn ads7828_command(addr: I2cAddr) -> I2cReg {
         // set SD = 1, PD0 = 1 (see ADS7828 datasheet, p11)
         let result = I2cReg(0x84 | (Self::ads7828_channel_select(addr.0) << 4));
         result
@@ -57,5 +57,37 @@ impl ReadableSensor for Ads7828Sensor {
         let raw_value = self.device.read_register(self.reg, &*self.name)?;
         let display_value = adc_val_to_temp(raw_value, ADS7828_ADC_RESOLUTION)?;
         Ok(SensorReading::new(raw_value, display_value))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::device::ads7828::Ads7828Sensor;
+    use crate::device::i2c::I2cAddr;
+
+    #[test]
+    fn test_ads7828_command() {
+        let command = |addr| -> u8 { Ads7828Sensor::ads7828_command(I2cAddr(addr)).0 };
+        
+        assert_eq!(0b10000100, command(0));
+        assert_eq!(0b11000100, command(1));
+        assert_eq!(0b10010100, command(2));
+        assert_eq!(0b11010100, command(3));
+        assert_eq!(0b10100100, command(4));
+        assert_eq!(0b11100100, command(5));
+        assert_eq!(0b10110100, command(6));
+        assert_eq!(0b11110100, command(7));
+    }
+
+    #[test]
+    fn test_ads7828_channel_select() {
+        assert_eq!(0b000, Ads7828Sensor::ads7828_channel_select(0));
+        assert_eq!(0b001, Ads7828Sensor::ads7828_channel_select(2));
+        assert_eq!(0b010, Ads7828Sensor::ads7828_channel_select(4));
+        assert_eq!(0b011, Ads7828Sensor::ads7828_channel_select(6));
+        assert_eq!(0b100, Ads7828Sensor::ads7828_channel_select(1));
+        assert_eq!(0b101, Ads7828Sensor::ads7828_channel_select(3));
+        assert_eq!(0b110, Ads7828Sensor::ads7828_channel_select(5));
+        assert_eq!(0b111, Ads7828Sensor::ads7828_channel_select(7));
     }
 }

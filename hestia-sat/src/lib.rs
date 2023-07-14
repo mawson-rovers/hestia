@@ -55,6 +55,23 @@ impl From<std::io::Error> for ReadError {
     }
 }
 
+impl PartialEq for ReadError {
+    /// Type-based equality for ReadError, only used for testing
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (ReadError::None, ReadError::None) => true,
+            (ReadError::ValueOutOfRange, ReadError::ValueOutOfRange) => true,
+            (ReadError::I2CError(_), ReadError::I2CError(_)) => true,
+            (ReadError::Disabled, ReadError::Disabled) => true,
+            (_, _) => false,
+        }
+    }
+
+    fn ne(&self, other: &Self) -> bool {
+        !self.eq(other)
+    }
+}
+
 pub type ReadResult<T> = Result<T, ReadError>;
 
 impl<T> From<ReadResult<T>> for CsvData
