@@ -40,5 +40,9 @@ name = "uts-log"
 test = false
 
 [[bin]]
+name = "uts-run"
+test = false
+
+[[bin]]
 name = "uts-web"
 test = false
