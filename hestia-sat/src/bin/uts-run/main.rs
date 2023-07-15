@@ -1,17 +1,20 @@
+mod config;
+
 use std::fmt::Formatter;
+use std::slice::Iter;
 use std::thread::sleep;
-use std::vec::IntoIter;
 use chrono::{DateTime, Duration, Utc};
 use log::info;
+use crate::config::Program;
 
-#[derive(Debug, PartialEq, Clone)]
-enum State {
+#[derive(Debug, PartialEq)]
+enum State<'a> {
     Heating {
-        program: Program,
+        program: &'a Program,
         end_time: DateTime<Utc>,
     },
     Cooling {
-        program: Program,
+        program: &'a Program,
         end_time: DateTime<Utc>,
     },
     Done,
@@ -20,7 +23,7 @@ enum State {
     },
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 enum Event {
     TemperatureReading {
         temp_sensor: String,
@@ -29,8 +32,8 @@ enum Event {
     Time,
 }
 
-impl State {
-    pub fn next(self, event: Event) -> State {
+impl <'a> State<'a> {
+    pub fn next(self, programs: &mut Iter<'a, Program>, event: Event) -> State<'a> {
         let current_time = Utc::now();
         match self {
             State::Heating { program, end_time } => match event {
@@ -38,7 +41,7 @@ impl State {
                     info!("Checking {} <=> {}, {} <=> {}", temp, program.temp_abort,
                         temp_sensor, program.temp_sensor);
                     if temp > program.temp_abort && temp_sensor == program.temp_sensor {
-                        info!("Too hot - aborting program: {}", &program);
+                        info!("Too hot - aborting program: {:?}", &program);
                         let end_time = current_time + program.cooling_time;
                         State::Cooling { program, end_time }
                     } else {
@@ -47,7 +50,7 @@ impl State {
                 }
                 Event::Time => {
                     if current_time >= end_time {
-                        info ! ("Outta time - completing program: {}", & program);
+                        info ! ("Outta time - completing program: {:?}", &program);
                         let end_time = current_time + program.cooling_time;
                         State::Cooling { program, end_time }
                     } else {
@@ -57,12 +60,11 @@ impl State {
             },
             State::Cooling { program, end_time } => match event {
                 Event::Time if current_time >= end_time => {
-                    match program.next {
-                        Some(program) => {
-                            let end_time = current_time + program.heating_time;
-                            State::Heating { program: *program, end_time }
-                        },
-                        None => State::Done,
+                    if let Some(program) = programs.next() {
+                        let end_time = current_time + program.heating_time;
+                        State::Heating { program, end_time }
+                    } else {
+                        State::Done
                     }
                 }
                 _ => {
@@ -75,10 +77,16 @@ impl State {
             }
         }
     }
+
+    pub fn start(programs: &mut Iter<'a, Program>) -> State<'a> {
+        let first = programs.next().expect("Didn't find any programs");
+        let end_time = Utc::now() + first.heating_time;
+        State::Heating { program: first, end_time }
+    }
 }
 
-impl std::fmt::Display for State {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for State<'_> {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         match self {
             State::Heating { end_time, .. } => write!(f, "State::Heating({})", end_time),
             State::Cooling { end_time, .. } => write!(f, "State::Cooling({})", end_time),
@@ -88,87 +96,27 @@ impl std::fmt::Display for State {
     }
 }
 
-#[repr(u8)]
-#[derive(Debug, PartialEq, Clone)]
-enum HeaterPosition {
-    Top = 1,
-    Bottom = 2,
-}
-
-#[derive(Debug, PartialEq, Clone)]
-struct Program {
-    id: usize,
-    heating_time: Duration,
-    temp_sensor: String,
-    temp_abort: f32,
-    thermostat: Option<f32>,
-    cooling_time: Duration,
-    heater_position: HeaterPosition,
-    heater_duty: f32,
-    next: Option<Box<Program>>,
-}
-
-impl Program {
-    fn run(self, events: IntoIter<Event>) {
-        let end_time = Utc::now() + self.heating_time;
-        let mut state = State::Heating { program: self, end_time };
-        for event in events {
-            info!("{} <- {:?}", &state, &event);
-            if state == State::Done { break }
-            state = state.next(event);
-            sleep(Duration::seconds(1).to_std().unwrap());
-        }
-    }
-}
-
-impl std::fmt::Display for Program {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Program#{}", self.id)
-    }
-}
-
 pub fn main() {
     env_logger::init();
-
-    let last = Program {
-        id: 2,
-        heating_time: Duration::seconds(5),
-        temp_sensor: String::from("TH1"),
-        temp_abort: 80.0,
-        thermostat: None,
-        cooling_time: Duration::seconds(10),
-        heater_position: HeaterPosition::Top,
-        heater_duty: 1.0,
-        next: None,
-    };
-    let first = Program {
-        id: 1,
-        heating_time: Duration::seconds(3),
-        temp_sensor: String::from("J7"),
-        temp_abort: 100.0,
-        thermostat: Some(80.0),
-        cooling_time: Duration::seconds(10),
-        heater_position: HeaterPosition::Bottom,
-        heater_duty: 0.0,
-        next: Some(Box::new(last)),
-    };
+    let config = config::load();
+    info!("Loaded config:\n{:#?}", config);
 
     let events: Vec<Event> = vec![
         Event::Time,
-        Event::TemperatureReading { temp: 55.0, temp_sensor: String::from("J7") },
-        Event::TemperatureReading { temp: 105.0, temp_sensor: String::from("J7") },
+        Event::TemperatureReading { temp: 55.0, temp_sensor: String::from("TH1") },
+        Event::TemperatureReading { temp: 105.0, temp_sensor: String::from("TH1") },
         Event::Time,
         Event::Time,
-        Event::TemperatureReading { temp: 60.0, temp_sensor: String::from("J7") },
-        Event::TemperatureReading { temp: 80.0, temp_sensor: String::from("TH1") },
-        Event::Time,
-        Event::Time,
-        Event::TemperatureReading { temp: 120.0, temp_sensor: String::from("TH1") },
-        Event::TemperatureReading { temp: 100.0, temp_sensor: String::from("TH1") },
+        Event::TemperatureReading { temp: 60.0, temp_sensor: String::from("TH1") },
+        Event::TemperatureReading { temp: 80.0, temp_sensor: String::from("J7") },
         Event::Time,
         Event::Time,
         Event::TemperatureReading { temp: 120.0, temp_sensor: String::from("J7") },
-        Event::TemperatureReading { temp: 90.0, temp_sensor: String::from("TH1") },
+        Event::TemperatureReading { temp: 100.0, temp_sensor: String::from("J7") },
+        Event::Time,
+        Event::Time,
+        Event::TemperatureReading { temp: 120.0, temp_sensor: String::from("TH1") },
+        Event::TemperatureReading { temp: 90.0, temp_sensor: String::from("J7") },
         Event::Time,
         Event::Time,
         Event::TemperatureReading { temp: 60.0, temp_sensor: String::from("TH1") },
@@ -188,5 +136,12 @@ pub fn main() {
         Event::Time,
     ];
 
-    first.run(events.into_iter());
+    let mut programs = config.programs();
+    let mut state = State::start(&mut programs);
+    for event in events {
+        info!("{} <- {:?}", &state, &event);
+        if state == State::Done { break }
+        state = state.next(&mut programs, event);
+        sleep(Duration::seconds(1).to_std().unwrap());
+    }
 }

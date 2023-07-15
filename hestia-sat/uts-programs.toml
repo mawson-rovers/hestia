@@ -1,0 +1,16 @@
+[[programs]]
+heating_time = "5s"
+temp_sensor = "TH1"
+temp_abort = 80.0
+cooling_time = "10s"
+heater_position = "Top"
+heater_duty = 1.0
+
+[[programs]]
+heating_time = "3s"
+temp_sensor = "J7"
+temp_abort = 100.0
+thermostat = 80.0
+cooling_time = "10s"
+heater_position = "Bottom"
+heater_duty = 1.0
