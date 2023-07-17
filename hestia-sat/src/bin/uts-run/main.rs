@@ -5,23 +5,41 @@ use std::marker::PhantomData;
 use std::thread::sleep;
 use chrono::{DateTime, Duration, Utc};
 use log::info;
+use uts_ws1::heater::{HeaterMode, TargetSensor};
 use uts_ws1::payload::Payload;
 use crate::config::{HeatBoard, Program};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug)]
 enum State<'a> {
     Heating {
+        payload: &'a Payload,
         program: &'a Program,
         end_time: DateTime<Utc>,
     },
     Cooling {
-        program: &'a Program,
+        payload: &'a Payload,
         end_time: DateTime<Utc>,
     },
     Done,
     Failed {
         message: String,
     },
+}
+
+impl<'a> PartialEq for State<'a> {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (State::Heating { .. }, State::Heating { .. }) => true,
+            (State::Cooling { .. }, State::Cooling { .. }) => true,
+            (State::Done, State::Done) => true,
+            (State::Failed { .. }, State::Failed { .. }) => true,
+            _ => false,
+        }
+    }
+
+    fn ne(&self, other: &Self) -> bool {
+        !self.eq(other)
+    }
 }
 
 #[derive(Debug)]
@@ -42,7 +60,7 @@ impl<'a> State<'a> {
     {
         let current_time = Utc::now();
         match self {
-            &State::Heating { program, end_time } => match event {
+            &State::Heating { payload, program, end_time } => match event {
                 Event::TemperatureReading { board, temp_sensor, temp }
                 if board == program.heat_board && temp_sensor == program.temp_sensor
                 => {
@@ -50,8 +68,7 @@ impl<'a> State<'a> {
                         board, temp_sensor, temp, program.temp_abort);
                     if temp > program.temp_abort {
                         info!("Too hot - aborting program: {:?}", &program);
-                        let end_time = current_time + program.cool_time;
-                        Some(State::Cooling { program, end_time })
+                        Some(Self::start_cool(payload, program))
                     } else {
                         None
                     }
@@ -59,18 +76,17 @@ impl<'a> State<'a> {
                 Event::Time => {
                     if current_time >= end_time {
                         info!("Outta time - completing program: {:?}", &program);
-                        let end_time = current_time + program.cool_time;
-                        Some(State::Cooling { program, end_time })
+                        Some(Self::start_cool(payload, program))
                     } else {
                         None
                     }
                 }
                 _ => None,
             },
-            &State::Cooling { program: _, end_time } => match event {
+            &State::Cooling { payload, end_time } => match event {
                 Event::Time if current_time >= end_time => {
                     if let Some(program) = programs.next() {
-                        Some(Self::start_heat(program))
+                        Some(Self::start_heat(payload, program))
                     } else {
                         Some(State::Done)
                     }
@@ -86,17 +102,39 @@ impl<'a> State<'a> {
         }
     }
 
-    pub fn start<P>(programs: &mut P) -> State<'a>
+    pub fn start<P>(payload: &'a Payload, programs: &mut P) -> State<'a>
         where
             P: Iterator<Item=&'a Program>,
     {
         let first = programs.next().expect("Didn't find any programs");
-        State::start_heat(first)
+        State::start_heat(payload, first)
     }
 
-    pub fn start_heat(program: &'a Program) -> State<'a> {
+    pub fn start_heat(payload: &'a Payload, program: &'a Program) -> State<'a> {
+        info!("Starting heat for program: {:?}", &program);
+        let board = &payload[program.heat_board as u8];
         let end_time = Utc::now() + program.heat_time;
-        State::Heating { program, end_time }
+        board.write_heater_duty((program.heat_duty * 255.0) as u16);
+        let target_sensor = TargetSensor::from(program.temp_sensor.clone());
+        board.write_target_sensor(target_sensor);
+        match program.thermostat {
+            Some(temp) => {
+                board.write_target_temp(temp);
+                board.write_heater_mode(HeaterMode::PID);
+            },
+            None => {
+                board.write_heater_mode(HeaterMode::PWM);
+            }
+        }
+        State::Heating { payload, program, end_time }
+    }
+
+    pub fn start_cool(payload: &'a Payload, program: &'a Program) -> State<'a> {
+        info!("Starting cool for program: {:?}", &program);
+        let board = &payload[program.heat_board as u8];
+        board.write_heater_mode(HeaterMode::OFF);
+        let end_time = Utc::now() + program.cool_time;
+        State::Cooling { payload, end_time }
     }
 }
 
@@ -111,13 +149,14 @@ impl std::fmt::Display for State<'_> {
     }
 }
 
-fn run_programs<'a, P, E>(programs: &mut P, events: E, duration: Duration) -> State<'a>
+fn run_programs<'a, P, E>(payload: &'a Payload, programs: &mut P, events: E, duration: Duration)
+    -> State<'a>
     where
         P: Iterator<Item=&'a Program>,
         E: IntoIterator<Item=Event<'a>>,
 {
     let duration = duration.to_std().unwrap();
-    let mut state = State::start(programs);
+    let mut state = State::start(payload, programs);
     for event in events {
         info!("{} <- {:?}", &state, &event);
         if state == State::Done { break; }
@@ -176,12 +215,13 @@ pub fn main() {
 
     let payload = Payload::create();
     let events = PayloadEvents::new(&payload);
-    run_programs(&mut config.programs(), events, Duration::seconds(1));
+    run_programs(&payload, &mut config.programs(), events, Duration::seconds(1));
 }
 
 #[cfg(test)]
 mod tests {
     use chrono::Duration;
+    use uts_ws1::payload::Payload;
     use crate::{Event, run_programs, State};
     use crate::config::{HeatBoard, Program};
 
@@ -239,7 +279,9 @@ mod tests {
             Event::Time,
         ];
 
+        let payload = Payload::create();
         let final_state = run_programs(
+            &payload,
             &mut programs.iter(),
             events,
             Duration::milliseconds(1),

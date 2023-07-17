@@ -47,6 +47,7 @@ impl Config {
     }
 }
 
+#[derive(Debug)]
 pub struct Payload {
     boards: Vec<Board>,
 }

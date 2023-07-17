@@ -1,4 +1,5 @@
 use std::convert::TryInto;
+use std::fmt::Formatter;
 use std::rc::Rc;
 use log::{debug, error};
 use serde::Deserialize;
@@ -179,6 +180,12 @@ impl Board {
         self.sensors.iter()
             .map(|s| s.read())
             .collect::<Vec<ReadResult<SensorReading<f32>>>>()
+    }
+}
+
+impl std::fmt::Debug for Board {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Board{{bus: {:?}}})", self.bus)
     }
 }
 
