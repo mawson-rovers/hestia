@@ -36,13 +36,14 @@ enum Event<'a> {
 }
 
 impl<'a> State<'a> {
-    pub fn next<P>(self, programs: &mut P, event: Event) -> State<'a>
+    /// Returns a new State if one is entered, otherwise None indicates current state continues
+    pub fn next<P>(&self, programs: &mut P, event: Event) -> Option<State<'a>>
         where
             P: Iterator<Item=&'a Program>,
     {
         let current_time = Utc::now();
         match self {
-            State::Heating { program, end_time } => match event {
+            &State::Heating { program, end_time } => match event {
                 Event::TemperatureReading { board, temp_sensor, temp }
                 if board == program.heat_board && temp_sensor == program.temp_sensor
                 => {
@@ -51,39 +52,38 @@ impl<'a> State<'a> {
                     if temp > program.temp_abort {
                         info!("Too hot - aborting program: {:?}", &program);
                         let end_time = current_time + program.cool_time;
-                        State::Cooling { program, end_time }
+                        Some(State::Cooling { program, end_time })
                     } else {
-                        State::Heating { program, end_time }
+                        None
                     }
                 }
                 Event::Time => {
                     if current_time >= end_time {
                         info!("Outta time - completing program: {:?}", &program);
                         let end_time = current_time + program.cool_time;
-                        State::Cooling { program, end_time }
+                        Some(State::Cooling { program, end_time })
                     } else {
-                        State::Heating { program, end_time }
+                        None
                     }
                 }
-                _ => State::Heating { program, end_time },
+                _ => None,
             },
-            State::Cooling { program, end_time } => match event {
+            &State::Cooling { program: _, end_time } => match event {
                 Event::Time if current_time >= end_time => {
                     if let Some(program) = programs.next() {
-                        let end_time = current_time + program.heat_time;
-                        State::Heating { program, end_time }
+                        Some(Self::start_heat(program))
                     } else {
-                        State::Done
+                        Some(State::Done)
                     }
                 }
                 _ => {
-                    State::Cooling { program, end_time }
+                    None
                 }
             },
-            State::Done => State::Done,
-            state => State::Failed {
+            &State::Done => None,
+            state => Some(State::Failed {
                 message: format!("Invalid event {:#?} for state: {:#?}", event, state)
-            }
+            })
         }
     }
 
@@ -92,8 +92,12 @@ impl<'a> State<'a> {
             P: Iterator<Item=&'a Program>,
     {
         let first = programs.next().expect("Didn't find any programs");
-        let end_time = Utc::now() + first.heat_time;
-        State::Heating { program: first, end_time }
+        State::start_heat(first)
+    }
+
+    pub fn start_heat(program: &'a Program) -> State<'a> {
+        let end_time = Utc::now() + program.heat_time;
+        State::Heating { program, end_time }
     }
 }
 
@@ -118,7 +122,9 @@ fn run_programs<'a, P, E>(programs: &mut P, events: E, duration: Duration) -> St
     for event in events {
         info!("{} <- {:?}", &state, &event);
         if state == State::Done { break; }
-        state = state.next(programs, event);
+        if let Some(new_state) = state.next(programs, event) {
+            state = new_state
+        }
         sleep(duration);
     }
     state
