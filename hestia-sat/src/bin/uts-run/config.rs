@@ -1,3 +1,4 @@
+use std::fmt::Formatter;
 use std::fs;
 use std::slice::Iter;
 use chrono::Duration;
@@ -17,24 +18,34 @@ impl Config {
 
 #[derive(Debug, PartialEq, Clone, Deserialize)]
 pub struct Program {
+    pub heat_board: HeatBoard,
     #[serde(deserialize_with = "deserialize_duration_chrono")]
-    pub heating_time: Duration,
+    pub heat_time: Duration,
+    pub heat_duty: f32,
     pub temp_sensor: String,
     pub temp_abort: f32,
     pub thermostat: Option<f32>,
     #[serde(deserialize_with = "deserialize_duration_chrono")]
-    pub cooling_time: Duration,
-    pub heater_position: HeaterPosition,
-    pub heater_duty: f32,
+    pub cool_time: Duration,
 }
 
+/// u8 repr corresponds to index into boards array (0 = i2c1, 1 = i2c2)
 #[repr(u8)]
-#[derive(Debug, PartialEq, Clone, Deserialize)]
-pub enum HeaterPosition {
+#[derive(Debug, PartialEq, Clone, Deserialize, Copy)]
+pub enum HeatBoard {
     #[serde(alias="top", alias="TOP")]
-    Top = 1,
+    Top = 0,
     #[serde(alias="bottom", alias="BOTTOM")]
-    Bottom = 2,
+    Bottom = 1,
+}
+
+impl std::fmt::Display for HeatBoard {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            HeatBoard::Top => write!(f, "top"),
+            HeatBoard::Bottom => write!(f, "bottom"),
+        }
+    }
 }
 
 pub fn load() -> Config {
