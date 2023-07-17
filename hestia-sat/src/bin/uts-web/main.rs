@@ -8,7 +8,7 @@ use actix_web::web::Redirect;
 use log::{error, info};
 use serde::Serialize;
 use data::SystemTimeTempData;
-use uts_ws1::config::Config;
+use uts_ws1::payload::{Config, Payload};
 use status::SystemStatus;
 use crate::status::BoardStatusUpdate;
 
@@ -37,8 +37,8 @@ async fn get_status(state: web::Data<AppState>) -> impl Responder {
 async fn post_status(state: web::Data<AppState>, update: web::Json<BoardStatusUpdate>)
     -> impl Responder {
     let update = update.into_inner();
-    let boards = state.config.create_boards();
-    let board = boards.iter().find(|b| b.bus.id == update.board_id);
+    let payload = Payload::from_config(&state.config);
+    let board = payload.iter().find(|b| b.bus.id == update.board_id);
     if let Some(board) = board {
         update.apply(board);
     } else {

@@ -7,7 +7,7 @@ use uts_ws1::board::{Board, BoardData, BoardDataProvider, HEATER_CURR, HEATER_V_
 use uts_ws1::heater::{HeaterMode, TargetSensor};
 use uts_ws1::reading::SensorReading;
 use uts_ws1::{board, ReadResult};
-use uts_ws1::config::Config;
+use uts_ws1::payload::{Config, Payload};
 use uts_ws1::sensors::{Sensor, SensorInterface};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -146,8 +146,9 @@ pub(crate) struct SystemStatus(pub LinkedHashMap<String, Option<BoardStatus>>);
 
 impl SystemStatus {
     pub(crate) fn read(config: &Config) -> Self {
+        let payload = Payload::from_config(config);
         let mut result = SystemStatus::new();
-        for board in config.create_boards() {
+        for board in payload {
             result.read_status(&board);
         }
         result

@@ -104,7 +104,7 @@ pub struct Board {
 }
 
 impl Board {
-    pub fn init(version: BoardVersion, bus: u8) -> Self {
+    pub fn new(version: BoardVersion, bus: u8) -> Self {
         let sensors = Board::get_readable_sensors(version, bus.into(), ALL_SENSORS);
         let msp430 = Msp430::new(bus.into());
         Board {

@@ -7,7 +7,7 @@ use crate::csv::CsvData;
 
 // public modules
 pub mod board;
-pub mod config;
+pub mod payload;
 pub mod csv;
 pub mod heater;
 pub mod logger;

@@ -5,8 +5,7 @@ use std::marker::PhantomData;
 use std::thread::sleep;
 use chrono::{DateTime, Duration, Utc};
 use log::info;
-use uts_ws1::board::Board;
-use uts_ws1::config::Config;
+use uts_ws1::payload::Payload;
 use crate::config::{HeatBoard, Program};
 
 #[derive(Debug, PartialEq)]
@@ -131,16 +130,14 @@ fn run_programs<'a, P, E>(programs: &mut P, events: E, duration: Duration) -> St
 }
 
 struct PayloadEvents<'a> {
-    boards: Vec<Board>,
+    payload: &'a Payload,
     last_board: HeatBoard,
     phantom: PhantomData<&'a Event<'a>>,
 }
 
 impl<'a> PayloadEvents<'a> {
-    fn new() -> PayloadEvents<'a> {
-        let config = Config::read();
-        let boards = config.create_boards();
-        PayloadEvents { boards, last_board: HeatBoard::Bottom, phantom: PhantomData }
+    fn new(payload: &'a Payload) -> PayloadEvents<'a> {
+        PayloadEvents { payload, last_board: HeatBoard::Bottom, phantom: PhantomData }
     }
 }
 
@@ -153,9 +150,9 @@ impl<'a> Iterator for PayloadEvents<'a> {
             HeatBoard::Bottom => HeatBoard::Top,
         };
         self.last_board = board;
-        match self.boards[board as usize].get_target_sensor() {
+        match self.payload[board as u8].get_target_sensor() {
             Ok(sensor) => {
-                match self.boards[board as usize].read_target_sensor_temp() {
+                match self.payload[board as u8].read_target_sensor_temp() {
                     Ok(reading) => {
                         Some(Event::TemperatureReading {
                             board: self.last_board,
@@ -177,7 +174,8 @@ pub fn main() {
     let config = config::load();
     info!("Loaded config:\n{:#?}", config);
 
-    let events = PayloadEvents::new();
+    let payload = Payload::create();
+    let events = PayloadEvents::new(&payload);
     run_programs(&mut config.programs(), events, Duration::seconds(1));
 }
 

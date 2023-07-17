@@ -34,9 +34,9 @@ pub struct Program {
 #[derive(Debug, PartialEq, Clone, Deserialize, Copy)]
 pub enum HeatBoard {
     #[serde(alias="top", alias="TOP")]
-    Top = 0,
+    Top = 1,
     #[serde(alias="bottom", alias="BOTTOM")]
-    Bottom = 1,
+    Bottom = 2,
 }
 
 impl std::fmt::Display for HeatBoard {

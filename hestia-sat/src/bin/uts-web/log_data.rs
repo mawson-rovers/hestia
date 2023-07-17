@@ -9,7 +9,7 @@ use log::{debug, info, warn};
 use serde::Serialize;
 
 use uts_ws1::board;
-use uts_ws1::config::Config;
+use uts_ws1::payload::Config;
 use uts_ws1::csv::TIMESTAMP_FORMAT;
 
 use crate::data::{SystemTimeTempData, TimeTempData};

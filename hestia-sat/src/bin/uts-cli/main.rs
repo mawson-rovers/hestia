@@ -3,7 +3,7 @@ use std::time::Duration;
 use chrono::Utc;
 use clap::{Parser, Subcommand};
 use uts_ws1::board::{Board, BoardDataProvider};
-use uts_ws1::config::Config;
+use uts_ws1::payload::{Config, Payload};
 use uts_ws1::heater::{HeaterMode, TargetSensor};
 use uts_ws1::logger::LogWriter;
 
@@ -121,18 +121,11 @@ fn do_target(board: u8, temp: f32) {
 }
 
 fn single_board(board: u8) -> Board {
-    let boards = Config {
-        i2c_bus: vec![board],
-        ..Config::read()
-    }.create_boards();
-    boards.into_iter().next().expect("Only one board")
+    Payload::single_board(board)
 }
 
 fn do_heater(board_id: u8, command: &HeaterCommand) {
-    let all_boards = Config {
-        i2c_bus: vec![1, 2],
-        ..Config::read()
-    }.create_boards();
+    let all_boards = Payload::all_boards();
 
     // disable heater on other boards before enabling on this one
     let other_boards = all_boards.iter().filter(|b| b.bus.id != board_id);
@@ -157,12 +150,12 @@ fn do_heater(board_id: u8, command: &HeaterCommand) {
 }
 
 fn do_status() {
-    let boards = Config::read().create_boards();
-    show_status_all(boards);
+    let payload = Payload::create();
+    show_status_all(payload);
 }
 
-fn show_status_all(boards: Vec<Board>) {
-    for board in boards {
+fn show_status_all(payload: Payload) {
+    for board in payload {
         show_status(board);
     }
 }
@@ -195,9 +188,9 @@ fn show_status(board: Board) {
 
 fn do_log() {
     let config = Config::read();
-    let boards = config.create_boards();
+    let payload = Payload::from_config(&config);
 
-    let mut writer = LogWriter::create_stdout_writer(boards);
+    let mut writer = LogWriter::create_stdout_writer(&payload);
     writer.write_header_if_new();
     loop {
         let timestamp = Utc::now();
