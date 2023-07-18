@@ -60,38 +60,36 @@ impl<'a> State<'a> {
     {
         let current_time = Utc::now();
         match self {
-            &State::Heating { payload, program, end_time } => match event {
-                Event::TemperatureReading { board, temp_sensor, temp }
-                if board == program.heat_board && temp_sensor == program.temp_sensor
-                => {
-                    info!("Checking {}, {}, temp {}°C vs abort temp: {}°C",
+            &State::Heating { payload, program, end_time } => {
+                if current_time >= end_time {
+                    info!("Heating time completed");
+                    return Some(Self::start_cool(payload, program));
+                }
+                match event {
+                    Event::TemperatureReading { board, temp_sensor, temp }
+                    if board == program.heat_board && temp_sensor == program.temp_sensor
+                    => {
+                        info!("Checking {}, {}, temp {}°C vs abort temp: {}°C",
                         board, temp_sensor, temp, program.temp_abort);
-                    if temp > program.temp_abort {
-                        info!("Too hot - aborting program: {:?}", &program);
-                        Some(Self::start_cool(payload, program))
-                    } else {
-                        None
-                    }
+                        if temp > program.temp_abort {
+                            info!("Too hot - aborting program: {:?}", &program);
+                            Some(Self::start_cool(payload, program))
+                        } else {
+                            None
+                        }
+                    },
+                    _ => None,
                 }
-                Event::Time => {
-                    if current_time >= end_time {
-                        info!("Outta time - completing program: {:?}", &program);
-                        Some(Self::start_cool(payload, program))
-                    } else {
-                        None
-                    }
-                }
-                _ => None,
             },
-            &State::Cooling { payload, end_time } => match event {
-                Event::Time if current_time >= end_time => {
+            &State::Cooling { payload, end_time } => {
+                if current_time >= end_time {
+                    info!("Cooling time completed");
                     if let Some(program) = programs.next() {
                         Some(Self::start_heat(payload, program))
                     } else {
                         Some(State::Done)
                     }
-                }
-                _ => {
+                } else {
                     None
                 }
             },
@@ -149,11 +147,11 @@ impl std::fmt::Display for State<'_> {
     }
 }
 
-fn run_programs<'a, P, E>(payload: &'a Payload, programs: &mut P, events: E, duration: Duration)
+fn run_programs<'a, P, E>(payload: &'a Payload, programs: &mut P, events: &mut E, duration: Duration)
     -> State<'a>
     where
         P: Iterator<Item=&'a Program>,
-        E: IntoIterator<Item=Event<'a>>,
+        E: Iterator<Item=Event<'a>>,
 {
     let duration = duration.to_std().unwrap();
     let mut state = State::start(payload, programs);
@@ -214,8 +212,11 @@ pub fn main() {
     info!("Loaded programs:\n{:#?}", programs);
 
     let payload = Payload::from_config(&config);
-    let events = PayloadEvents::new(&payload);
-    run_programs(&payload, &mut programs.iter(), events, Duration::seconds(1));
+    let mut events = PayloadEvents::new(&payload);
+    loop {
+        run_programs(&payload, &mut programs.iter(), &mut events, Duration::seconds(1));
+        if !programs.run_loop { break }
+    }
 }
 
 #[cfg(test)]
@@ -283,7 +284,7 @@ mod tests {
         let final_state = run_programs(
             &payload,
             &mut programs.iter(),
-            events,
+            &mut events.into_iter(),
             Duration::milliseconds(1),
         );
         assert_eq!(State::Done, final_state);

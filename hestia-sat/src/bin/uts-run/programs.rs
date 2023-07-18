@@ -9,6 +9,9 @@ use uts_ws1::payload::Config;
 #[derive(Debug, PartialEq, Clone, Deserialize)]
 pub struct Programs {
     programs: Vec<Program>,
+
+    #[serde(default, alias="loop")]
+    pub run_loop: bool,
 }
 
 impl Programs {
