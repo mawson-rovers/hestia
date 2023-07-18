@@ -215,9 +215,11 @@ void initGPIO() {
 
 void initADC() {
     P6SEL = 0x0F;                             // Enable A/D channel inputs
-    ADC12CTL0 = ADC12ON + MSC + SHT0_8;           // Turn on ADC12, extend sampling time
-    // to avoid overflow of results
-    ADC12CTL1 = SHP + CONSEQ_3;                 // Use sampling timer, repeated sequence
+    ADC12CTL0 = ADC12ON + MSC;                // Turn on ADC12, multiple sample/conv mode
+    ADC12CTL0 |= SHT0_8;                      // Sample+hold time: 256 ADC12CLK cycles (~19.5 KHz)
+    ADC12CTL1 = SHP + CONSEQ_3;               // Use sampling timer, repeated sequence
+    ADC12CTL1 |= ADC12SSEL_0;                 // Use ADC12OSC internal oscillator (~5 MHz)
+    ADC12CTL1 |= ADC12DIV_0;                  // ADC12 clock divider = /1
     ADC12MCTL0 = INCH_0;                      // ref+=AVcc, channel = A0
     ADC12MCTL1 = INCH_1;                      // ref+=AVcc, channel = A1
     ADC12MCTL2 = INCH_2;                      // ref+=AVcc, channel = A2
@@ -226,7 +228,7 @@ void initADC() {
     ADC12MCTL5 = INCH_5;                      // ref+=AVcc, channel = A5
     ADC12MCTL6 = INCH_6;                      // ref+=AVcc, channel = A6
     ADC12MCTL7 = INCH_7 + EOS;                // ref+=AVcc, channel = A7, end seq.
-    ADC12IE = 0x08;                           // Enable ADC12IFG.3
+    ADC12IE = 0x80;                           // Enable ADC12IFG.7
     ADC12CTL0 |= ENC;                         // Enable conversions
 }
 
