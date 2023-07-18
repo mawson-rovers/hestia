@@ -1,4 +1,4 @@
-mod config;
+mod programs;
 
 use std::fmt::Formatter;
 use std::marker::PhantomData;
@@ -6,8 +6,8 @@ use std::thread::sleep;
 use chrono::{DateTime, Duration, Utc};
 use log::info;
 use uts_ws1::heater::{HeaterMode, TargetSensor};
-use uts_ws1::payload::Payload;
-use crate::config::{HeatBoard, Program};
+use uts_ws1::payload::{Config, Payload};
+use crate::programs::{HeatBoard, Program, Programs};
 
 #[derive(Debug)]
 enum State<'a> {
@@ -209,13 +209,13 @@ impl<'a> Iterator for PayloadEvents<'a> {
 
 
 pub fn main() {
-    env_logger::init();
-    let config = config::load();
-    info!("Loaded config:\n{:#?}", config);
+    let config = Config::read();
+    let programs = Programs::load(&config);
+    info!("Loaded programs:\n{:#?}", programs);
 
-    let payload = Payload::create();
+    let payload = Payload::from_config(&config);
     let events = PayloadEvents::new(&payload);
-    run_programs(&payload, &mut config.programs(), events, Duration::seconds(1));
+    run_programs(&payload, &mut programs.iter(), events, Duration::seconds(1));
 }
 
 #[cfg(test)]
@@ -223,7 +223,7 @@ mod tests {
     use chrono::Duration;
     use uts_ws1::payload::Payload;
     use crate::{Event, run_programs, State};
-    use crate::config::{HeatBoard, Program};
+    use crate::programs::{HeatBoard, Program};
 
     const TH1: &str = "TH1";
     const J7: &str = "J7";

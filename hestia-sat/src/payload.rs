@@ -30,6 +30,9 @@ pub struct Config {
     #[serde(default = "default_log_interval")]
     pub log_interval: u16,
 
+    /// Location of program config file, e.g. /home/debian/uts/uts-programs.toml
+    pub program_file: Option<String>,
+
     /// Port used for HTTP dashboard
     #[serde(default = "default_http_port")]
     pub http_port: u16,
