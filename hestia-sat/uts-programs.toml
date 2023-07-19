@@ -1,16 +1,28 @@
-[[programs]]
-heat_board = "Bottom"
-heat_time = "60s"
-heat_duty = 1.0
-temp_sensor = "TH1"
-temp_abort = 90.0
-thermostat = 80.0
-cool_time = "1m 30s"
+loop = false
 
 [[programs]]
+name = "Top hot"
+heat_board = "Top"
+heat_time = "3m"
+temp_sensor = "TH3"
+temp_abort = 90.0
+thermostat = 80.0
+cool_temp = 40.0
+
+[[programs]]
+name = "Bottom hot"
 heat_board = "Bottom"
-heat_time = "30s"
-heat_duty = 0.5
+heat_time = "2m"
+temp_sensor = "TH3"
+temp_abort = 90.0
+thermostat = 80.0
+cool_temp = 40.0
+
+[[programs]]
+name = "Bottom warm"
+heat_board = "Bottom"
+heat_time = "3m"
+heat_duty = 0.75
 temp_sensor = "J7"
 temp_abort = 60.0
-cool_time = "60s"
+cool_temp = 40.0

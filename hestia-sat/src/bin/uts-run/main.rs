@@ -4,7 +4,7 @@ use std::fmt::Formatter;
 use std::marker::PhantomData;
 use std::thread::sleep;
 use chrono::{DateTime, Duration, Utc};
-use log::info;
+use log::{debug, info};
 use uts_ws1::heater::{HeaterMode, TargetSensor};
 use uts_ws1::payload::{Config, Payload};
 use crate::programs::{HeatBoard, Program, Programs};
@@ -12,14 +12,13 @@ use crate::programs::{HeatBoard, Program, Programs};
 #[derive(Debug)]
 enum State<'a> {
     Heating {
-        payload: &'a Payload,
         program: &'a Program,
         end_time: DateTime<Utc>,
     },
     Cooling {
-        payload: &'a Payload,
-        end_time: DateTime<Utc>,
+        program: &'a Program,
     },
+    FinishedProgram,
     Done,
     Failed {
         message: String,
@@ -54,44 +53,47 @@ enum Event<'a> {
 
 impl<'a> State<'a> {
     /// Returns a new State if one is entered, otherwise None indicates current state continues
-    pub fn next<P>(&self, programs: &mut P, event: Event) -> Option<State<'a>>
-        where
-            P: Iterator<Item=&'a Program>,
-    {
+    pub fn next(&self, controller: &mut PayloadController<'a>, event: Event) -> Option<State<'a>> {
         let current_time = Utc::now();
         match self {
-            &State::Heating { payload, program, end_time } => {
+            &State::Heating { program, end_time } => {
                 if current_time >= end_time {
-                    info!("Heating time completed");
-                    return Some(Self::start_cool(payload, program));
+                    info!("Heating time completed: {}", program);
+                    return Some(controller.start_cool(program));
                 }
                 match event {
                     Event::TemperatureReading { board, temp_sensor, temp }
-                    if board == program.heat_board && temp_sensor == program.temp_sensor
-                    => {
-                        info!("Checking {}, {}, temp {}°C vs abort temp: {}°C",
-                        board, temp_sensor, temp, program.temp_abort);
+                    if board == program.heat_board && temp_sensor == program.temp_sensor => {
+                        debug!("Checking {}, {}, temp {}°C vs abort temp: {}°C",
+                            board, temp_sensor, temp, program.temp_abort);
                         if temp > program.temp_abort {
-                            info!("Too hot - aborting program: {:?}", &program);
-                            Some(Self::start_cool(payload, program))
+                            info!("Abort temp reached ({} > {}): {}", temp, program.temp_abort, program);
+                            Some(controller.start_cool(program))
                         } else {
                             None
                         }
-                    },
+                    }
                     _ => None,
                 }
-            },
-            &State::Cooling { payload, end_time } => {
-                if current_time >= end_time {
-                    info!("Cooling time completed");
-                    if let Some(program) = programs.next() {
-                        Some(Self::start_heat(payload, program))
-                    } else {
-                        Some(State::Done)
+            }
+            &State::Cooling { program } => {
+                match event {
+                    Event::TemperatureReading { board, temp_sensor, temp }
+                    if board == program.heat_board && temp_sensor == program.temp_sensor => {
+                        debug!("Checking {}, {}, temp {}°C vs cool temp: {}°C",
+                            board, temp_sensor, temp, program.cool_temp);
+                        if temp <= program.cool_temp {
+                            info!("Cool temp reached ({} <= {}): {}", temp, program.cool_temp, program);
+                            Some(State::FinishedProgram)
+                        } else {
+                            None
+                        }
                     }
-                } else {
-                    None
+                    _ => None
                 }
+            },
+            &State::FinishedProgram => {
+                Some(controller.next_program_or_done())
             },
             &State::Done => None,
             state => Some(State::Failed {
@@ -99,18 +101,57 @@ impl<'a> State<'a> {
             })
         }
     }
+}
 
-    pub fn start<P>(payload: &'a Payload, programs: &mut P) -> State<'a>
-        where
-            P: Iterator<Item=&'a Program>,
-    {
-        let first = programs.next().expect("Didn't find any programs");
-        State::start_heat(payload, first)
+impl std::fmt::Display for State<'_> {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        match self {
+            State::Heating { program, end_time } => {
+                write!(f, "State::Heating(end_time: {}, temp_abort: {:.2}, thermostat: {})",
+                       end_time.format("%T.%3f"), program.temp_abort,
+                       program.thermostat.map(|v| format!("{:.2}", v)).unwrap_or(format!("#empty")))
+            }
+            State::Cooling { program } => write!(f, "State::Cooling({})", program.cool_temp),
+            State::FinishedProgram => write!(f, "State::FinishedProgram"),
+            State::Done => write!(f, "State::Done"),
+            State::Failed { message } => write!(f, "State::Failed(\"{}\")", message),
+        }
+    }
+}
+
+struct PayloadController<'a> {
+    payload: &'a Payload,
+    programs: &'a mut dyn Iterator<Item=&'a Program>,
+}
+
+impl<'a> PayloadController<'a> {
+    fn new(payload: &'a Payload, programs: &'a mut dyn Iterator<Item=&'a Program>) -> Self {
+        PayloadController { payload, programs }
     }
 
-    pub fn start_heat(payload: &'a Payload, program: &'a Program) -> State<'a> {
+    fn run(&mut self, events: &mut dyn Iterator<Item = Event<'a>>, duration: Duration) -> State<'a>
+    {
+        let duration = duration.to_std().unwrap();
+        let mut state = self.start();
+        for event in events {
+            debug!("{} <- {:?}", &state, &event);
+            if state == State::Done { break; }
+            if let Some(new_state) = state.next(self, event) {
+                state = new_state
+            }
+            sleep(duration);
+        }
+        state
+    }
+
+    pub fn start(&mut self) -> State<'a> {
+        let first = self.programs.next().expect("Didn't find any programs");
+        self.start_heat(first)
+    }
+
+    pub fn start_heat(&self, program: &'a Program) -> State<'a> {
         info!("Starting heat for program: {:?}", &program);
-        let board = &payload[program.heat_board as u8];
+        let board = &self.payload[program.heat_board as u8];
         let end_time = Utc::now() + program.heat_time;
         board.write_heater_duty((program.heat_duty * 255.0) as u16);
         let target_sensor = TargetSensor::from(program.temp_sensor.clone());
@@ -119,52 +160,30 @@ impl<'a> State<'a> {
             Some(temp) => {
                 board.write_target_temp(temp);
                 board.write_heater_mode(HeaterMode::PID);
-            },
+            }
             None => {
                 board.write_heater_mode(HeaterMode::PWM);
             }
         }
-        State::Heating { payload, program, end_time }
+        State::Heating { program, end_time }
     }
 
-    pub fn start_cool(payload: &'a Payload, program: &'a Program) -> State<'a> {
+    pub fn start_cool(&self, program: &'a Program) -> State<'a> {
         info!("Starting cool for program: {:?}", &program);
-        let board = &payload[program.heat_board as u8];
+        let board = &self.payload[program.heat_board as u8];
         board.write_heater_mode(HeaterMode::OFF);
-        let end_time = Utc::now() + program.cool_time;
-        State::Cooling { payload, end_time }
+        State::Cooling { program }
     }
-}
 
-impl std::fmt::Display for State<'_> {
-    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        match self {
-            State::Heating { end_time, .. } => write!(f, "State::Heating({})", end_time),
-            State::Cooling { end_time, .. } => write!(f, "State::Cooling({})", end_time),
-            State::Done => write!(f, "State::Done"),
-            State::Failed { message } => write!(f, "State::Failed(\"{}\")", message),
+    pub fn next_program_or_done(&mut self) -> State<'a> {
+        if let Some(program) = self.programs.next() {
+            self.start_heat(program)
+        } else {
+            State::Done
         }
     }
 }
 
-fn run_programs<'a, P, E>(payload: &'a Payload, programs: &mut P, events: &mut E, duration: Duration)
-    -> State<'a>
-    where
-        P: Iterator<Item=&'a Program>,
-        E: Iterator<Item=Event<'a>>,
-{
-    let duration = duration.to_std().unwrap();
-    let mut state = State::start(payload, programs);
-    for event in events {
-        info!("{} <- {:?}", &state, &event);
-        if state == State::Done { break; }
-        if let Some(new_state) = state.next(programs, event) {
-            state = new_state
-        }
-        sleep(duration);
-    }
-    state
-}
 
 struct PayloadEvents<'a> {
     payload: &'a Payload,
@@ -193,7 +212,7 @@ impl<'a> Iterator for PayloadEvents<'a> {
                     Ok(reading) => {
                         Some(Event::TemperatureReading {
                             board: self.last_board,
-                            temp_sensor: sensor.label,
+                            temp_sensor: sensor.id,
                             temp: reading.display_value,
                         })
                     }
@@ -213,9 +232,11 @@ pub fn main() {
 
     let payload = Payload::from_config(&config);
     let mut events = PayloadEvents::new(&payload);
+    let program_list = &mut programs.iter();
+    let mut controller = PayloadController::new(&payload, program_list);
     loop {
-        run_programs(&payload, &mut programs.iter(), &mut events, Duration::seconds(1));
-        if !programs.run_loop { break }
+        controller.run(&mut events, Duration::seconds(1));
+        if !programs.run_loop { break; }
     }
 }
 
@@ -223,7 +244,7 @@ pub fn main() {
 mod tests {
     use chrono::Duration;
     use uts_ws1::payload::Payload;
-    use crate::{Event, run_programs, State};
+    use crate::{Event, PayloadController, State};
     use crate::programs::{HeatBoard, Program};
 
     const TH1: &str = "TH1";
@@ -234,20 +255,24 @@ mod tests {
         env_logger::init();
         let programs: Vec<Program> = vec![
             Program {
+                id: 0,
+                name: String::from("Top"),
                 heat_time: Duration::milliseconds(5),
                 temp_sensor: String::from("TH1"),
                 temp_abort: 80.0,
                 thermostat: None,
-                cool_time: Duration::milliseconds(10),
+                cool_temp: 40.0,
                 heat_board: HeatBoard::Top,
                 heat_duty: 1.0,
             },
             Program {
+                id: 1,
+                name: String::from("Bottom"),
                 heat_time: Duration::milliseconds(3),
                 temp_sensor: String::from("J7"),
                 temp_abort: 100.0,
                 thermostat: Some(80.0),
-                cool_time: Duration::milliseconds(10),
+                cool_temp: 30.0,
                 heat_board: HeatBoard::Bottom,
                 heat_duty: 1.0,
             },
@@ -262,7 +287,7 @@ mod tests {
             Event::TemperatureReading { board: HeatBoard::Top, temp: 60.0, temp_sensor: TH1 },
             Event::TemperatureReading { board: HeatBoard::Bottom, temp: 80.0, temp_sensor: J7 },
             Event::Time,
-            Event::Time,
+            Event::TemperatureReading { board: HeatBoard::Top, temp: 35.0, temp_sensor: TH1 },
             Event::TemperatureReading { board: HeatBoard::Bottom, temp: 120.0, temp_sensor: J7 },
             Event::TemperatureReading { board: HeatBoard::Bottom, temp: 100.0, temp_sensor: J7 },
             Event::Time,
@@ -276,14 +301,14 @@ mod tests {
             Event::Time,
             Event::Time,
             Event::Time,
-            Event::Time,
+            Event::TemperatureReading { board: HeatBoard::Bottom, temp: 30.0, temp_sensor: J7 },
             Event::Time,
         ];
 
         let payload = Payload::create();
-        let final_state = run_programs(
-            &payload,
-            &mut programs.iter(),
+        let program_list = &mut programs.iter();
+        let mut controller = PayloadController::new(&payload, program_list);
+        let final_state = controller.run(
             &mut events.into_iter(),
             Duration::milliseconds(1),
         );
