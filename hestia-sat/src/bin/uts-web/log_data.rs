@@ -141,11 +141,19 @@ pub(crate) fn list_logs(config: &Config) -> Vec<LogFile> {
         .map(|f| {
             // Rust's filename handling is awful :(
             let name = f.file_name().unwrap().to_string_lossy().to_string();
+            let name = format!("{}{}", hostname_prefix(), name);
             LogFile { name: name.clone(), url: format!("/api/log/{}", name) }
         })
         .collect()
 }
 
+fn hostname_prefix() -> String {
+    hostname::get().map(|v| format!("{}-", v.to_string_lossy()))
+        .unwrap_or(String::from(""))
+}
+
 pub(crate) fn get_log_file(config: &Config, name: &String) -> PathBuf {
+    let prefix = hostname_prefix();
+    let name = name.strip_prefix(prefix.as_str()).unwrap_or(name);
     PathBuf::from(config.log_path.as_ref().unwrap()).join(name)
 }
