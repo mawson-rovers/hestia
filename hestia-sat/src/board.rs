@@ -1,6 +1,8 @@
 use std::convert::TryInto;
+use std::fmt::Formatter;
 use std::rc::Rc;
-use log::error;
+use log::{debug, error};
+use serde::Deserialize;
 
 use crate::{ReadResult};
 use crate::heater::{Heater, HeaterMode, TargetSensor};
@@ -8,8 +10,33 @@ use crate::device::ads7828::Ads7828Sensor;
 use crate::device::i2c::I2cBus;
 use crate::device::max31725::Max31725Sensor;
 use crate::device::msp430::{Msp430, Msp430CurrentSensor, Msp430TempSensor, Msp430VoltageSensor};
-use crate::reading::{ReadableSensor, SensorReading};
+use crate::reading::{DisabledSensor, ReadableSensor, SensorReading};
 use crate::sensors::{Sensor, SensorInterface};
+
+
+#[derive(Debug, Copy, Clone, Deserialize)]
+pub enum BoardVersion {
+    V1_1 = 110,
+    V2 = 200,
+}
+
+impl BoardVersion {
+    fn is_sensor_enabled(&self, sensor: &Sensor) -> bool {
+        match self {
+            BoardVersion::V1_1 => sensor.id != U4.id,
+            BoardVersion::V2 => true,
+        }
+    }
+}
+
+impl std::fmt::Display for BoardVersion {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            BoardVersion::V1_1 => f.write_str("v1.1"),
+            BoardVersion::V2 => f.write_str("v2")
+        }
+    }
+}
 
 pub const TH1: Sensor = Sensor::new("TH1", SensorInterface::MSP430, 0x01,
                                 "Centre", -42.0135, 43.18);
@@ -71,40 +98,42 @@ pub static ALL_SENSORS: &[Sensor; 20] = &[
 ];
 
 pub struct Board {
+    pub version: BoardVersion,
     pub bus: I2cBus,
     pub heater: Rc<dyn Heater>,
     pub sensors: Vec<Box<dyn ReadableSensor>>,
-    pub check_sensor: Box<dyn ReadableSensor>,
 }
 
 impl Board {
-    pub fn init(bus: &I2cBus, check_sensor: &String) -> Self {
-        let sensors = Board::get_readable_sensors(bus, ALL_SENSORS);
-        let check_sensor = Board::sensor_by_id(check_sensor)
-            .expect("Check sensor not found");
-        let check_sensor = Board::create_sensor(bus, *check_sensor);
-        let msp430 = Msp430::new(bus.clone());
+    pub fn new(version: BoardVersion, bus: u8) -> Self {
+        let sensors = Board::get_readable_sensors(version, bus.into(), ALL_SENSORS);
+        let msp430 = Msp430::new(bus.into());
         Board {
-            bus: bus.clone(),
+            version,
+            bus: bus.into(),
             heater: Rc::new(msp430),
             sensors,
-            check_sensor,
         }
     }
 
-    fn get_readable_sensors(bus: &I2cBus, sensors: &[Sensor]) -> Vec<Box<dyn ReadableSensor>> {
-        sensors.iter().map(move |s| Board::create_sensor(bus, *s)).collect()
+    fn get_readable_sensors(version: BoardVersion, bus: I2cBus, sensors: &[Sensor]) -> Vec<Box<dyn ReadableSensor>> {
+        sensors.iter()
+            .map(|s| Board::create_sensor(version, bus, *s))
+            .collect()
     }
 
-    fn create_sensor(bus: &I2cBus, s: Sensor) -> Box<dyn ReadableSensor> {
-        let bus = bus.clone();
+    fn create_sensor(version: BoardVersion, bus: I2cBus, s: Sensor) -> Box<dyn ReadableSensor> {
         let name = s.to_string();
         let reg = s.addr.into();
+        if !version.is_sensor_enabled(&s) {
+            debug!("Disabling sensor: {}", s);
+            return Box::new(DisabledSensor::new(name))
+        }
         match s.iface {
             SensorInterface::MSP430 => Box::new(Msp430TempSensor::new(bus, name, reg)),
             SensorInterface::MSP430Voltage => Box::new(Msp430VoltageSensor::new(bus, name, reg)),
             SensorInterface::MSP430Current => Box::new(Msp430CurrentSensor::new(bus, name, reg)),
-            SensorInterface::ADS7828 => Box::new(Ads7828Sensor::new(bus, name, s.addr)),
+            SensorInterface::ADS7828 => Box::new(Ads7828Sensor::new(version, bus, name, s.addr)),
             SensorInterface::MAX31725 => Box::new(Max31725Sensor::new(bus, name, s.addr)),
         }
     }
@@ -131,7 +160,7 @@ impl Board {
 
     pub fn read_target_sensor_temp(&self) -> ReadResult<SensorReading<f32>> {
         let sensor = self.get_target_sensor()?;
-        let sensor = Board::create_sensor(&self.bus, sensor);
+        let sensor = Board::create_sensor(self.version, self.bus, sensor);
         sensor.read()
     }
 
@@ -139,21 +168,12 @@ impl Board {
         self.heater.write_target_sensor(target_sensor)
     }
 
-    pub fn read_heater_pwm(&self) -> ReadResult<SensorReading<u8>> {
+    pub fn read_heater_duty(&self) -> ReadResult<SensorReading<u16>> {
         self.heater.read_duty()
     }
 
-    pub fn write_heater_pwm(&self, pwm_duty_cycle: u8) {
+    pub fn write_heater_duty(&self, pwm_duty_cycle: u16) {
         self.heater.write_duty(pwm_duty_cycle)
-    }
-
-    fn sensor_by_id(id: &String) -> Option<&'static Sensor> {
-        for sensor in ALL_SENSORS {
-            if id.eq_ignore_ascii_case(sensor.id) {
-                return Some(sensor);
-            }
-        }
-        None
     }
 
     fn read_sensors(&self) -> Vec<ReadResult<SensorReading<f32>>> {
@@ -163,27 +183,36 @@ impl Board {
     }
 }
 
+impl std::fmt::Debug for Board {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Board{{bus: {:?}}})", self.bus)
+    }
+}
+
+pub trait BoardDataProvider {
+    fn read_data(&self) -> Option<BoardData>;
+}
+
 impl BoardDataProvider for Board {
     fn read_data(&self) -> Option<BoardData> {
-        // fail fast if bus isn't found or check sensor is not readable
+        // fail fast if bus isn't found
         if !self.bus.exists() {
             error!("I2C bus device not found: {}", self.bus);
-            return None
-        }
-        let test_read = self.check_sensor.read();
-        if test_read.is_err() {
-            error!("Failed to read check sensor {} on I2C bus {}", self.check_sensor, self.bus);
-            return None
+            return None;
         }
 
         let sensors = self.read_sensors();
-        let sensors: [_; 20] = sensors.try_into().expect("Oversize");
+        if sensors.iter().all(|rr| rr.is_err()) {
+            return None;
+        }
+
+        let sensors: [_; 20] = sensors.try_into().expect("invalid sensor reading count");
         return Some(BoardData {
             sensors,
             heater_mode: self.heater.read_mode(),
             target_temp: self.heater.read_target_temp(),
             target_sensor: self.heater.read_target_sensor(),
-            pwm_freq: self.heater.read_duty(),
+            heater_duty: self.heater.read_duty(),
         });
     }
 }
@@ -193,7 +222,7 @@ pub struct BoardData {
     pub heater_mode: ReadResult<SensorReading<HeaterMode>>,
     pub target_temp: ReadResult<SensorReading<f32>>,
     pub target_sensor: ReadResult<SensorReading<Sensor>>,
-    pub pwm_freq: ReadResult<SensorReading<u8>>,
+    pub heater_duty: ReadResult<SensorReading<u16>>,
 }
 
 impl BoardData {
@@ -210,13 +239,9 @@ impl BoardData {
             self.heater_mode.map(|v| v.raw_value),
             self.target_temp.map(|v| v.raw_value),
             self.target_sensor.map(|v| v.raw_value),
-            self.pwm_freq.map(|v| v.raw_value),
+            self.heater_duty.map(|v| v.raw_value),
         ]);
         result.try_into().expect("Sizes didn't match")
     }
-}
-
-pub trait BoardDataProvider {
-    fn read_data(&self) -> Option<BoardData>;
 }
 

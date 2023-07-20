@@ -84,8 +84,8 @@ void __attribute__ ((interrupt(TIMERA0_VECTOR))) Timer_A(void)
     ta_count++;
     if (ta_count > 250) {
         ta_count = 0;
-        P5OUT ^= LED_GREEN;     // toggle LED
         if (heater_mode == HEATER_MODE_PID) {
+            P5OUT ^= LED_YELLOW;     // toggle PID indicator LED
             unsigned int adc_value = adc_readings[control_sensor];
             if (adc_value >= ADC_MIN_VALUE && adc_value <= ADC_MAX_VALUE) {
                 CCR2 = update_pid(adc_value);
@@ -94,6 +94,7 @@ void __attribute__ ((interrupt(TIMERA0_VECTOR))) Timer_A(void)
             }
         } else {
             CCR2 = 0;
+            P5OUT &= ~(LED_YELLOW); // turn off PID indicator LED
         }
     }
 }
@@ -103,6 +104,8 @@ void process_cmd_tx(unsigned char cmd) {
         // set active adc to read from
         unsigned int sensor = cmd - 1;
         transmit_uint(adc_readings[sensor]);
+    } else if (cmd == COMMAND_READ_BOARD_VERSION) {
+        transmit_uint(HESTIA_VERSION);
     } else if (cmd == COMMAND_READ_HEATER_MODE) {
         transmit_uint(heater_mode);
     } else if (cmd == COMMAND_READ_TARGET_TEMP) {
@@ -134,7 +137,7 @@ void I2C_Slave_ProcessCMD(unsigned char *message_rx, uint16_t length) {
     uint8_t cmd = message_rx[0];
     unsigned char *package = message_rx + 1; // ignore the command
 
-    P5OUT ^= LED_BLUE;
+    P5OUT ^= (HESTIA_VERSION < 200) ? LED_GREEN : LED_BLUE;
 
     if (cmd == COMMAND_WRITE_HEATER_MODE) {
         // Set the heater mode
@@ -170,19 +173,21 @@ void heater_process() {
         // CCR2 = current_pwm;                                 // CCR2 PWM duty cycle 0%
         if (current_pwm > counter) {
             P1OUT |= HEATER_PIN;
-            P5OUT |= LED_YELLOW;    // LED_2 on
+            if (HESTIA_VERSION < 200) P5OUT |= LED_YELLOW;    // LED on
         } else {
             P1OUT &= ~HEATER_PIN;
-            P5OUT &= ~LED_YELLOW;   // LED_2 off
+            if (HESTIA_VERSION < 200) P5OUT &= ~LED_YELLOW;   // LED off
         }
         counter++;
         if (counter > 255) {
             counter = 0;
         }
+    } else if (heater_mode == HEATER_MODE_PID) {
+        // do nothing - PID timer will take care of heater pin and LEDs
     } else {
-        // just turn everything off
+        // turn everything off
         P1OUT &= ~HEATER_PIN;
-        P5OUT &= ~LED_YELLOW;   // LED_2 off
+        if (HESTIA_VERSION < 200) P5OUT &= ~LED_YELLOW;   // LED off
     }
 }
 
@@ -210,9 +215,11 @@ void initGPIO() {
 
 void initADC() {
     P6SEL = 0x0F;                             // Enable A/D channel inputs
-    ADC12CTL0 = ADC12ON + MSC + SHT0_8;           // Turn on ADC12, extend sampling time
-    // to avoid overflow of results
-    ADC12CTL1 = SHP + CONSEQ_3;                 // Use sampling timer, repeated sequence
+    ADC12CTL0 = ADC12ON + MSC;                // Turn on ADC12, multiple sample/conv mode
+    ADC12CTL0 |= SHT0_8;                      // Sample+hold time: 256 ADC12CLK cycles (~19.5 KHz)
+    ADC12CTL1 = SHP + CONSEQ_3;               // Use sampling timer, repeated sequence
+    ADC12CTL1 |= ADC12SSEL_0;                 // Use ADC12OSC internal oscillator (~5 MHz)
+    ADC12CTL1 |= ADC12DIV_0;                  // ADC12 clock divider = /1
     ADC12MCTL0 = INCH_0;                      // ref+=AVcc, channel = A0
     ADC12MCTL1 = INCH_1;                      // ref+=AVcc, channel = A1
     ADC12MCTL2 = INCH_2;                      // ref+=AVcc, channel = A2
@@ -221,7 +228,7 @@ void initADC() {
     ADC12MCTL5 = INCH_5;                      // ref+=AVcc, channel = A5
     ADC12MCTL6 = INCH_6;                      // ref+=AVcc, channel = A6
     ADC12MCTL7 = INCH_7 + EOS;                // ref+=AVcc, channel = A7, end seq.
-    ADC12IE = 0x08;                           // Enable ADC12IFG.3
+    ADC12IE = 0x80;                           // Enable ADC12IFG.7
     ADC12CTL0 |= ENC;                         // Enable conversions
 }
 

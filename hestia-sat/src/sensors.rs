@@ -74,10 +74,10 @@ fn adc_range_check(adc_val: u16) -> ReadResult<u16> {
 }
 
 pub(crate) fn adc_val_to_temp(adc_val: u16, adc_resolution: u16) -> ReadResult<f32> {
-    let adc_val = adc_range_check(adc_val);
+    let adc_val = adc_range_check(adc_val)?;
     Ok(1.0 / (
         INV_NB21K00103_REF_TEMP_K +
-            INV_NB21K00103_B_VALUE * f32::ln(adc_resolution as f32 / adc_val? as f32 - 1.0)) -
+            INV_NB21K00103_B_VALUE * f32::ln(adc_resolution as f32 / adc_val as f32 - 1.0)) -
         ZERO_CELSIUS_IN_KELVIN)
 }
 
@@ -85,4 +85,33 @@ pub(crate) fn temp_to_adc_val(temp: f32) -> u16 {
     assert!(temp > -55.0 && temp < 150.0, "temp out of range");
     (MSP430_ADC_RESOLUTION as f32 / (f32::exp((1.0 / (temp + ZERO_CELSIUS_IN_KELVIN) - INV_NB21K00103_REF_TEMP_K) *
                  NB21K00103_B_VALUE) + 1.0)) as u16
+}
+
+#[cfg(test)]
+mod tests {
+    use assert_approx_eq::assert_approx_eq;
+    use crate::ReadError;
+    use crate::sensors::{adc_val_to_temp, temp_to_adc_val};
+
+    #[test]
+    fn test_adc_val_to_temp() {
+        let resolution = 4096;
+        assert_approx_eq!(0.323, adc_val_to_temp(1024, resolution).unwrap(), 0.001);
+        assert_approx_eq!(25.00, adc_val_to_temp(2048, resolution).unwrap(), 0.001);
+        assert_approx_eq!(54.571, adc_val_to_temp(3072, resolution).unwrap(), 0.001);
+        assert_eq!(ReadError::ValueOutOfRange, adc_val_to_temp(0, resolution).unwrap_err());
+        assert_eq!(ReadError::ValueOutOfRange, adc_val_to_temp(resolution, resolution).unwrap_err());
+        assert_eq!(ReadError::ValueOutOfRange, adc_val_to_temp(10000, resolution).unwrap_err());
+    }
+
+    #[test]
+    fn test_temp_to_adc_val() {
+        assert_eq!(1011, temp_to_adc_val(0.0));
+        assert_eq!(2048, temp_to_adc_val(25.0));
+        assert_eq!(2628, temp_to_adc_val(40.0));
+        assert_eq!(2947, temp_to_adc_val(50.0));
+        assert_eq!(3204, temp_to_adc_val(60.0));
+        assert_eq!(3406, temp_to_adc_val(70.0));
+        assert_eq!(3561, temp_to_adc_val(80.0));
+    }
 }

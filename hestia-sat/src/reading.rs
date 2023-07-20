@@ -2,7 +2,7 @@ use std::fmt;
 
 use serde::Serialize;
 
-use crate::ReadResult;
+use crate::{ReadError, ReadResult};
 
 #[derive(Debug, Copy, Clone, Serialize)]
 pub struct SensorReading<T>
@@ -34,4 +34,26 @@ impl<T> fmt::Display for SensorReading<T>
 
 pub trait ReadableSensor: fmt::Display {
     fn read(&self) -> ReadResult<SensorReading<f32>>;
+}
+
+pub struct DisabledSensor {
+    name: String,
+}
+
+impl DisabledSensor {
+    pub fn new(name: String) -> Self {
+        Self { name }
+    }
+}
+
+impl fmt::Display for DisabledSensor {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(&self.name)
+    }
+}
+
+impl ReadableSensor for DisabledSensor {
+    fn read(&self) -> ReadResult<SensorReading<f32>> {
+        Err(ReadError::Disabled)
+    }
 }

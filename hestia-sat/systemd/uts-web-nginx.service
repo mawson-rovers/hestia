@@ -1,0 +1,9 @@
+[Unit]
+Description=UTS web nginx config monitor
+
+[Service]
+Type=oneshot
+ExecStart=/bin/systemctl reload nginx
+
+[Install]
+WantedBy=multi-user.target

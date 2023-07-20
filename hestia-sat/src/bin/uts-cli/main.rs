@@ -3,7 +3,7 @@ use std::time::Duration;
 use chrono::Utc;
 use clap::{Parser, Subcommand};
 use uts_ws1::board::{Board, BoardDataProvider};
-use uts_ws1::config::Config;
+use uts_ws1::payload::{Config, Payload};
 use uts_ws1::heater::{HeaterMode, TargetSensor};
 use uts_ws1::logger::LogWriter;
 
@@ -64,8 +64,8 @@ enum Command {
         #[arg(short, long, required = true)]
         board: u8,
 
-        /// duty cycle (0-255)
-        duty: u8,
+        /// duty cycle (0-255 for PWM, 0-1000 for PID)
+        duty: u16,
     },
 }
 
@@ -102,9 +102,9 @@ pub fn main() {
     }
 }
 
-fn do_your_duty(board: u8, duty: u8) {
+fn do_your_duty(board: u8, duty: u16) {
     let board = single_board(board);
-    board.write_heater_pwm(duty);
+    board.write_heater_duty(duty);
     show_status(board);
 }
 
@@ -121,18 +121,11 @@ fn do_target(board: u8, temp: f32) {
 }
 
 fn single_board(board: u8) -> Board {
-    let boards = Config {
-        i2c_bus: vec![board],
-        ..Config::read()
-    }.create_boards();
-    boards.into_iter().next().expect("Only one board")
+    Payload::single_board(board)
 }
 
 fn do_heater(board_id: u8, command: &HeaterCommand) {
-    let all_boards = Config {
-        i2c_bus: vec![1, 2],
-        ..Config::read()
-    }.create_boards();
+    let all_boards = Payload::all_boards();
 
     // disable heater on other boards before enabling on this one
     let other_boards = all_boards.iter().filter(|b| b.bus.id != board_id);
@@ -157,12 +150,12 @@ fn do_heater(board_id: u8, command: &HeaterCommand) {
 }
 
 fn do_status() {
-    let boards = Config::read().create_boards();
-    show_status_all(boards);
+    let payload = Payload::create();
+    show_status_all(payload);
 }
 
-fn show_status_all(boards: Vec<Board>) {
-    for board in boards {
+fn show_status_all(payload: Payload) {
+    for board in payload {
         show_status(board);
     }
 }
@@ -176,13 +169,15 @@ fn show_status(board: Board) {
             .map(|m| m.to_string())
             .unwrap_or(String::from("#err"));
         let [.., heater_v_high, heater_v_low, heater_curr] = data.sensors;
-        println!("board:{} temp:{} heater:{} target:{:0.2} sensor:{} duty:{} V:{:0.2}/{:0.2} I:{:0.2}",
+        println!("board:{} {} temp:{} heater:{} target:{} sensor:{} duty:{} V:{:0.2}/{:0.2} I:{:0.2}",
                  board.bus,
+                 board.version,
                  target_sensor_temp,
                  heater_mode,
-                 data.target_temp.unwrap().display_value,
+                 data.target_temp.map(|t| format!("{:0.2}", t.display_value))
+                     .unwrap_or(String::from("#err")),
                  board.get_target_sensor().map(|s| s.id).unwrap_or("#err"),
-                 board.read_heater_pwm().unwrap(),
+                 board.read_heater_duty().unwrap(),
                  heater_v_high.unwrap(),
                  heater_v_low.unwrap(),
                  heater_curr.unwrap());
@@ -193,9 +188,9 @@ fn show_status(board: Board) {
 
 fn do_log() {
     let config = Config::read();
-    let boards = config.create_boards();
+    let payload = Payload::from_config(&config);
 
-    let mut writer = LogWriter::create_stdout_writer(boards);
+    let mut writer = LogWriter::create_stdout_writer(&payload);
     writer.write_header_if_new();
     loop {
         let timestamp = Utc::now();

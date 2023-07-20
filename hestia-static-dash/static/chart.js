@@ -33,7 +33,7 @@
     const savedColors = {};
 
     window.colorsForSensor = function (sensor_id) {
-        if (sensor_id === 'heater') {
+        if (sensor_id === 'heater_power') {
             return heaterColors;
         }
         if (!savedColors[sensor_id]) {
@@ -63,7 +63,7 @@
                     borderWidth: 1,
                     borderColor: colors.borderColor,
                     backgroundColor: colors.backgroundColor,
-                    fill: id === 'heater',
+                    fill: id === 'heater_power',
                     xAxisID: 'x',
                     yAxisID: id?.startsWith('heater') ? 'y2' : 'y1',
                 };
@@ -120,9 +120,15 @@
     }
 
     fetch(host + '/api/log_data')
-        .then(response => response.json())
+        .then(response => {
+            if (response.ok && response.headers.get("Content-Type").startsWith("application/json")) {
+                return response.json();
+            } else {
+                throw response;
+            }
+        })
         .then(function (data) {
-            data = data["2"];
+            data = data["1"] || data["2"] || {};
             const chart = new Chart(ctx, {
                 type: 'line',
                 responsive: true,
@@ -181,7 +187,7 @@
                 fetch(host + '/api/data')
                     .then((response) => response.json())
                     .then((newData) => {
-                        updateChartData(chart, newData["2"]);
+                        updateChartData(chart, newData["2"] || {});
                         updateChartDuration(chart);
                         chart.update();
                     });
@@ -209,5 +215,10 @@
             });
 
             window.chart = chart;
+        })
+        .catch((response) => {
+            response.text()
+                .then((text) => console.error("Failed to retrieve log_data:", text))
+                .catch((err) => console.error("Failed to retrieve log_data:", err));
         });
 })();

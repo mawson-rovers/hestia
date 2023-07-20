@@ -1,0 +1,5 @@
+[Path]
+PathChanged=/home/debian/uts/bin/uts-log
+
+[Install]
+WantedBy=multi-user.target

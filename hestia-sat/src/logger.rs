@@ -1,29 +1,31 @@
 use std::fs;
 use std::path::Path;
 use chrono::{DateTime, Utc};
-use crate::board::{Board, BoardDataProvider};
+use log::info;
+use crate::board::BoardDataProvider;
 use crate::csv::CsvWriter;
+use crate::payload::Payload;
 
-pub struct LogWriter {
+pub struct LogWriter<'a> {
     writer: CsvWriter,
     raw_writer: Option<CsvWriter>,
-    boards: Vec<Board>,
+    payload: &'a Payload,
 }
 
-impl LogWriter {
-    pub fn create_stdout_writer(boards: Vec<Board>) -> LogWriter {
+impl<'a> LogWriter<'a> {
+    pub fn create_stdout_writer(payload: &'a Payload) -> LogWriter<'a> {
         let writer = CsvWriter::stdout();
-        LogWriter { writer, raw_writer: None, boards }
+        LogWriter { writer, raw_writer: None, payload }
     }
 
-    pub fn create_file_writer(path: &String, boards: Vec<Board>, start_date: &DateTime<Utc>) -> LogWriter {
+    pub fn create_file_writer(path: &String, payload: &'a Payload, start_date: &DateTime<Utc>) -> LogWriter<'a> {
         let log_path = Path::new(&path);
         fs::create_dir_all(log_path)
             .expect("Log path does not exist and could not be created: {}");
         let writer = Self::new_csv_writer(start_date, log_path, false);
         let raw_writer = Self::new_csv_writer(start_date, log_path, true);
 
-        LogWriter { writer, raw_writer: Some(raw_writer), boards }
+        LogWriter { writer, raw_writer: Some(raw_writer), payload }
     }
 
     fn new_csv_writer(start_date: &DateTime<Utc>, log_path: &Path, raw_log: bool) -> CsvWriter {
@@ -31,11 +33,11 @@ impl LogWriter {
                                 start_date.format("%Y-%m-%d"),
                                 if raw_log { "-raw" } else { "" });
         let file_path = log_path.join(filename);
-        eprintln!("Logging {} sensor data to {}...",
+        info!("Logging {} sensor data to {}...",
                   if raw_log { "raw" } else { "temp" },
                   file_path.display());
         let is_new = !file_path.exists();
-        CsvWriter::file(file_path, is_new).expect("Unable to create log file")
+        CsvWriter::file(file_path, is_new)
     }
 
     pub fn write_header_if_new(&mut self) {
@@ -46,7 +48,7 @@ impl LogWriter {
     }
 
     pub fn write_data(&mut self, timestamp: DateTime<Utc>) {
-        for board in &self.boards {
+        for board in self.payload {
             if let Some(data) = board.read_data() {
                 self.writer.write_display_data(timestamp, board, &data);
                 if let Some(raw_writer) = &mut self.raw_writer {

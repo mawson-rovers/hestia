@@ -4,14 +4,14 @@ Description=UTS payload web dashboard
 [Service]
 User=debian
 Group=debian
-Environment=UTS_LOG_PATH=/home/debian/data/uts/logs
+Environment=UTS_LOG_PATH=/home/debian/uts/logs
 Environment=UTS_I2C_BUS=2
 Environment=UTS_HTTP_PORT=5001
 Environment=RUST_LOG=info
 Environment=RUST_BACKTRACE=1
 Environment=TZ=Australia/Sydney
-WorkingDirectory=/home/debian/opt/hestia-sat
-ExecStart=/home/debian/opt/hestia-sat/uts-web
+WorkingDirectory=/home/debian/uts/bin
+ExecStart=/home/debian/uts/bin/uts-web
 Restart=on-failure
 RestartSec=30s
 

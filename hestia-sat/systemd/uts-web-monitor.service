@@ -1,0 +1,9 @@
+[Unit]
+Description=UTS web monitor
+
+[Service]
+Type=oneshot
+ExecStart=/bin/systemctl restart uts-web
+
+[Install]
+WantedBy=multi-user.target

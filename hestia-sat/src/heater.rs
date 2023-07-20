@@ -28,8 +28,8 @@ pub trait Heater {
     fn read_mode(&self) -> ReadResult<SensorReading<HeaterMode>>;
     fn write_mode(&self, mode: HeaterMode);
 
-    fn read_duty(&self) -> ReadResult<SensorReading<u8>>;
-    fn write_duty(&self, duty: u8);
+    fn read_duty(&self) -> ReadResult<SensorReading<u16>>;
+    fn write_duty(&self, duty: u16);
 
     fn read_target_temp(&self) -> ReadResult<SensorReading<f32>>;
     fn write_target_temp(&self, temp: f32);

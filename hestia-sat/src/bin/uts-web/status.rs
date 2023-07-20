@@ -7,7 +7,7 @@ use uts_ws1::board::{Board, BoardData, BoardDataProvider, HEATER_CURR, HEATER_V_
 use uts_ws1::heater::{HeaterMode, TargetSensor};
 use uts_ws1::reading::SensorReading;
 use uts_ws1::{board, ReadResult};
-use uts_ws1::config::Config;
+use uts_ws1::payload::{Config, Payload};
 use uts_ws1::sensors::{Sensor, SensorInterface};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -33,7 +33,9 @@ pub(crate) struct BoardStatus {
     #[serde(serialize_with = "serialize_f32")]
     pub target_temp: Option<f32>,
     pub target_sensor: Option<String>,
-    pub heater_duty: Option<u8>,
+
+    #[serde(serialize_with = "serialize_f32")]
+    pub heater_duty: Option<f32>,
 
     #[serde(serialize_with = "serialize_f32")]
     pub heater_power: Option<f32>,
@@ -70,8 +72,13 @@ impl BoardStatus {
             sensor_values.insert(String::from(sensor.id), from_reading(value));
         }
         let heater_mode = from_reading(data.heater_mode);
-        let heater_duty = from_reading(data.pwm_freq);
-        let target_temp = from_reading(data.target_temp);
+        let heater_duty = from_reading(data.heater_duty);
+        let heater_duty = match (heater_mode, heater_duty) {
+            (Some(HeaterMode::PID), Some(duty)) => Some(f32::from(duty) / 1000.0),
+            (_, Some(duty)) => Some(f32::from(duty) / 255.0),
+            _ => None
+        };
+        let target_temp = from_reading(data.target_temp).map(|t| t.round());
         let target_sensor = from_reading(data.target_sensor).map(|s| s.to_string());
         let target_sensor_temp = get_sensor_value(&target_sensor, &sensor_values);
         let heater_power = calculate_power(&sensor_values);
@@ -139,8 +146,9 @@ pub(crate) struct SystemStatus(pub LinkedHashMap<String, Option<BoardStatus>>);
 
 impl SystemStatus {
     pub(crate) fn read(config: &Config) -> Self {
+        let payload = Payload::from_config(config);
         let mut result = SystemStatus::new();
-        for board in config.create_boards() {
+        for board in payload {
             result.read_status(&board);
         }
         result
@@ -161,8 +169,25 @@ impl SystemStatus {
 pub(crate) struct BoardStatusUpdate {
     pub board_id: u8,
     pub heater_mode: Option<HeaterMode>,
-    pub heater_duty: Option<u8>,
+    pub heater_duty: Option<u16>,
     pub target_temp: Option<f32>,
     pub target_sensor: Option<TargetSensor>,
+}
+
+impl BoardStatusUpdate {
+    pub fn apply(&self, board: &Board) {
+        if let Some(heater_mode) = self.heater_mode {
+            board.write_heater_mode(heater_mode);
+        }
+        if let Some(heater_duty) = self.heater_duty {
+            board.write_heater_duty(heater_duty);
+        }
+        if let Some(target_temp) = self.target_temp {
+            board.write_target_temp(target_temp);
+        }
+        if let Some(target_sensor) = self.target_sensor {
+            board.write_target_sensor(target_sensor);
+        }
+    }
 }
 

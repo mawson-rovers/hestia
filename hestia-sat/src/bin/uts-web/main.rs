@@ -1,14 +1,15 @@
 use actix_cors::Cors;
+use actix_files::NamedFile;
 use actix_web::{App, get, post, HttpResponse, HttpServer, middleware, Responder, web};
 use actix_web::error::JsonPayloadError;
 use actix_web::http::header;
+use actix_web::middleware::Condition;
 use actix_web::web::Redirect;
 use log::{error, info};
 use serde::Serialize;
 use data::SystemTimeTempData;
-use uts_ws1::config::Config;
+use uts_ws1::payload::{Config, Payload};
 use status::SystemStatus;
-use log_data::LogReader;
 use crate::status::BoardStatusUpdate;
 
 mod data;
@@ -23,7 +24,7 @@ struct AppState {
 #[get("/")]
 async fn get_index(state: web::Data<AppState>) -> String {
     let app_name = &state.app_name; // <- get app_name
-    format!("Hello {app_name}!") // <- response with app_name
+    format!("Welcome to {app_name}! Try /api/status or /api/data for more info.")
 }
 
 #[get("/status")]
@@ -36,21 +37,10 @@ async fn get_status(state: web::Data<AppState>) -> impl Responder {
 async fn post_status(state: web::Data<AppState>, update: web::Json<BoardStatusUpdate>)
     -> impl Responder {
     let update = update.into_inner();
-    let boards = state.config.create_boards();
-    let board = boards.iter().find(|b| b.bus.id == update.board_id);
+    let payload = Payload::from_config(&state.config);
+    let board = payload.iter().find(|b| b.bus.id == update.board_id);
     if let Some(board) = board {
-        if let Some(heater_mode) = update.heater_mode {
-            board.write_heater_mode(heater_mode);
-        }
-        if let Some(heater_duty) = update.heater_duty {
-            board.write_heater_pwm(heater_duty);
-        }
-        if let Some(target_temp) = update.target_temp {
-            board.write_target_temp(target_temp);
-        }
-        if let Some(target_sensor) = update.target_sensor {
-            board.write_target_sensor(target_sensor);
-        }
+        update.apply(board);
     } else {
         error!("Board ID not found or configured: {}", update.board_id);
     }
@@ -66,16 +56,29 @@ async fn get_data(state: web::Data<AppState>) -> impl Responder {
 
 #[get("/log_data")]
 async fn get_log_data(state: web::Data<AppState>) -> impl Responder {
-    let data = &state.config.read_logs();
+    let data = log_data::read_logs(&state.config);
     pretty_json(&data)
+}
+
+#[get("/log_files")]
+async fn get_log_files(state: web::Data<AppState>) -> impl Responder {
+    let log_files = log_data::list_logs(&state.config);
+    pretty_json(&log_files)
+}
+
+#[get("/log/{name}")]
+async fn download_log(state: web::Data<AppState>, path: web::Path<String>) -> impl Responder {
+    let name = path.into_inner();
+    let log_file = log_data::get_log_file(&state.config, &name);
+    NamedFile::open(log_file)
 }
 
 fn pretty_json<T>(result: &T) -> HttpResponse
     where T: Serialize {
-    match serde_json::to_string_pretty(&result) {
+    match serde_json::to_string_pretty(result) {
         Ok(body) => {
             HttpResponse::Ok()
-                .insert_header((header::CONTENT_TYPE, mime::APPLICATION_JSON))
+                .insert_header((header::CONTENT_TYPE, "application/json; charset=utf-8"))
                 .body(body)
         }
         Err(err) => HttpResponse::from_error(JsonPayloadError::Serialize(err))
@@ -86,7 +89,7 @@ fn pretty_json<T>(result: &T) -> HttpResponse
 async fn main() -> std::io::Result<()> {
     let config = Config::read();
     let app_data = web::Data::new(AppState {
-        app_name: String::from("Hestia control panel"),
+        app_name: String::from("Hestia API"),
         config: config.clone(),
     });
     let addr = ("0.0.0.0", config.http_port);
@@ -100,7 +103,7 @@ async fn main() -> std::io::Result<()> {
 
         App::new()
             .wrap(middleware::Compress::default())
-            .wrap(cors)
+            .wrap(Condition::new(config.cors_enable, cors))
             .app_data(app_data.clone())
             .service(get_index)
             .service(
@@ -108,7 +111,10 @@ async fn main() -> std::io::Result<()> {
                     .service(get_status)
                     .service(post_status)
                     .service(get_data)
-                    .service(get_log_data))
+                    .service(get_log_data)
+                    .service(get_log_files)
+                    .service(download_log)
+            )
     })
         .bind(addr)?
         .run();

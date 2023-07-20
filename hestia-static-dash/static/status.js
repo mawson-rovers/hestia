@@ -10,30 +10,21 @@
     const boardChartElement = document.getElementById('board-chart');
 
     function updateStatus(data) {
-        data = data["2"];
-        coreTemperature.value = "target_sensor_temp" in data ? data["target_sensor_temp"] : "n/a";
-        heaterPower.value = "heater_power" in data ? data["heater_power"] : "n/a";
-        if ('heater_mode' in data) {
-            heaterMode.value = data['heater_mode'];
-        } else {
-            heaterMode.value = "n/a";
-        }
-        heaterDuty.value = "heater_duty" in data ? data["heater_duty"] : "n/a";
-        targetTemp.value = "target_temp" in data ? data["target_temp"] : "n/a";
-        targetSensor.value = "target_sensor" in data ? data["target_sensor"] : "n/a";
+        data = data["1"] || data["2"] || {};
+        coreTemperature.value = data["target_sensor_temp"] ?? "n/a";
+        heaterPower.value = data["heater_power"] ?? "n/a";
+        heaterMode.value = data['heater_mode'] ?? "n/a";
+        heaterDuty.value = data["heater_duty"] ?? "n/a";
+        targetTemp.value = data["target_temp"] ?? "n/a";
+        targetSensor.value = data["target_sensor"] ?? "n/a";
         targetSensorLabel.innerText = targetSensor.value;
 
-        if (!window.boardChart) {
+        if (!window.boardChart && data['sensor_info']) {
             window.boardChart = newBoardChart(boardChartElement, data['sensor_info']);
         }
     }
 
     function newBoardChart(ctx, data) {
-        const tempFormat = new Intl.NumberFormat('en-US', {
-            style: 'unit',
-            unit: 'celsius',
-            maximumSignificantDigits: 2
-        });
         let mounted = 0;
         return new Chart(ctx, {
             type: 'scatter',
@@ -136,6 +127,14 @@
     document.querySelectorAll(".set-heater-duty").forEach(el => {
         el.addEventListener('click', () => {
             let duty = Number(el.getAttribute('data-duty'));
+            postStatusUpdate({ 'heater_duty': duty });
+        });
+    });
+
+    document.querySelectorAll(".set-custom-heater-duty").forEach(el => {
+        const customDuty = document.getElementById("custom-heater-duty");
+        el.addEventListener('click', () => {
+            let duty = Math.floor(Number(customDuty.value) * 255);
             postStatusUpdate({ 'heater_duty': duty });
         });
     });

@@ -138,28 +138,38 @@ pub const CSV_HEADERS: [&'static str; CSV_FIELD_COUNT] = [
     "heater_mode",
     "target_temp",
     "target_sensor",
-    "pwm_duty",
+    "heater_duty",
 ];
 
-pub struct CsvWriter {
-    writer: Box<dyn Write>,
+pub struct CsvWriter
+{
+    open_writer: Box<dyn FnMut() -> io::Result<Box<dyn Write>>>,
     line_ending: LineEnding,
     write_headers: bool,
 }
 
 impl CsvWriter {
     pub fn stdout() -> CsvWriter {
-        CsvWriter { writer: Box::new(io::stdout()),
-            line_ending: LineEnding::LF, write_headers: true }
+        CsvWriter {
+            open_writer: Box::new(|| Ok(Box::new(io::stdout()))),
+            line_ending: LineEnding::LF,
+            write_headers: true,
+        }
     }
 
-    pub fn file<P: AsRef<Path>>(path: P, is_new: bool) -> io::Result<CsvWriter> {
-        let file = OpenOptions::new()
+    pub fn file<P: AsRef<Path> + 'static>(path: P, is_new: bool) -> CsvWriter {
+        let options = OpenOptions::new()
             .create(true)
             .append(true)
-            .open(path)?;
-        Ok(CsvWriter { writer: Box::new(file),
-            line_ending: LineEnding::CRLF, write_headers: is_new })
+            .clone();
+        CsvWriter {
+            open_writer: Box::new(move || {
+                let file = options.open(&path)?;
+                Ok(Box::new(file))
+            }),
+            line_ending: LineEnding::CRLF,
+            write_headers: is_new,
+        }
     }
 
     pub fn write_headers(&mut self) {
@@ -173,10 +183,10 @@ impl CsvWriter {
                           raw_data: &[ReadResult<u16>; 24]) {
         let mut data: Vec<CsvData> = vec![timestamp.into(), board.into()];
         data.extend(raw_data.iter().map(|d| CsvData::from(d)));
-        let data: [CsvData; 26] = data.try_into().expect("Array sizes didn't match"); 
+        let data: [CsvData; 26] = data.try_into().expect("Array sizes didn't match");
         self.write_data(data).unwrap_or_else(|e| eprint!("Failed to write to log file: {:?}", e));
     }
-    
+
     pub fn write_display_data(&mut self, timestamp: DateTime<Utc>, board: &Board,
                               board_data: &BoardData) {
         let mut data: Vec<CsvData> = vec![timestamp.into(), board.into()];
@@ -184,7 +194,7 @@ impl CsvWriter {
         data.extend(Some(CsvData::from(&board_data.heater_mode)));
         data.extend(Some(CsvData::from(&board_data.target_temp)));
         data.extend(Some(CsvData::from(&board_data.target_sensor)));
-        data.extend(Some(CsvData::from(&board_data.pwm_freq)));
+        data.extend(Some(CsvData::from(&board_data.heater_duty)));
         let data: [CsvData; 26] = data.try_into().expect("Array sizes didn't match");
         self.write_data(data).unwrap_or_else(|e| eprint!("Failed to write to log file: {:?}", e));
     }
@@ -196,15 +206,15 @@ impl CsvWriter {
     fn write_line(&mut self, line: [String; CSV_FIELD_COUNT]) -> io::Result<()>
     {
         let mut write_delim = false;
+        let mut writer = (self.open_writer)()?;
         for val in line {
             if write_delim {
-                self.writer.write_all(b",")?;
+                writer.write_all(b",")?;
             }
-            write!(self.writer, "{}", val)?;
+            write!(writer, "{}", val)?;
             write_delim = true;
         }
-        self.writer.write_all(self.line_ending.to_str().as_bytes())?;
-        self.writer.flush()?;
-        Ok(())
+        writer.write_all(self.line_ending.to_str().as_bytes())?;
+        writer.flush()
     }
 }
