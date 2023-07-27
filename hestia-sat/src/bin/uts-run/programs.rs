@@ -7,6 +7,7 @@ use serde::Deserialize;
 use duration_str::deserialize_duration_chrono;
 use lazy_static::lazy_static;
 use serial_int::{SerialGenerator};
+use uts_ws1::board::Board;
 use uts_ws1::payload::Config;
 
 #[derive(Debug, PartialEq, Clone, Deserialize)]
@@ -77,6 +78,16 @@ impl std::fmt::Display for HeatBoard {
         match self {
             HeatBoard::Top => write!(f, "top"),
             HeatBoard::Bottom => write!(f, "bottom"),
+        }
+    }
+}
+
+impl From<&Board> for HeatBoard {
+    fn from(board: &Board) -> Self {
+        match board.bus.id {
+            1 => HeatBoard::Top,
+            2 => HeatBoard::Bottom,
+            _ => panic!("Unknown board ID: {}", board.bus.id),
         }
     }
 }

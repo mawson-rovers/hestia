@@ -121,7 +121,7 @@ fn do_target(board: u8, temp: f32) {
 }
 
 fn single_board(board: u8) -> Board {
-    Payload::single_board(board)
+    Payload::single_board(board).into_board()
 }
 
 fn do_heater(board_id: u8, command: &HeaterCommand) {

@@ -5,6 +5,7 @@ use std::marker::PhantomData;
 use std::thread::sleep;
 use chrono::{DateTime, Duration, Utc};
 use log::{debug, info};
+use uts_ws1::board::Board;
 use uts_ws1::heater::{HeaterMode, TargetSensor};
 use uts_ws1::payload::{Config, Payload};
 use crate::programs::{HeatBoard, Program, Programs};
@@ -41,7 +42,7 @@ impl<'a> PartialEq for State<'a> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 enum Event<'a> {
     TemperatureReading {
         board: HeatBoard,
@@ -187,13 +188,13 @@ impl<'a> PayloadController<'a> {
 
 struct PayloadEvents<'a> {
     payload: &'a Payload,
-    last_board: HeatBoard,
+    buffer: Vec<Event<'a>>,
     phantom: PhantomData<&'a Event<'a>>,
 }
 
 impl<'a> PayloadEvents<'a> {
     fn new(payload: &'a Payload) -> PayloadEvents<'a> {
-        PayloadEvents { payload, last_board: HeatBoard::Bottom, phantom: PhantomData }
+        PayloadEvents { payload, buffer: vec![], phantom: PhantomData }
     }
 }
 
@@ -201,29 +202,27 @@ impl<'a> Iterator for PayloadEvents<'a> {
     type Item = Event<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let board = match self.last_board {
-            HeatBoard::Top => HeatBoard::Bottom,
-            HeatBoard::Bottom => HeatBoard::Top,
-        };
-        self.last_board = board;
-        match self.payload[board as u8].get_target_sensor() {
-            Ok(sensor) => {
-                match self.payload[board as u8].read_target_sensor_temp() {
-                    Ok(reading) => {
-                        Some(Event::TemperatureReading {
-                            board: self.last_board,
-                            temp_sensor: sensor.id,
-                            temp: reading.display_value,
-                        })
-                    }
-                    Err(_) => Some(Event::Time),
+        if self.buffer.is_empty() {
+            self.buffer.push(Event::Time); // always put something in the buffer
+            for board in self.payload {
+                if let Some(reading) = read_board(&board, board.into()) {
+                    self.buffer.push(reading);
                 }
             }
-            Err(_) => Some(Event::Time),
         }
+        self.buffer.pop()
     }
 }
 
+fn read_board<'a>(board: &Board, heat_board: HeatBoard) -> Option<Event<'a>> {
+    let sensor = board.get_target_sensor().ok()?;
+    let reading = board.read_target_sensor_temp().ok()?;
+    Some(Event::TemperatureReading {
+        board: heat_board,
+        temp_sensor: sensor.id,
+        temp: reading.display_value,
+    })
+}
 
 pub fn main() {
     let config = Config::read();
@@ -244,7 +243,7 @@ pub fn main() {
 mod tests {
     use chrono::Duration;
     use uts_ws1::payload::Payload;
-    use crate::{Event, PayloadController, State};
+    use crate::{Event, PayloadController, PayloadEvents, State};
     use crate::programs::{HeatBoard, Program};
 
     const TH1: &str = "TH1";
@@ -252,7 +251,7 @@ mod tests {
 
     #[test]
     fn test_programs() {
-        env_logger::init();
+        let _ = env_logger::try_init();
         let programs: Vec<Program> = vec![
             Program {
                 id: 0,
@@ -313,5 +312,33 @@ mod tests {
             Duration::milliseconds(1),
         );
         assert_eq!(State::Done, final_state);
+    }
+
+    #[test]
+    fn test_events_from_single_board() {
+        let _ = env_logger::try_init();
+        let payload = Payload::single_board(1);
+        let mut events = PayloadEvents::new(&payload);
+        let board = HeatBoard::Top;
+        assert_eq!(Some(Event::TemperatureReading { board, temp_sensor: "TH1", temp: 25.191437 }),
+                   events.next());
+        assert_eq!(Some(Event::Time),
+                   events.next());
+        assert_eq!(Some(Event::TemperatureReading { board, temp_sensor: "TH1", temp: 25.191437 }),
+                   events.next());
+        assert_eq!(Some(Event::Time),
+                   events.next());
+
+        let payload = Payload::single_board(2);
+        let mut events = PayloadEvents::new(&payload);
+        let board = HeatBoard::Bottom;
+        assert_eq!(Some(Event::TemperatureReading { board, temp_sensor: "TH1", temp: 25.191437 }),
+                   events.next());
+        assert_eq!(Some(Event::Time),
+                   events.next());
+        assert_eq!(Some(Event::TemperatureReading { board, temp_sensor: "TH1", temp: 25.191437 }),
+                   events.next());
+        assert_eq!(Some(Event::Time),
+                   events.next());
     }
 }

@@ -75,12 +75,11 @@ impl Payload {
     }
 
     /// board_id is the I2C bus ID, i.e. 1 or 2
-    pub fn single_board(board_id: u8) -> Board {
-        let payload = Self::from_config(&Config {
+    pub fn single_board(board_id: u8) -> Payload {
+        Self::from_config(&Config {
             i2c_bus: vec![board_id],
             ..Config::read()
-        });
-        payload.into_iter().next().expect("Only one board")
+        })
     }
 
     /// Ignore the I2C_BUS config option and create both boards
@@ -89,6 +88,11 @@ impl Payload {
             i2c_bus: vec![1, 2],
             ..Config::read()
         })
+    }
+
+    /// Converts the payload into the first available board
+    pub fn into_board(self) -> Board {
+        self.into_iter().next().expect("Only one board")
     }
 
     pub fn iter(&self) -> Iter<Board> {
