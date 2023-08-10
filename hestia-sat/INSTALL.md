@@ -66,6 +66,15 @@ lrwxrwxrwx 1 root root 45 Jul  3 17:08 uts-web-nginx.conf -> /etc/nginx/sites-av
 debian@b2:/etc/nginx/sites-enabled$ sudo systemctl reload nginx
 ```
 
+### Link binaries into ~/bin
+
+Next, link the uts binaries into `~/bin` so you can run them at the command line.
+
+```shell
+debian@b2:~$ cd ~/bin
+debian@b2:~$ ln -s ~/uts/bin/* .
+```
+
 ### Reboot
 
 Restart the Beaglebone to make sure everything has started properly:
