@@ -226,14 +226,14 @@ fn read_board<'a>(board: &Board, heat_board: HeatBoard) -> Option<Event<'a>> {
 
 pub fn main() {
     let config = Config::read();
+    let payload = Payload::from_config(&config);
     let programs = Programs::load(&config);
     info!("Loaded programs:\n{:#?}", programs);
 
-    let payload = Payload::from_config(&config);
-    let mut events = PayloadEvents::new(&payload);
-    let program_list = &mut programs.iter();
-    let mut controller = PayloadController::new(&payload, program_list);
     loop {
+        let mut events = PayloadEvents::new(&payload);
+        let program_list = &mut programs.iter();
+        let mut controller = PayloadController::new(&payload, program_list);
         controller.run(&mut events, Duration::seconds(1));
         if !programs.run_loop { break; }
     }
