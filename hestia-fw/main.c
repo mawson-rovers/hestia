@@ -18,9 +18,11 @@ union I2C_Packet_t message_tx;
 volatile unsigned int adc_readings[ADC_SENSOR_COUNT];
 unsigned int control_sensor = 0; // ADC input used for PWM control
 unsigned int set_point = TEMP_0C;
+unsigned int board_status = BOARD_STATUS_ON;
 unsigned int heater_mode = HEATER_MODE_OFF;
-unsigned int current_pwm = HEATER_PWM_FREQ_DEFAULT; // Currently bit-banged 8 bit resolution
+unsigned int pwm_duty = HEATER_PWM_FREQ_DEFAULT; // Currently bit-banged 8 bit resolution
 unsigned int counter = 0;
+unsigned int max_temp = TEMP_120C; // Set to zero to disable max_temp check
 
 // PID control variables
 #define K_P         7       // PID proportional gain
@@ -76,6 +78,7 @@ unsigned int ta_count = 0;
 #pragma vector=TIMERA0_VECTOR
 __interrupt void Timer_A(void)
 #elif defined(__GNUC__)
+
 void __attribute__ ((interrupt(TIMERA0_VECTOR))) Timer_A(void)
 #else
 #error Compiler not supported!
@@ -106,6 +109,8 @@ void process_cmd_tx(unsigned char cmd) {
         transmit_uint(adc_readings[sensor]);
     } else if (cmd == COMMAND_READ_BOARD_VERSION) {
         transmit_uint(HESTIA_VERSION);
+    } else if (cmd == COMMAND_READ_BOARD_STATUS) {
+        transmit_uint(board_status);
     } else if (cmd == COMMAND_READ_HEATER_MODE) {
         transmit_uint(heater_mode);
     } else if (cmd == COMMAND_READ_TARGET_TEMP) {
@@ -116,10 +121,13 @@ void process_cmd_tx(unsigned char cmd) {
         if (heater_mode == HEATER_MODE_PID) {
             transmit_uint(CCR2);
         } else {
-            transmit_uint(current_pwm);
+            transmit_uint(pwm_duty);
         }
+    } else if (cmd == COMMAND_READ_MAX_TEMP) {
+        transmit_uint(max_temp);
     } else {
         // Unknown command
+        TransmitLen = 0;
     }
 }
 
@@ -147,6 +155,7 @@ void I2C_Slave_ProcessCMD(unsigned char *message_rx, uint16_t length) {
         } else if (heater_mode == HEATER_MODE_PID) {
             P1SEL |= HEATER_PIN;                      // P1.7 enable TA2 option
         }
+        board_status &= ~BOARD_STATUS_MAX_TEMP;       // clear max temp flag
     } else if (cmd == COMMAND_WRITE_TARGET_TEMP) {
         if (length >= 2) {
             set_point = (package[1] << 8) + package[0];
@@ -158,20 +167,47 @@ void I2C_Slave_ProcessCMD(unsigned char *message_rx, uint16_t length) {
         }
         TransmitLen = 0;
     } else if (cmd == COMMAND_WRITE_PWM_FREQ) {
-        current_pwm = package[0];
+        pwm_duty = package[0];
+        TransmitLen = 0;
+    } else if (cmd == COMMAND_WRITE_MAX_TEMP) {
+        if (length >= 2) {
+            max_temp = (package[1] << 8) + package[0];
+        }
         TransmitLen = 0;
     } else if (cmd == COMMAND_RESET) {
         WDTCTL = 0xDEAD;  // write to the WDT password to trigger a reset
     } else {
         // unknown command
+        TransmitLen = 0;
     }
 }
 
+inline void disable_heater_max_temp() {
+    heater_mode = HEATER_MODE_OFF;
+    P1SEL &= ~HEATER_PIN;  // P1.7 disable TA2 option - drive heater pin manually
+    P1OUT &= ~HEATER_PIN;  // set P1.7 low
+    if (HESTIA_VERSION < 200) P5OUT &= ~LED_YELLOW;   // heater LED off on board v1
+    board_status |= BOARD_STATUS_MAX_TEMP;
+}
+
+inline bool max_temp_exceeded() {
+    return max_temp != 0 && (
+            adc_readings[0] > max_temp ||
+            adc_readings[1] > max_temp ||
+            adc_readings[2] > max_temp ||
+            adc_readings[3] > max_temp ||
+            adc_readings[4] > max_temp
+    );
+}
+
 void heater_process() {
+    if (max_temp_exceeded()) {
+        disable_heater_max_temp();
+        return;
+    }
     if (heater_mode == HEATER_MODE_PWM) {
-        // TODO PWM currently doesn't seem to be working so bit banging
-        // CCR2 = current_pwm;                                 // CCR2 PWM duty cycle 0%
-        if (current_pwm > counter) {
+        // TODO change PWM mode to use timer instead of bit-banging
+        if (counter < pwm_duty) {
             P1OUT |= HEATER_PIN;
             if (HESTIA_VERSION < 200) P5OUT |= LED_YELLOW;    // LED on
         } else {
@@ -237,6 +273,7 @@ void initADC() {
 #pragma vector=ADC12_VECTOR
 __interrupt void ADC12_ISR(void)
 #elif defined(__GNUC__)
+
 void __attribute__ ((interrupt(ADC12_VECTOR))) ADC12_ISR(void)
 #else
 #error Compiler not supported!
