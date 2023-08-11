@@ -2,8 +2,12 @@ mod programs;
 
 use std::fmt::Formatter;
 use std::marker::PhantomData;
+use std::sync::Arc;
+use std::sync::atomic::AtomicBool;
+use std::sync::atomic::Ordering::Relaxed;
 use std::thread::sleep;
 use chrono::{DateTime, Duration, Utc};
+use lazy_static::lazy_static;
 use log::{debug, info};
 use uts_ws1::board::Board;
 use uts_ws1::heater::{HeaterMode, TargetSensor};
@@ -120,6 +124,10 @@ impl std::fmt::Display for State<'_> {
     }
 }
 
+lazy_static! {
+    static ref ABORT: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
+}
+
 struct PayloadController<'a> {
     payload: &'a Payload,
     programs: &'a mut dyn Iterator<Item=&'a Program>,
@@ -136,11 +144,12 @@ impl<'a> PayloadController<'a> {
         let mut state = self.start();
         for event in events {
             debug!("{} <- {:?}", &state, &event);
-            if state == State::Done { break; }
+            if state == State::Done { break }
             if let Some(new_state) = state.next(self, event) {
                 state = new_state
             }
             sleep(duration);
+            if ABORT.load(Relaxed) { break }
         }
         state
     }
@@ -185,6 +194,15 @@ impl<'a> PayloadController<'a> {
     }
 }
 
+impl<'a> Drop for PayloadController<'a> {
+    fn drop(&mut self) {
+        info!("Disabling payload heaters");
+        for board in self.payload {
+            board.write_heater_mode(HeaterMode::OFF);
+        }
+    }
+}
+
 
 struct PayloadEvents<'a> {
     payload: &'a Payload,
@@ -225,6 +243,11 @@ fn read_board<'a>(board: &Board, heat_board: HeatBoard) -> Option<Event<'a>> {
 }
 
 pub fn main() {
+    // switch off heater if program is stopped with Ctrl-C
+    ctrlc::set_handler(|| {
+        ABORT.store(true, Relaxed);
+    }).expect("Error setting Ctrl-C handler");
+
     let config = Config::read();
     let payload = Payload::from_config(&config);
     let programs = Programs::load(&config);
@@ -235,7 +258,7 @@ pub fn main() {
         let program_list = &mut programs.iter();
         let mut controller = PayloadController::new(&payload, program_list);
         controller.run(&mut events, Duration::seconds(1));
-        if !programs.run_loop { break; }
+        if !programs.run_loop || ABORT.load(Relaxed) { break }
     }
 }
 
