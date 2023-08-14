@@ -1,3 +1,5 @@
+mod test;
+
 use std::thread;
 use std::time::Duration;
 use chrono::Utc;
@@ -25,6 +27,11 @@ enum Command {
     ///
     /// Use UTS_I2C_BUS environment variable to configure active boards.
     Log,
+
+    /// Test board functionality
+    ///
+    /// Use UTS_I2C_BUS environment variable to configure active boards.
+    Test,
 
     /// Set heater mode
     Heater {
@@ -73,19 +80,8 @@ enum Command {
 enum HeaterCommand {
     Off,
     Thermostat,
-    Thermocool,
     On,
 }
-
-// COMMANDS = {
-// "log": lambda: run_logger(),
-// "test": lambda args: run_tests(args),
-// "temp": lambda: run_temps(),
-// "heater": lambda args: run_heater(args),
-// "power": lambda args: (set_heater_pwm(int(args[0])) if args
-// else print("Power level: %d" % get_heater_pwm())),
-// "help": lambda: print("Available commands: %s" % list(COMMANDS.keys())),
-// }
 
 pub fn main() {
     let cli = CommandLine::parse();
@@ -93,6 +89,7 @@ pub fn main() {
         Some(command) => match command {
             Command::Log => do_log(),
             Command::Status => do_status(),
+            Command::Test => test::run_test(),
             Command::Heater { board, command } => do_heater(*board, command),
             Command::Target { board, temp } => do_target(*board, *temp),
             Command::TargetSensor { board, target_sensor } => do_target_sensor(*board, *target_sensor),
@@ -141,7 +138,6 @@ fn do_heater(board_id: u8, command: &HeaterCommand) {
         match command {
             HeaterCommand::Off => this_board.write_heater_mode(HeaterMode::OFF),
             HeaterCommand::Thermostat => this_board.write_heater_mode(HeaterMode::PID),
-            HeaterCommand::Thermocool => todo!(),
             HeaterCommand::On => this_board.write_heater_mode(HeaterMode::PWM),
         }
     }
