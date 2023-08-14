@@ -173,7 +173,11 @@ impl Board {
     }
 
     pub fn write_heater_duty(&self, pwm_duty_cycle: u16) {
-        self.heater.write_duty(pwm_duty_cycle)
+        self.heater.write_duty(pwm_duty_cycle);
+    }
+
+    pub fn write_max_temp(&self, temp: f32) {
+        self.heater.write_max_temp(temp);
     }
 
     fn read_sensors(&self) -> Vec<ReadResult<SensorReading<f32>>> {
@@ -213,6 +217,7 @@ impl BoardDataProvider for Board {
             target_temp: self.heater.read_target_temp(),
             target_sensor: self.heater.read_target_sensor(),
             heater_duty: self.heater.read_duty(),
+            max_temp: self.heater.read_max_temp(),
         });
     }
 }
@@ -223,6 +228,7 @@ pub struct BoardData {
     pub target_temp: ReadResult<SensorReading<f32>>,
     pub target_sensor: ReadResult<SensorReading<Sensor>>,
     pub heater_duty: ReadResult<SensorReading<u16>>,
+    pub max_temp: ReadResult<SensorReading<f32>>,
 }
 
 impl BoardData {
@@ -240,6 +246,7 @@ impl BoardData {
             self.target_temp.map(|v| v.raw_value),
             self.target_sensor.map(|v| v.raw_value),
             self.heater_duty.map(|v| v.raw_value),
+            self.max_temp.map(|v| v.raw_value),
         ]);
         result.try_into().expect("Sizes didn't match")
     }

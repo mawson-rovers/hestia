@@ -36,6 +36,9 @@ pub trait Heater {
 
     fn read_target_sensor(&self) -> ReadResult<SensorReading<Sensor>>;
     fn write_target_sensor(&self, target_sensor: TargetSensor);
+
+    fn read_max_temp(&self) -> ReadResult<SensorReading<f32>>;
+    fn write_max_temp(&self, temp: f32);
 }
 
 impl std::fmt::Display for HeaterMode {

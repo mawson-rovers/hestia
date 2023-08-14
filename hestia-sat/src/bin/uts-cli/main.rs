@@ -8,6 +8,8 @@ use uts_ws1::board::{Board, BoardDataProvider};
 use uts_ws1::payload::{Config, Payload};
 use uts_ws1::heater::{HeaterMode, TargetSensor};
 use uts_ws1::logger::LogWriter;
+use uts_ws1::reading::SensorReading;
+use uts_ws1::ReadResult;
 
 #[derive(Parser)]
 #[command(version, about)]
@@ -74,6 +76,16 @@ enum Command {
         /// duty cycle (0-255 for PWM, 0-1000 for PID)
         duty: u16,
     },
+
+    /// Set max heater temperature
+    Max {
+        /// Board to update
+        #[arg(short, long, required = true)]
+        board: u8,
+
+        /// temperature in °C
+        temp: f32,
+    },
 }
 
 #[derive(Subcommand)]
@@ -94,9 +106,16 @@ pub fn main() {
             Command::Target { board, temp } => do_target(*board, *temp),
             Command::TargetSensor { board, target_sensor } => do_target_sensor(*board, *target_sensor),
             Command::Duty { board, duty } => do_your_duty(*board, *duty),
+            Command::Max { board, temp } => do_max(*board, *temp),
         },
         None => do_status()
     }
+}
+
+fn do_max(board: u8, temp: f32) {
+    let board = single_board(board);
+    board.write_max_temp(temp);
+    show_status(board);
 }
 
 fn do_your_duty(board: u8, duty: u16) {
@@ -156,22 +175,24 @@ fn show_status_all(payload: Payload) {
     }
 }
 
+fn format_reading(reading: ReadResult<SensorReading<f32>>) -> String {
+    reading.map(|v| format!("{:0.2}", v))
+        .unwrap_or(String::from("#err"))
+}
+
 fn show_status(board: Board) {
     if let Some(data) = board.read_data() {
-        let target_sensor_temp = board.read_target_sensor_temp()
-            .map(|v| format!("{:0.2}", v))
-            .unwrap_or(String::from("#err"));
         let heater_mode = data.heater_mode
             .map(|m| m.to_string())
             .unwrap_or(String::from("#err"));
         let [.., heater_v_high, heater_v_low, heater_curr] = data.sensors;
-        println!("board:{} {} temp:{} heater:{} target:{} sensor:{} duty:{} V:{:0.2}/{:0.2} I:{:0.2}",
+        println!("board:{} {} temp:{} heater:{} target:{} max:{} sensor:{} duty:{} V:{:0.2}/{:0.2} I:{:0.2}",
                  board.bus,
                  board.version,
-                 target_sensor_temp,
+                 format_reading(board.read_target_sensor_temp()),
                  heater_mode,
-                 data.target_temp.map(|t| format!("{:0.2}", t.display_value))
-                     .unwrap_or(String::from("#err")),
+                 format_reading(data.target_temp),
+                 format_reading(data.max_temp),
                  board.get_target_sensor().map(|s| s.id).unwrap_or("#err"),
                  board.read_heater_duty().unwrap(),
                  heater_v_high.unwrap(),

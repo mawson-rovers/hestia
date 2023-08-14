@@ -14,10 +14,12 @@ const MSP430_READ_HEATER_MODE: I2cReg = I2cReg(0x20);
 const MSP430_READ_HEATER_TARGET_TEMP: I2cReg = I2cReg(0x21);
 const MSP430_READ_HEATER_TARGET_SENSOR: I2cReg = I2cReg(0x22);
 const MSP430_READ_HEATER_PWM_DUTY_CYCLE: I2cReg = I2cReg(0x23);
+const MSP430_READ_HEATER_MAX_TEMP: I2cReg = I2cReg(0x24);
 const MSP430_WRITE_HEATER_MODE: I2cReg = I2cReg(0x40);
 const MSP430_WRITE_HEATER_TARGET_TEMP: I2cReg = I2cReg(0x41);
 const MSP430_WRITE_HEATER_TARGET_SENSOR: I2cReg = I2cReg(0x42);
 const MSP430_WRITE_HEATER_PWM_DUTY_CYCLE: I2cReg = I2cReg(0x43);
+const MSP430_WRITE_HEATER_MAX_TEMP: I2cReg = I2cReg(0x44);
 
 const MSP430_ADC_RESOLUTION: u16 = 1 << 12;
 const MSP430_ADC_V_REF: f32 = 3.35;
@@ -102,6 +104,17 @@ impl Heater for Msp430 {
     fn write_target_sensor(&self, target_sensor: TargetSensor) {
         self.write_register(MSP430_WRITE_HEATER_TARGET_SENSOR, "target sensor",
                             target_sensor as u16)
+    }
+
+    fn read_max_temp(&self) -> ReadResult<SensorReading<f32>> {
+        let raw = self.read_register(MSP430_READ_HEATER_MAX_TEMP, "max temp")?;
+        let display = adc_val_to_temp(raw, sensors::MSP430_ADC_RESOLUTION)?;
+        Ok(SensorReading::new(raw, display))
+    }
+
+    fn write_max_temp(&self, temp: f32) {
+        let adc_val = sensors::temp_to_adc_val(temp);
+        self.write_register(MSP430_WRITE_HEATER_MAX_TEMP, "max temp", adc_val)
     }
 }
 
