@@ -1,7 +1,7 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#define HESTIA_VERSION 200  // 3 digits -> major, minor, rev
+#define HESTIA_VERSION 220  // 3 digits -> major, minor, rev
 
 // GPIO PINS
 #define LED_YELLOW BIT2  // P5.2
