@@ -75,12 +75,12 @@ impl Drop for BoardTest {
     }
 }
 
-pub fn run_test() {
+pub fn run_test(duration: Option<u8>) {
     let test = BoardTest::new();
     for board in &test.payload {
         log::info!("Testing board {} on /dev/i2c-{}", board.version, board.bus);
         test_sensors(board);
-        test_heater(board);
+        test_heater(board, duration);
 
         log::info!("Testing for board {} complete", board.bus);
     }
@@ -121,7 +121,7 @@ fn test_sensors(board: &Board) {
     }
 }
 
-fn test_heater(board: &Board) {
+fn test_heater(board: &Board, duration: Option<u8>) {
     log::info!("Testing heater on board {}", board.bus);
 
     let data = read_board(board);
@@ -141,8 +141,9 @@ fn test_heater(board: &Board) {
     assert_f32(data.heater_curr > 1.0, "heater_current", data.heater_curr);
     assert_eq!(HeaterMode::PWM, data.heater_mode);
 
-    log::info!("Waiting 5 seconds for things to warm up a bit");
-    thread::sleep(Duration::from_secs(5));
+    let duration = duration.unwrap_or(10);
+    log::info!("Waiting {} seconds for things to warm up a bit", duration);
+    thread::sleep(Duration::from_secs(duration as u64));
 
     let data = read_board(board);
     log::info!("{}", data);

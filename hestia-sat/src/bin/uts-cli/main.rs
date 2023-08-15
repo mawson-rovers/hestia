@@ -33,7 +33,11 @@ enum Command {
     /// Test board functionality
     ///
     /// Use UTS_I2C_BUS environment variable to configure active boards.
-    Test,
+    Test {
+        /// Time to run the heater (seconds)
+        #[arg(short, long)]
+        duration: Option<u8>,
+    },
 
     /// Set heater mode
     Heater {
@@ -101,7 +105,7 @@ pub fn main() {
         Some(command) => match command {
             Command::Log => do_log(),
             Command::Status => do_status(),
-            Command::Test => test::run_test(),
+            Command::Test { duration } => test::run_test(*duration),
             Command::Heater { board, command } => do_heater(*board, command),
             Command::Target { board, temp } => do_target(*board, *temp),
             Command::TargetSensor { board, target_sensor } => do_target_sensor(*board, *target_sensor),
