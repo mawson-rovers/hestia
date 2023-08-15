@@ -200,6 +200,10 @@ inline bool max_temp_exceeded() {
     );
 }
 
+inline bool is_pwm_heating_on() {
+    return counter < pwm_duty;
+}
+
 void heater_process() {
     if (max_temp_exceeded()) {
         disable_heater_max_temp();
@@ -207,7 +211,7 @@ void heater_process() {
     }
     if (heater_mode == HEATER_MODE_PWM) {
         // TODO change PWM mode to use timer instead of bit-banging
-        if (counter < pwm_duty) {
+        if (is_pwm_heating_on()) {
             P1OUT |= HEATER_PIN;
             if (HESTIA_VERSION < 200) P5OUT |= LED_YELLOW;    // LED on
         } else {
@@ -284,10 +288,19 @@ void __attribute__ ((interrupt(ADC12_VECTOR))) ADC12_ISR(void)
     adc_readings[2] = ADC12MEM2;
     adc_readings[3] = ADC12MEM3;
     adc_readings[4] = ADC12MEM4;
-    adc_readings[5] = ADC12MEM5;
-    adc_readings[6] = ADC12MEM6;
-    adc_readings[7] = ADC12MEM7;
-    // IFG is cleared by reads
+    if (heater_mode == HEATER_MODE_PWM && !is_pwm_heating_on()) {
+        // don't capture voltage & current readings while heater is disabled in PWM mode
+
+        ADC12IFG = 0x00; // manually reset the ADC12 interrupt vector since we aren't reading all the values
+    } else {
+        // TODO average voltage readings in PID mode
+        adc_readings[5] = ADC12MEM5;
+        adc_readings[6] = ADC12MEM6;
+        adc_readings[7] = ADC12MEM7;
+
+        // IFG is cleared by reads
+    }
+
 
     __bic_SR_register_on_exit(CPUOFF);      // Clear CPUOFF bit from 0(SR)
 }
