@@ -38,7 +38,7 @@ unsigned int max_temp = TEMP_120C; // Set to zero to disable max_temp check
 // exponential moving average (EMA) control values
 const uint8_t K = 6;                // fixed point position; smoothing factor = 2 ^ -K
 const uint16_t half = 1 << (K - 1); // one half in fixed point representation
-const uint32_t ema_start = 1024 << K;  // initial state in fixed point repr
+const uint32_t ema_start = (uint32_t) 1024 << K;  // initial state in fixed point repr
 volatile uint32_t ema_filter_state[ADC_SENSOR_COUNT] = {
         ema_start, ema_start, ema_start, ema_start,
         ema_start, ema_start, ema_start, ema_start,
