@@ -11,7 +11,7 @@ fn default_log_interval() -> u16 { 5 }
 
 fn default_http_port() -> u16 { 5000 }
 
-fn default_board_version() -> BoardVersion { BoardVersion::V2 }
+fn default_board_version() -> BoardVersion { BoardVersion::V2_2 }
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct Config {

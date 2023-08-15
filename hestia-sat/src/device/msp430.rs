@@ -4,12 +4,14 @@ use log::warn;
 use crate::heater::{Heater, HeaterMode, TargetSensor};
 use crate::device::i2c::*;
 use crate::{ReadResult, sensors};
-use crate::board::{TH1, TH2, TH3, J7, J8};
+use crate::board::{TH1, TH2, TH3, J7, J8, BoardFlags};
 use crate::ReadError::ValueOutOfRange;
 use crate::reading::{ReadableSensor, SensorReading};
 use crate::sensors::{adc_val_to_temp, Sensor};
 
 const MSP430_I2C_ADDR: I2cAddr = I2cAddr(0x08);
+const MSP430_READ_VERSION: I2cReg = I2cReg(0x10);
+const MSP430_READ_FLAGS: I2cReg = I2cReg(0x11);
 const MSP430_READ_HEATER_MODE: I2cReg = I2cReg(0x20);
 const MSP430_READ_HEATER_TARGET_TEMP: I2cReg = I2cReg(0x21);
 const MSP430_READ_HEATER_TARGET_SENSOR: I2cReg = I2cReg(0x22);
@@ -55,11 +57,11 @@ impl Msp430 {
 impl Heater for Msp430 {
     fn read_mode(&self) -> ReadResult<SensorReading<HeaterMode>> {
         let raw = self.read_register(MSP430_READ_HEATER_MODE, "heater mode")?;
-        let display: ReadResult<HeaterMode> = raw.try_into().or_else(|_| {
+        let display: HeaterMode = raw.try_into().or_else(|_| {
             warn!("{}: Invalid heater mode: {:?}", self.device, raw);
             Err(ValueOutOfRange)
-        });
-        Ok(SensorReading::new(raw, display?))
+        })?;
+        Ok(SensorReading::new(raw, display))
     }
 
     fn write_mode(&self, mode: HeaterMode) {
@@ -115,6 +117,15 @@ impl Heater for Msp430 {
     fn write_max_temp(&self, temp: f32) {
         let adc_val = sensors::temp_to_adc_val(temp);
         self.write_register(MSP430_WRITE_HEATER_MAX_TEMP, "max temp", adc_val)
+    }
+
+    fn read_flags(&self) -> ReadResult<SensorReading<BoardFlags>> {
+        let raw = self.read_register(MSP430_READ_FLAGS, "flags")?;
+        let display: BoardFlags = raw.try_into().or_else(|_| {
+            warn!("{}: Invalid flags: {:?}", self.device, raw);
+            Err(ValueOutOfRange)
+        })?;
+        Ok(SensorReading::new(raw, display))
     }
 }
 

@@ -186,7 +186,7 @@ fn show_status(board: Board) {
             .map(|m| m.to_string())
             .unwrap_or(String::from("#err"));
         let [.., heater_v_high, heater_v_low, heater_curr] = data.sensors;
-        println!("board:{} {} temp:{} heater:{} target:{} max:{} sensor:{} duty:{} V:{:0.2}/{:0.2} I:{:0.2}",
+        println!("board:{} {} temp:{} heater:{} target:{} max:{} sensor:{} duty:{} V:{:0.2}/{:0.2} I:{:0.2} {}",
                  board.bus,
                  board.version,
                  format_reading(board.read_target_sensor_temp()),
@@ -197,7 +197,9 @@ fn show_status(board: Board) {
                  board.read_heater_duty().unwrap(),
                  heater_v_high.unwrap(),
                  heater_v_low.unwrap(),
-                 heater_curr.unwrap());
+                 heater_curr.unwrap(),
+                 data.flags.unwrap(),
+        );
     } else {
         println!("board:{} #err", board.bus);
     }

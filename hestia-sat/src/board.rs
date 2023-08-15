@@ -1,10 +1,11 @@
-use std::convert::TryInto;
+use std::convert::{TryFrom, TryInto};
 use std::fmt::Formatter;
 use std::rc::Rc;
 use log::{debug, error};
 use serde::Deserialize;
 
 use crate::{ReadResult};
+use crate::csv::CSV_FIELD_COUNT;
 use crate::heater::{Heater, HeaterMode, TargetSensor};
 use crate::device::ads7828::Ads7828Sensor;
 use crate::device::i2c::I2cBus;
@@ -17,14 +18,16 @@ use crate::sensors::{Sensor, SensorInterface};
 #[derive(Debug, Copy, Clone, Deserialize)]
 pub enum BoardVersion {
     V1_1 = 110,
-    V2 = 200,
+    V2_0 = 200,
+    V2_2 = 220,
 }
 
 impl BoardVersion {
     fn is_sensor_enabled(&self, sensor: &Sensor) -> bool {
         match self {
             BoardVersion::V1_1 => sensor.id != U4.id,
-            BoardVersion::V2 => true,
+            BoardVersion::V2_0 => true,
+            BoardVersion::V2_2 => true,
         }
     }
 }
@@ -33,7 +36,8 @@ impl std::fmt::Display for BoardVersion {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             BoardVersion::V1_1 => f.write_str("v1.1"),
-            BoardVersion::V2 => f.write_str("v2")
+            BoardVersion::V2_0 => f.write_str("v2.0"),
+            BoardVersion::V2_2 => f.write_str("v2.2"),
         }
     }
 }
@@ -74,7 +78,8 @@ pub const HEATER_V_HIGH: Sensor = Sensor::circuit("heater_v_high", SensorInterfa
 pub const HEATER_V_LOW: Sensor = Sensor::circuit("heater_v_low", SensorInterface::MSP430Voltage, 0x06);
 pub const HEATER_CURR: Sensor = Sensor::circuit("heater_curr", SensorInterface::MSP430Current, 0x07);
 
-pub static ALL_SENSORS: &[Sensor; 20] = &[
+pub const SENSOR_COUNT: usize = 20;
+pub static ALL_SENSORS: &[Sensor; SENSOR_COUNT] = &[
     TH1,
     TH2,
     TH3,
@@ -218,23 +223,25 @@ impl BoardDataProvider for Board {
             target_sensor: self.heater.read_target_sensor(),
             heater_duty: self.heater.read_duty(),
             max_temp: self.heater.read_max_temp(),
+            flags: self.heater.read_flags(),
         });
     }
 }
 
 pub struct BoardData {
-    pub sensors: [ReadResult<SensorReading<f32>>; 20],
+    pub sensors: [ReadResult<SensorReading<f32>>; SENSOR_COUNT],
     pub heater_mode: ReadResult<SensorReading<HeaterMode>>,
     pub target_temp: ReadResult<SensorReading<f32>>,
     pub target_sensor: ReadResult<SensorReading<Sensor>>,
     pub heater_duty: ReadResult<SensorReading<u16>>,
     pub max_temp: ReadResult<SensorReading<f32>>,
+    pub flags: ReadResult<SensorReading<BoardFlags>>,
 }
 
 impl BoardData {
-    pub fn get_raw_data(self) -> [ReadResult<u16>; 24] {
+    pub fn get_raw_data(self) -> [ReadResult<u16>; CSV_FIELD_COUNT - 2] {
         let readings = &self.sensors;
-        let mut result = Vec::with_capacity(24);
+        let mut result = Vec::with_capacity(CSV_FIELD_COUNT - 2);
         for reading in readings {
             result.push(match reading {
                 Ok(reading) => Ok(reading.raw_value),
@@ -247,8 +254,41 @@ impl BoardData {
             self.target_sensor.map(|v| v.raw_value),
             self.heater_duty.map(|v| v.raw_value),
             self.max_temp.map(|v| v.raw_value),
+            self.flags.map(|v| v.raw_value),
         ]);
         result.try_into().expect("Sizes didn't match")
+    }
+}
+
+#[derive(Debug, Copy, Clone)]
+pub struct BoardFlags {
+    on: bool,
+    max_temp: bool,
+}
+
+impl std::fmt::Display for BoardFlags {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match (self.on, self.max_temp) {
+            (true, true) => write!(f, "ERR_MAX_TEMP"),
+            (true, false) => write!(f, "OK"),
+            (false, _) => write!(f, "ERR_UNKNOWN"),
+        }
+    }
+}
+
+impl TryFrom<u16> for BoardFlags {
+    type Error = ();
+
+    fn try_from(value: u16) -> Result<Self, Self::Error> {
+        let valid_bits = 0b0011;
+        if value & (!valid_bits) > 0 {
+            return Err(());
+        }
+        let (on, max_temp) = (
+            value & 0b0001 != 0,
+            value & 0b0010 != 0,
+        );
+        Ok(BoardFlags { on, max_temp })
     }
 }
 

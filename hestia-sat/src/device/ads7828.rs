@@ -24,7 +24,7 @@ impl Ads7828Sensor {
         let name = format!("ads7828/{}", name);
         let addr = match version {
             BoardVersion::V1_1 => ADS7828_I2C_ADDR_V1,
-            BoardVersion::V2 => ADS7828_I2C_ADDR_V2,
+            _ => ADS7828_I2C_ADDR_V2,
         };
         let device = LoggingI2cDevice::new(
             name.clone(), I2cDevice::big_endian(bus, addr));

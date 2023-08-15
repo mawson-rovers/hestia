@@ -6,7 +6,7 @@ use std::io::Write;
 use std::path::Path;
 
 use chrono::{DateTime, Utc};
-use crate::board::{Board, BoardData};
+use crate::board::{Board, BoardData, BoardFlags};
 use crate::heater::HeaterMode;
 use crate::reading::SensorReading;
 use crate::ReadResult;
@@ -43,6 +43,9 @@ pub enum CsvData {
     Sensor {
         value: Sensor,
     },
+    BoardFlags {
+        value: BoardFlags,
+    },
     Error,
 }
 
@@ -57,6 +60,7 @@ impl From<CsvData> for String {
             CsvData::Error => String::from(""), // errors are logged to stderr, not the CSV file
             CsvData::HeaterMode { value } => format!("{}", value),
             CsvData::Sensor { value } => format!("{}", value),
+            CsvData::BoardFlags { value } => format!("{}", value),
         }
     }
 }
@@ -103,6 +107,12 @@ impl From<Sensor> for CsvData {
     }
 }
 
+impl From<BoardFlags> for CsvData {
+    fn from(value: BoardFlags) -> Self {
+        CsvData::BoardFlags { value }
+    }
+}
+
 impl<T> From<SensorReading<T>> for CsvData
     where CsvData: From<T>, T: std::fmt::Display {
     fn from(value: SensorReading<T>) -> Self {
@@ -110,7 +120,7 @@ impl<T> From<SensorReading<T>> for CsvData
     }
 }
 
-pub const CSV_FIELD_COUNT: usize = 26;
+pub const CSV_FIELD_COUNT: usize = 28;
 
 pub const CSV_HEADERS: [&'static str; CSV_FIELD_COUNT] = [
     "UTC",
@@ -139,6 +149,8 @@ pub const CSV_HEADERS: [&'static str; CSV_FIELD_COUNT] = [
     "target_temp",
     "target_sensor",
     "heater_duty",
+    "max_temp",
+    "flags",
 ];
 
 pub struct CsvWriter
@@ -180,10 +192,10 @@ impl CsvWriter {
     }
 
     pub fn write_raw_data(&mut self, timestamp: DateTime<Utc>, board: &Board,
-                          raw_data: &[ReadResult<u16>; 24]) {
+                          raw_data: &[ReadResult<u16>; CSV_FIELD_COUNT - 2]) {
         let mut data: Vec<CsvData> = vec![timestamp.into(), board.into()];
         data.extend(raw_data.iter().map(|d| CsvData::from(d)));
-        let data: [CsvData; 26] = data.try_into().expect("Array sizes didn't match");
+        let data: [CsvData; CSV_FIELD_COUNT] = data.try_into().expect("Array sizes didn't match");
         self.write_data(data).unwrap_or_else(|e| eprint!("Failed to write to log file: {:?}", e));
     }
 
@@ -195,7 +207,9 @@ impl CsvWriter {
         data.extend(Some(CsvData::from(&board_data.target_temp)));
         data.extend(Some(CsvData::from(&board_data.target_sensor)));
         data.extend(Some(CsvData::from(&board_data.heater_duty)));
-        let data: [CsvData; 26] = data.try_into().expect("Array sizes didn't match");
+        data.extend(Some(CsvData::from(&board_data.max_temp)));
+        data.extend(Some(CsvData::from(&board_data.flags)));
+        let data: [CsvData; CSV_FIELD_COUNT] = data.try_into().expect("Array sizes didn't match");
         self.write_data(data).unwrap_or_else(|e| eprint!("Failed to write to log file: {:?}", e));
     }
 

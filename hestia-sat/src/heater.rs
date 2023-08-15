@@ -1,5 +1,6 @@
 use std::convert::TryFrom;
 use serde::{Deserialize, Serialize};
+use crate::board::BoardFlags;
 use crate::reading::SensorReading;
 use crate::ReadResult;
 use crate::sensors::Sensor;
@@ -39,6 +40,8 @@ pub trait Heater {
 
     fn read_max_temp(&self) -> ReadResult<SensorReading<f32>>;
     fn write_max_temp(&self, temp: f32);
+
+    fn read_flags(&self) -> ReadResult<SensorReading<BoardFlags>>;
 }
 
 impl std::fmt::Display for HeaterMode {
