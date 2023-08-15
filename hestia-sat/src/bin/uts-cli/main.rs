@@ -186,6 +186,14 @@ fn show_status(board: Board) {
             .map(|m| m.to_string())
             .unwrap_or(String::from("#err"));
         let [.., heater_v_high, heater_v_low, heater_curr] = data.sensors;
+        let heater_v_high = heater_v_high.unwrap().display_value;
+        let heater_v_low = heater_v_low.unwrap().display_value;
+        let heater_curr = heater_curr.unwrap().display_value;
+        let heater_curr = if heater_curr < 3.0 && heater_v_low < 3.0 {
+            (heater_v_low - heater_curr) / 0.05
+        } else {
+            0.0
+        };
         println!("board:{} {} temp:{} heater:{} target:{} max:{} sensor:{} duty:{} V:{:0.2}/{:0.2} I:{:0.2} {}",
                  board.bus,
                  board.version,
@@ -195,9 +203,9 @@ fn show_status(board: Board) {
                  format_reading(data.max_temp),
                  board.get_target_sensor().map(|s| s.id).unwrap_or("#err"),
                  board.read_heater_duty().unwrap(),
-                 heater_v_high.unwrap(),
-                 heater_v_low.unwrap(),
-                 heater_curr.unwrap(),
+                 heater_v_high,
+                 heater_v_low,
+                 heater_curr,
                  data.flags.unwrap(),
         );
     } else {
