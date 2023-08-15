@@ -5,9 +5,13 @@
 //******************************************************************************
 
 #include <msp430.h>
+
 #if defined(__GNUC__)
+
 #include <in430.h>
+
 #endif
+
 #include <stdint.h>
 #include <stdbool.h>
 #include "main.h"
@@ -16,6 +20,7 @@
 union I2C_Packet_t message_tx;
 
 volatile unsigned int adc_readings[ADC_SENSOR_COUNT];
+volatile unsigned int adc_avg[ADC_SENSOR_COUNT];
 unsigned int control_sensor = 0; // ADC input used for PWM control
 unsigned int set_point = TEMP_0C;
 unsigned int board_status = BOARD_STATUS_ON;
@@ -29,6 +34,15 @@ unsigned int max_temp = TEMP_120C; // Set to zero to disable max_temp check
 #define K_I_SHIFT   7       // PID integral shift right bits
 #define MAX_OUT     1000
 #define MIN_OUT     0
+
+// exponential moving average (EMA) control values
+const uint8_t K = 6;                // fixed point position; smoothing factor = 2 ^ -K
+const uint16_t half = 1 << (K - 1); // one half in fixed point representation
+const uint32_t ema_start = 1024 << K;  // initial state in fixed point repr
+volatile uint32_t ema_filter_state[ADC_SENSOR_COUNT] = {
+        ema_start, ema_start, ema_start, ema_start,
+        ema_start, ema_start, ema_start, ema_start,
+};
 
 int error_sum = 0;
 
@@ -105,8 +119,12 @@ void __attribute__ ((interrupt(TIMERA0_VECTOR))) Timer_A(void)
 void process_cmd_tx(unsigned char cmd) {
     if (cmd >= COMMAND_READ_SENSOR_LOW && cmd <= COMMAND_READ_SENSOR_HIGH) {
         // set active adc to read from
-        unsigned int sensor = cmd - 1;
+        unsigned int sensor = cmd - COMMAND_READ_SENSOR_LOW;
         transmit_uint(adc_readings[sensor]);
+    } else if (cmd >= COMMAND_READ_AVG_LOW && cmd <= COMMAND_READ_AVG_HIGH) {
+        // set active adc to read from
+        unsigned int sensor = cmd - COMMAND_READ_AVG_LOW;
+        transmit_uint(adc_avg[sensor]);
     } else if (cmd == COMMAND_READ_BOARD_VERSION) {
         transmit_uint(HESTIA_VERSION);
     } else if (cmd == COMMAND_READ_BOARD_STATUS) {
@@ -272,6 +290,15 @@ void initADC() {
     ADC12CTL0 |= ENC;                         // Enable conversions
 }
 
+/// Exponential moving average (EMA) filter
+/// Updates the filter with the given input and return the filtered output.
+inline uint16_t update_ema_filter(uint8_t index, uint16_t reading) {
+    ema_filter_state[index] += reading;
+    uint16_t output = (ema_filter_state[index] + half) >> K;
+    ema_filter_state[index] -= output;
+    return output;
+}
+
 // ADC12 interrupt service routine
 #if defined(__TI_COMPILER_VERSION__) || defined(__IAR_SYSTEMS_ICC__)
 #pragma vector=ADC12_VECTOR
@@ -301,6 +328,9 @@ void __attribute__ ((interrupt(ADC12_VECTOR))) ADC12_ISR(void)
         // IFG is cleared by reads
     }
 
+    for (int i=0; i<ADC_SENSOR_COUNT; i++) {
+        adc_avg[i] = update_ema_filter(i, adc_readings[i]);
+    }
 
     __bic_SR_register_on_exit(CPUOFF);      // Clear CPUOFF bit from 0(SR)
 }
