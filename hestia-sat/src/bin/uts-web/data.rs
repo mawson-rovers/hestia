@@ -42,7 +42,7 @@ impl TimeTempData {
 }
 
 #[derive(Debug, Clone)]
-struct BoardTimeTempData(LinkedHashMap<String, LinkedList<TimeTempData>>);
+pub struct BoardTimeTempData(pub LinkedHashMap<String, LinkedList<TimeTempData>>);
 
 impl Serialize for BoardTimeTempData {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -78,7 +78,7 @@ impl BoardTimeTempData {
 }
 
 #[derive(Debug, Clone)]
-pub struct SystemTimeTempData(LinkedHashMap<String, BoardTimeTempData>);
+pub struct SystemTimeTempData(pub LinkedHashMap<String, BoardTimeTempData>);
 
 impl Serialize for SystemTimeTempData {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>

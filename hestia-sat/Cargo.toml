@@ -52,4 +52,4 @@ test = true
 
 [[bin]]
 name = "uts-web"
-test = false
+test = true

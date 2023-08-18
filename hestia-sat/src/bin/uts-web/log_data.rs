@@ -16,26 +16,28 @@ use crate::data::{SystemTimeTempData, TimeTempData};
 use crate::status;
 
 pub fn read_logs(config: &Config) -> SystemTimeTempData {
-    let mut result = SystemTimeTempData::new();
-    let reader = match open_last_log_file(config.log_path.as_ref()) {
-        None => {
-            warn!("No recent log data to return");
-            return result;
-        }
-        Some(r) => r,
-    };
+    if let Some(reader) = open_last_log_file(config.log_path.as_ref()) {
+        process_file(reader)
+    } else {
+        warn!("No recent log data to return");
+        SystemTimeTempData::new()
+    }
+}
+
+fn process_file(reader: BufReader<File>) -> SystemTimeTempData {
     let mut lines_iter = reader.lines().map(|l|
         l.unwrap_or_else(|_| String::from("")));
     let headers: Vec<String> = match lines_iter.next() {
         None => {
             warn!("Couldn't read header line from CSV file");
-            return result;
+            return SystemTimeTempData::new();
         }
         Some(line) => {
             line.split(",").map(|s| s.to_string()).collect()
         }
     };
     let sensor_whitelist = sensors_to_include();
+    let mut result = SystemTimeTempData::new();
     info!("Starting processing lines");
     for (index, line) in zip(2.., lines_iter) {
         process_line(index, line, &headers, &sensor_whitelist, &mut result);
@@ -48,6 +50,7 @@ fn process_line(index: usize, line: String, headers: &Vec<String>,
                 sensor_whitelist: &HashSet<String>, result: &mut SystemTimeTempData) {
     let values: Vec<&str> = line.split(",").collect();
     debug!("Read CSV values: {:?}", values);
+
     let timestamp = match Utc.datetime_from_str(values[0], TIMESTAMP_FORMAT) {
         Ok(value) => value,
         Err(_) => {
@@ -61,7 +64,7 @@ fn process_line(index: usize, line: String, headers: &Vec<String>,
     let (mut mode, mut duty) = (None::<&str>, None::<u16>);
 
     let board_id = values[1];
-    for (sensor_id, value) in zip(&headers[2..], &values[2..]) {
+    for (sensor_id, &value) in zip(&headers[2..], &values[2..]) {
         if sensor_whitelist.contains(sensor_id) && value.len() > 0 {
             result.add(board_id, sensor_id,
                        TimeTempData::new(timestamp, value));
@@ -156,4 +159,66 @@ pub(crate) fn get_log_file(config: &Config, name: &String) -> PathBuf {
     let prefix = hostname_prefix();
     let name = name.strip_prefix(prefix.as_str()).unwrap_or(name);
     PathBuf::from(config.log_path.as_ref().unwrap()).join(name)
+}
+
+#[cfg(test)]
+mod tests {
+    use std::fs::File;
+    use std::io::BufReader;
+    use std::path::PathBuf;
+    use std::time::Instant;
+    use log::{debug, info};
+    use crate::data::SystemTimeTempData;
+    use crate::log_data::{process_file, process_line, sensors_to_include};
+
+    #[test]
+    fn test_process_file() {
+        let last = Instant::now();
+        let _ = env_logger::try_init();
+        let path = PathBuf::from("../var/logs/uts-data-2023-08-16-raw.csv");
+        let file = File::open(path).unwrap();
+        let reader = BufReader::new(file);
+        info!("test setup took {} µs", Instant::now().duration_since(last).as_micros());
+        let last = Instant::now();
+
+        let result = process_file(reader);
+        info!("process_file took {} µs for {} records",
+            Instant::now().duration_since(last).as_micros(),
+            result.0.front().unwrap().1.0.len());
+        let last = Instant::now();
+
+        let json = serde_json::to_string_pretty(&result).unwrap();
+        info!("json took {} µs", Instant::now().duration_since(last).as_micros());
+        let last = Instant::now();
+
+        assert_eq!(&json[0..512], "{}", "");
+        info!("assert_eq took {} µs", Instant::now().duration_since(last).as_micros());
+    }
+
+    #[test]
+    fn test_process_line() {
+        let last = Instant::now();
+        let _ = env_logger::try_init();
+        let headers = "UTC,board,TH1,TH2,TH3,U4,U5,U6,U7,TH4,TH5,TH6,J7,J8,J12,J13,J14,J15,J16,\
+            heater_v_high,heater_v_low,heater_curr,heater_mode,target_temp,target_sensor,heater_duty";
+        let headers: Vec<String> = headers.split(",").map(|s| String::from(s)).collect();
+        let line = String::from("2023-08-17 04:17:15.406834,2,24.57,25.74,24.76,25.16,24.63,25.14,\
+            25.01,24.64,25.34,25.10,24.52,,,,,,,5.03,5.03,0.01,OFF,0.86,TH1,255");
+        let sensors = sensors_to_include();
+        let mut result = SystemTimeTempData::new();
+
+        debug!("test setup took {} µs", Instant::now().duration_since(last).as_micros());
+        let last = Instant::now();
+
+        process_line(25, line, &headers, &sensors, &mut result);
+        debug!("processing line took {} µs", Instant::now().duration_since(last).as_micros());
+        let last = Instant::now();
+
+        let json = serde_json::to_string_pretty(&result).unwrap();
+        debug!("json took {} µs", Instant::now().duration_since(last).as_micros());
+        let last = Instant::now();
+
+        assert_eq!(json, "{}");
+        debug!("assert_eq took {} µs", Instant::now().duration_since(last).as_micros());
+    }
 }
