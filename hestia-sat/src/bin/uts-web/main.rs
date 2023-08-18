@@ -95,8 +95,7 @@ async fn main() -> std::io::Result<()> {
     let addr = ("0.0.0.0", config.http_port);
     let server = HttpServer::new(move || {
         let cors = Cors::default()
-            .allowed_origin("http://localhost:8080")
-            .allowed_origin("https://uts.dashboard.space")
+            .allow_any_origin()
             .allowed_methods(vec!["GET", "POST"])
             .allow_any_header()
             .max_age(3600);
