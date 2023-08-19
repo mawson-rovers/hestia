@@ -38,7 +38,6 @@ impl ReadableSensor for Max31725Sensor {
 }
 
 #[cfg(test)]
-#[cfg(not(target_os = "linux"))]
 mod tests {
     use crate::device::i2c::{I2cAddr, I2cBus};
     use crate::device::max31725::Max31725Sensor;

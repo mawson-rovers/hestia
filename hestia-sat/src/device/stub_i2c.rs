@@ -16,6 +16,12 @@ impl I2cBus {
         match addr {
             I2cAddr(0x08) => { // MSP430
                 match reg {
+                    I2cReg(0x10) => { // version
+                        LittleEndian::write_u16(&mut data, 220); // v2.2
+                    },
+                    I2cReg(0x11) => { // flags
+                        LittleEndian::write_u16(&mut data, 1); // OK
+                    },
                     I2cReg(0x20) => { // heater mode
                         LittleEndian::write_u16(&mut data, 0); // OFF
                     },
