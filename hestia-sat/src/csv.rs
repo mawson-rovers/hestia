@@ -1,11 +1,14 @@
 use std::convert::TryInto;
-use std::io;
 use std::fmt::Debug;
 use std::fs::OpenOptions;
+use std::io;
 use std::io::Write;
 use std::path::Path;
 
 use chrono::{DateTime, Utc};
+use chrono::format::{StrftimeItems, Item};
+use lazy_static::lazy_static;
+
 use crate::board::{Board, BoardData, BoardFlags};
 use crate::heater::HeaterMode;
 use crate::reading::SensorReading;
@@ -50,6 +53,11 @@ pub enum CsvData {
 }
 
 pub const TIMESTAMP_FORMAT: &'static str = "%Y-%m-%d %T.%6f";
+
+lazy_static! {
+    pub static ref TIMESTAMP_FORMAT_ITEMS: Vec<Item<'static>> =
+        StrftimeItems::new(TIMESTAMP_FORMAT).collect();
+}
 
 impl From<CsvData> for String {
     fn from(value: CsvData) -> Self {

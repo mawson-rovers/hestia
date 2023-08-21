@@ -4,13 +4,14 @@ use std::io::{BufRead, BufReader};
 use std::iter::zip;
 use std::path::PathBuf;
 
-use chrono::{Local, TimeZone, Utc};
+use chrono::{DateTime, Local, Offset, ParseError, TimeZone, Utc};
+use chrono::format::{Parsed, parse};
 use log::{debug, info, warn};
 use serde::Serialize;
 
 use uts_ws1::board;
 use uts_ws1::payload::Config;
-use uts_ws1::csv::TIMESTAMP_FORMAT;
+use uts_ws1::csv::{TIMESTAMP_FORMAT, TIMESTAMP_FORMAT_ITEMS};
 
 use crate::data::{SystemTimeTempData, TimeTempData};
 use crate::status;
@@ -46,20 +47,26 @@ fn process_file(reader: BufReader<File>) -> SystemTimeTempData {
     result
 }
 
+fn parse_timestamp(value: &str) -> Result<DateTime<Local>, ParseError> {
+    let mut parsed = Parsed::new();
+    parse(&mut parsed, value, TIMESTAMP_FORMAT_ITEMS.iter())?;
+    let timestamp = parsed.to_naive_datetime_with_offset(0 /* UTC */)?;
+    Ok(Local.from_utc_datetime(&timestamp))
+}
+
 fn process_line(index: usize, line: String, headers: &Vec<String>,
                 sensor_whitelist: &HashSet<String>, result: &mut SystemTimeTempData) {
     let values: Vec<&str> = line.split(",").collect();
     debug!("Read CSV values: {:?}", values);
 
-    let timestamp = match Utc.datetime_from_str(values[0], TIMESTAMP_FORMAT) {
-        Ok(value) => value,
+    let timestamp = match parse_timestamp(values[0]) {
+        Ok(v) => v,
         Err(_) => {
             // don't print the bogus data, in case it corrupts the log file too
             warn!("Ignoring line {} with invalid timestamp", index);
-            return
+            return;
         }
     };
-    let timestamp = Local.from_utc_datetime(&timestamp.naive_local());
 
     // pull out some additional data for calculated fields
     let (mut v_high, mut v_low, mut curr) = (None::<f32>, None::<f32>, None::<f32>);
