@@ -1,8 +1,8 @@
 use std::convert::{TryFrom, TryInto};
-use std::fmt::Formatter;
+use std::fmt::{Display, Formatter};
 use std::rc::Rc;
 use log::{debug, error};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::{ReadResult};
 use crate::csv::CSV_FIELD_COUNT;
@@ -32,13 +32,65 @@ impl BoardVersion {
     }
 }
 
-impl std::fmt::Display for BoardVersion {
+impl Display for BoardVersion {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             BoardVersion::V1_1 => f.write_str("v1.1"),
             BoardVersion::V2_0 => f.write_str("v2.0"),
             BoardVersion::V2_2 => f.write_str("v2.2"),
         }
+    }
+}
+
+#[repr(u8)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum BoardId {
+    TOP = 1,
+    BOTTOM = 2,
+}
+
+impl TryFrom<&str> for BoardId {
+    type Error = ();
+
+    fn try_from(value: &str) -> Result<BoardId, Self::Error> {
+        match value {
+            "1" => Ok(Self::TOP),
+            "2" => Ok(Self::BOTTOM),
+            _ => Err(()),
+        }
+    }
+}
+
+impl TryFrom<u8> for BoardId {
+    type Error = ();
+
+    fn try_from(value: u8) -> Result<BoardId, Self::Error> {
+        match value {
+            1 => Ok(Self::TOP),
+            2 => Ok(Self::BOTTOM),
+            _ => Err(()),
+        }
+    }
+}
+
+impl From<&BoardId> for u8 {
+    fn from(value: &BoardId) -> Self {
+        match value {
+            BoardId::TOP => 1,
+            BoardId::BOTTOM => 2,
+        }
+    }
+}
+
+impl Into<I2cBus> for BoardId {
+    fn into(self) -> I2cBus {
+        I2cBus::from(u8::from(&self))
+    }
+}
+
+impl Display for BoardId {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", <u8>::from(self))
     }
 }
 
@@ -103,6 +155,7 @@ pub static ALL_SENSORS: &[Sensor; SENSOR_COUNT] = &[
 ];
 
 pub struct Board {
+    pub id: BoardId,
     pub version: BoardVersion,
     pub bus: I2cBus,
     pub heater: Rc<dyn Heater>,
@@ -110,12 +163,13 @@ pub struct Board {
 }
 
 impl Board {
-    pub fn new(version: BoardVersion, bus: u8) -> Self {
-        let sensors = Board::get_readable_sensors(version, bus.into(), ALL_SENSORS);
-        let msp430 = Msp430::new(bus.into());
+    pub fn new(id: BoardId, version: BoardVersion) -> Self {
+        let sensors = Board::get_readable_sensors(version, id.into(), ALL_SENSORS);
+        let msp430 = Msp430::new(id.into());
         Board {
+            id,
             version,
-            bus: bus.into(),
+            bus: id.into(),
             heater: Rc::new(msp430),
             sensors,
         }

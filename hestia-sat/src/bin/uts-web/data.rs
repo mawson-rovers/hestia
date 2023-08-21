@@ -5,8 +5,10 @@ use chrono::format::DelayedFormat;
 use linked_hash_map::LinkedHashMap;
 use serde::{Serialize, Serializer};
 use serde::ser::SerializeSeq;
+use uts_ws1::board::BoardId;
 
 use uts_ws1::csv::TIMESTAMP_FORMAT_ITEMS;
+use uts_ws1::sensors::SensorId;
 
 use crate::status::{BoardStatus, SystemStatus};
 
@@ -49,7 +51,7 @@ impl TimeTempData {
 }
 
 #[derive(Debug, Clone)]
-pub struct BoardTimeTempData(pub LinkedHashMap<String, LinkedList<TimeTempData>>);
+pub struct BoardTimeTempData(pub LinkedHashMap<SensorId, LinkedList<TimeTempData>>);
 
 impl Serialize for BoardTimeTempData {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -63,7 +65,7 @@ impl BoardTimeTempData {
         BoardTimeTempData(LinkedHashMap::new())
     }
 
-    pub fn add(&mut self, sensor_id: String, data: TimeTempData) {
+    pub fn add(&mut self, sensor_id: SensorId, data: TimeTempData) {
         let entry = self.0.entry(sensor_id).or_insert(LinkedList::new());
         entry.push_back(data);
         if entry.len() > 1500 {  // include up to 2 hours of data
@@ -72,20 +74,20 @@ impl BoardTimeTempData {
     }
 
     fn from(timestamp: DateTime<Local>, status: BoardStatus) -> Self {
-        let mut result = LinkedHashMap::<String, LinkedList<TimeTempData>>::with_capacity(
+        let mut result = LinkedHashMap::<SensorId, LinkedList<TimeTempData>>::with_capacity(
             status.sensor_values.len());
         for (sensor_id, value) in status.sensor_values {
-            result.insert(sensor_id.clone(), TimeTempData::singleton(timestamp, value));
+            result.insert(sensor_id, TimeTempData::singleton(timestamp, value));
         }
-        result.insert("target_temp".into(), TimeTempData::singleton(timestamp, status.target_temp));
-        result.insert("heater_duty".into(), TimeTempData::singleton(timestamp, status.heater_duty));
-        result.insert("heater_power".into(), TimeTempData::singleton(timestamp, status.heater_power));
+        result.insert("target_temp", TimeTempData::singleton(timestamp, status.target_temp));
+        result.insert("heater_duty", TimeTempData::singleton(timestamp, status.heater_duty));
+        result.insert("heater_power", TimeTempData::singleton(timestamp, status.heater_power));
         BoardTimeTempData(result)
     }
 }
 
 #[derive(Debug, Clone)]
-pub struct SystemTimeTempData(pub LinkedHashMap<String, BoardTimeTempData>);
+pub struct SystemTimeTempData(pub LinkedHashMap<BoardId, BoardTimeTempData>);
 
 impl Serialize for SystemTimeTempData {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -97,7 +99,7 @@ impl Serialize for SystemTimeTempData {
 impl From<SystemStatus> for SystemTimeTempData {
     fn from(status: SystemStatus) -> Self {
         let timestamp = Local::now();
-        let mut result = LinkedHashMap::<String, BoardTimeTempData>::with_capacity(status.0.len());
+        let mut result = LinkedHashMap::<BoardId, BoardTimeTempData>::with_capacity(status.0.len());
         for (board_id, board_status) in status.0 {
             result.insert(board_id, match board_status {
                 Some(board_status) => BoardTimeTempData::from(timestamp, board_status),
@@ -113,8 +115,8 @@ impl SystemTimeTempData {
         Self(LinkedHashMap::new())
     }
 
-    pub fn add(&mut self, board_id: &str, sensor_id: &str, data: TimeTempData) {
-        let entry = self.0.entry(board_id.into()).or_insert(BoardTimeTempData::new());
-        entry.add(sensor_id.into(), data);
+    pub fn add(&mut self, board_id: BoardId, sensor_id: SensorId, data: TimeTempData) {
+        let entry = self.0.entry(board_id).or_insert(BoardTimeTempData::new());
+        entry.add(sensor_id, data);
     }
 }

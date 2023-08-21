@@ -1,9 +1,10 @@
+use std::convert::TryFrom;
 use std::ops::Index;
 use std::slice::Iter;
 use dotenv::dotenv;
 use log::info;
 use serde::Deserialize;
-use crate::board::{Board, BoardVersion};
+use crate::board::{Board, BoardId, BoardVersion};
 
 fn default_i2c_bus() -> Vec<u8> { vec![1, 2] }
 
@@ -63,9 +64,13 @@ impl Payload {
     pub fn from_config(config: &Config) -> Payload {
         let mut boards = Vec::with_capacity(2);
         for &bus in config.i2c_bus.iter() {
-            boards.push(Board::new(config.board_version, bus));
+            if let Ok(id) = BoardId::try_from(bus) {
+                boards.push(Board::new(id, config.board_version));
+            } else {
+                panic!("Configured with unknown board ID: {}", bus);
+            }
         }
-        info!("Reading from {} {} boards: {:?}", boards.len(), config.board_version,
+        info!("Configured with {} {} boards: {:?}", boards.len(), config.board_version,
             boards.iter().map(|b| b.bus.path()).collect::<Vec<String>>());
         Self::from_boards(boards)
     }
