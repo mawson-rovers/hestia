@@ -4,7 +4,7 @@ use std::io::{BufRead, BufReader};
 use std::iter::zip;
 use std::path::PathBuf;
 
-use chrono::{TimeZone, Utc};
+use chrono::{Local, TimeZone, Utc};
 use log::{debug, info, warn};
 use serde::Serialize;
 
@@ -59,6 +59,8 @@ fn process_line(index: usize, line: String, headers: &Vec<String>,
             return
         }
     };
+    let timestamp = Local.from_utc_datetime(&timestamp.naive_local());
+
     // pull out some additional data for calculated fields
     let (mut v_high, mut v_low, mut curr) = (None::<f32>, None::<f32>, None::<f32>);
     let (mut mode, mut duty) = (None::<&str>, None::<u16>);
@@ -184,11 +186,13 @@ mod tests {
         let result = process_file(reader);
         info!("process_file took {} µs for {} records",
             Instant::now().duration_since(last).as_micros(),
-            result.0.front().unwrap().1.0.len());
+            result.0.front().unwrap().1.0.front().unwrap().1.len());
+        // 21 Aug: process_file took 501057 µs for 1500 records
         let last = Instant::now();
 
         let json = serde_json::to_string_pretty(&result).unwrap();
         info!("json took {} µs", Instant::now().duration_since(last).as_micros());
+        // 21 Aug: json took 353179 µs
         let last = Instant::now();
 
         assert_eq!(&json[0..512], "{}", "");

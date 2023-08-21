@@ -22,16 +22,15 @@ impl Serialize for TimeTempData {
 }
 
 impl TimeTempData {
-    pub fn new(timestamp: DateTime<Utc>, temp: &str) -> Self {
-        let timestamp = Local.from_utc_datetime(&timestamp.naive_local());
+    pub fn new(timestamp: DateTime<Local>, temp: &str) -> Self {
         Self { timestamp, temp: String::from(temp) }
     }
 
-    pub fn new_f32(timestamp: DateTime<Utc>, temp: f32) -> Self {
+    pub fn new_f32(timestamp: DateTime<Local>, temp: f32) -> Self {
         Self::new(timestamp, format!("{:0.2}", temp).as_str())
     }
 
-    fn singleton(timestamp: DateTime<Utc>, temp: Option<f32>) -> LinkedList<Self> {
+    fn singleton(timestamp: DateTime<Local>, temp: Option<f32>) -> LinkedList<Self> {
         match temp {
             None => LinkedList::new(),
             Some(temp) => LinkedList::from([
@@ -64,7 +63,7 @@ impl BoardTimeTempData {
         }
     }
 
-    fn from(timestamp: DateTime<Utc>, status: BoardStatus) -> Self {
+    fn from(timestamp: DateTime<Local>, status: BoardStatus) -> Self {
         let mut result = LinkedHashMap::<String, LinkedList<TimeTempData>>::with_capacity(
             status.sensor_values.len());
         for (sensor_id, value) in status.sensor_values {
@@ -89,7 +88,7 @@ impl Serialize for SystemTimeTempData {
 
 impl From<SystemStatus> for SystemTimeTempData {
     fn from(status: SystemStatus) -> Self {
-        let timestamp = Utc::now();
+        let timestamp = Local::now();
         let mut result = LinkedHashMap::<String, BoardTimeTempData>::with_capacity(status.0.len());
         for (board_id, board_status) in status.0 {
             result.insert(board_id, match board_status {
