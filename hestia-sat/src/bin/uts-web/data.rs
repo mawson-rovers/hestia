@@ -1,9 +1,15 @@
 use chrono::{DateTime, Local, TimeZone, Utc};
 use linked_hash_map::LinkedHashMap;
 use std::collections::LinkedList;
+use chrono::format::{DelayedFormat, Item, StrftimeItems};
+use lazy_static::lazy_static;
 use serde::{Serialize, Serializer};
 use serde::ser::SerializeSeq;
 use crate::status::{BoardStatus, SystemStatus};
+
+lazy_static! {
+    static ref TIMESTAMP_FORMAT: Vec<Item<'static>> = StrftimeItems::new("%Y-%m-%d %T.%6f").collect();
+}
 
 #[derive(Debug, Clone)]
 pub struct TimeTempData {
@@ -15,7 +21,9 @@ impl Serialize for TimeTempData {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer {
         let mut seq = serializer.serialize_seq(Some(2))?;
-        seq.serialize_element(&self.timestamp.format("%Y-%m-%d %T.%6f").to_string())?;
+        let format = DelayedFormat::new(Some(self.timestamp.date_naive()),
+                                        Some(self.timestamp.time()), TIMESTAMP_FORMAT.iter());
+        seq.serialize_element(&format.to_string())?;
         seq.serialize_element(&self.temp)?;
         seq.end()
     }

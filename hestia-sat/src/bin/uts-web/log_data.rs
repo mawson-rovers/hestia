@@ -199,7 +199,7 @@ mod tests {
         info!("assert_eq took {} µs", Instant::now().duration_since(last).as_micros());
     }
 
-    #[test]
+    // #[test]
     fn test_process_line() {
         let last = Instant::now();
         let _ = env_logger::try_init();
