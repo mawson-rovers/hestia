@@ -5,8 +5,8 @@ use std::io::{BufRead, BufReader};
 use std::iter::zip;
 use std::path::PathBuf;
 
-use chrono::{DateTime, Local, ParseError, TimeZone};
-use chrono::format::{parse, Parsed};
+use chrono::{Local, ParseError, TimeZone};
+use chrono::format::{DelayedFormat, parse, Parsed};
 use log::{debug, info, warn};
 use serde::Serialize;
 
@@ -68,11 +68,15 @@ fn parse_headers(line: &str, sensor_whitelist: &HashSet<&'static str>) -> Vec<Op
     }).collect()
 }
 
-fn parse_timestamp(value: &str) -> Result<DateTime<Local>, ParseError> {
+fn parse_timestamp(value: &str) -> Result<String, ParseError> {
     let mut parsed = Parsed::new();
     parse(&mut parsed, value, TIMESTAMP_FORMAT_ITEMS.iter())?;
     let timestamp = parsed.to_naive_datetime_with_offset(0 /* UTC */)?;
-    Ok(Local.from_utc_datetime(&timestamp))
+    let timestamp = Local.from_utc_datetime(&timestamp);
+    let format = DelayedFormat::new(Some(timestamp.date_naive()),
+                                    Some(timestamp.time()),
+                                    TIMESTAMP_FORMAT_ITEMS.iter());
+    Ok(format.to_string())
 }
 
 fn process_line(index: usize, line: String, headers: &Vec<Option<&'static str>>,
@@ -106,7 +110,7 @@ fn process_line(index: usize, line: String, headers: &Vec<Option<&'static str>>,
             let value = values[i];
             if value.len() > 0 {
                 result.add(board_id, sensor_id,
-                           TimeTempData::new(timestamp, value));
+                           TimeTempData::new(&timestamp, value));
             }
 
             if sensor_id == "heater_v_high" { v_high = value.parse().ok() }
@@ -121,18 +125,18 @@ fn process_line(index: usize, line: String, headers: &Vec<Option<&'static str>>,
     if let (Some(v_high), Some(v_low), Some(curr)) = (v_high, v_low, curr) {
         let power = status::heater_power(v_high, v_low, curr);
         result.add(board_id, "heater_power",
-                   TimeTempData::new_f32(timestamp, power));
+                   TimeTempData::new_f32(&timestamp, power));
     }
 
     // add derived value for heater_duty between 0.0 and 1.0, depending on mode
     match (mode, duty) {
         (Some("PID"), Some(duty)) => {
             result.add(board_id, "heater_duty",
-                       TimeTempData::new_f32(timestamp, duty / 1000.0));
+                       TimeTempData::new_f32(&timestamp, duty / 1000.0));
         },
         (_, Some(duty)) => {
             result.add(board_id, "heater_duty",
-                       TimeTempData::new_f32(timestamp, duty / 255.0));
+                       TimeTempData::new_f32(&timestamp, duty / 255.0));
         },
         _ => {}
     }
@@ -229,12 +233,14 @@ mod tests {
         // 21 Aug, 17:11 process_file took 302426 µs for 1500 records
         // 21 Aug, 18:01 process_file took 231437 µs for 1500 records
         // 23 Aug, 08:29 process_file took 102304 µs for 1500 records
+        // 23 Aug, 16:38 process_file took 93899 µs for 1500 records
         let last = Instant::now();
 
         let json = serde_json::to_string_pretty(&result).unwrap();
         info!("json took {} µs", Instant::now().duration_since(last).as_micros());
-        // 15:03 json took 353179 µs
-        // 18:01 json took 226329 µs
+        // 21 Aug, 15:03 json took 353179 µs
+        // 21 Aug, 18:01 json took 226329 µs
+        // 23 Aug, 16:38 json took 79663 µs
         let last = Instant::now();
 
         assert_eq!(&json[0..512], "{}", "");
