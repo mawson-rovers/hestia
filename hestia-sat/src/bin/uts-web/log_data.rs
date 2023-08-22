@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashSet, LinkedList};
 use std::convert::TryInto;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
@@ -40,9 +40,21 @@ fn process_file(reader: BufReader<File>) -> SystemTimeTempData {
             parse_headers(&line, &sensor_whitelist)
         }
     };
-    let mut result = SystemTimeTempData::new();
+
+    info!("Buffering lines");
+    let mut lines_to_process: LinkedList<String> = LinkedList::new();
+    let mut first_line = 2;
+    for line in lines_iter {
+        lines_to_process.push_back(line);
+        if lines_to_process.len() > 3000 {
+            lines_to_process.pop_front();
+            first_line += 1;
+        }
+    }
+
     info!("Starting processing lines");
-    for (index, line) in zip(2.., lines_iter) {
+    let mut result = SystemTimeTempData::new();
+    for (index, line) in zip(first_line.., lines_to_process) {
         process_line(index, line, &headers, &mut result);
     }
     info!("Finished processing lines");
@@ -213,9 +225,10 @@ mod tests {
         info!("process_file took {} µs for {} records",
             Instant::now().duration_since(last).as_micros(),
             result.0.front().unwrap().1.0.front().unwrap().1.len());
-        // 15:03 process_file took 501057 µs for 1500 records
-        // 17:11 process_file took 302426 µs for 1500 records
-        // 18:01 process_file took 231437 µs for 1500 records
+        // 21 Aug, 15:03 process_file took 501057 µs for 1500 records
+        // 21 Aug, 17:11 process_file took 302426 µs for 1500 records
+        // 21 Aug, 18:01 process_file took 231437 µs for 1500 records
+        // 23 Aug, 08:29 process_file took 102304 µs for 1500 records
         let last = Instant::now();
 
         let json = serde_json::to_string_pretty(&result).unwrap();
