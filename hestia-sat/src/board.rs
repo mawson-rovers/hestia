@@ -2,7 +2,7 @@ use std::convert::{TryFrom, TryInto};
 use std::fmt::{Display, Formatter};
 use std::rc::Rc;
 use log::{debug, error};
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, Serializer};
 
 use crate::{ReadResult};
 use crate::csv::CSV_FIELD_COUNT;
@@ -43,10 +43,16 @@ impl Display for BoardVersion {
 }
 
 #[repr(u8)]
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, Deserialize)]
 pub enum BoardId {
     TOP = 1,
     BOTTOM = 2,
+}
+
+impl Serialize for BoardId {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+        serializer.serialize_str((*self as u8).to_string().as_str())
+    }
 }
 
 impl TryFrom<&str> for BoardId {
