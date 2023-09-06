@@ -1,27 +1,37 @@
 (function () { // prevent leakage into global scope
+    const boards = ["top", "bottom"];
     const host = document.body.dataset.fetchHost || "";
-    const coreTemperature = document.getElementById('core-temperature');
-    const heaterPower = document.getElementById('heater-power');
-    const heaterMode = document.getElementById('heater-mode');
-    const heaterDuty = document.getElementById('heater-duty');
-    const targetTemp = document.getElementById('target-temp');
-    const targetSensor = document.getElementById('target-sensor');
-    const targetSensorLabel = document.getElementById('target-sensor-label');
-    const boardChartElement = document.getElementById('board-chart');
+    const coreTemperature = getFieldElements('core-temperature');
+    const heaterPower = getFieldElements('heater-power');
+    const heaterMode = getFieldElements('heater-mode');
+    const heaterDuty = getFieldElements('heater-duty');
+    const targetTemp = getFieldElements('target-temp');
+    const targetSensor = getFieldElements('target-sensor');
+    const targetSensorLabel = getFieldElements('target-sensor-label');
+    const boardChartElement = getFieldElements('board-chart');
 
-    function updateStatus(data) {
-        data = data["1"] || data["2"] || {};
-        coreTemperature.value = data["target_sensor_temp"] ?? "n/a";
-        heaterPower.value = data["heater_power"] ?? "n/a";
-        heaterMode.value = data['heater_mode'] ?? "n/a";
-        heaterDuty.value = data["heater_duty"] ?? "n/a";
-        targetTemp.value = data["target_temp"] ?? "n/a";
-        targetSensor.value = data["target_sensor"] ?? "n/a";
-        targetSensorLabel.innerText = targetSensor.value;
+    function getFieldElements(id) {
+        return Object.fromEntries(
+            boards.map(board => [board, document.getElementById(`${id}-${board}`)])
+        );
+    }
 
-        if (!window.boardChart && data['sensor_info']) {
-            window.boardChart = newBoardChart(boardChartElement, data['sensor_info']);
-        }
+    function updateStatus(status_data) {
+        boards.forEach(board => {
+            let data = status_data[board] || {};
+            coreTemperature[board].value = data["target_sensor_temp"] ?? "n/a";
+            heaterPower[board].value = data["heater_power"] ?? "n/a";
+            heaterMode[board].value = data['heater_mode'] ?? "n/a";
+            heaterDuty[board].value = data["heater_duty"] ?? "n/a";
+            targetTemp[board].value = data["target_temp"] ?? "n/a";
+            targetSensor[board].value = data["target_sensor"] ?? "n/a";
+            targetSensorLabel[board].innerText = targetSensor.value;
+            
+            window.boardChart ??= {};
+            if (!window.boardChart[board] && data['sensor_info']) {
+                window.boardChart[board] = newBoardChart(boardChartElement[board], data['sensor_info']);
+            }
+        });
     }
 
     function newBoardChart(ctx, data) {

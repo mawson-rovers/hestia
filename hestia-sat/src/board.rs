@@ -51,7 +51,10 @@ pub enum BoardId {
 
 impl Serialize for BoardId {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
-        serializer.serialize_str((*self as u8).to_string().as_str())
+        serializer.serialize_str(match self {
+            BoardId::TOP => "top",
+            BoardId::BOTTOM => "bottom",
+        })
     }
 }
 

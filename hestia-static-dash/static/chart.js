@@ -51,21 +51,22 @@
     const adaptTimestamps = seriesData =>
         seriesData.map(([timestamp, value]) => [timestamp.replace(' ', 'T'), value]);
 
-    function getChartData(data) {
+    function getChartData(board, data) {
         let sensor_ids = Object.keys(data)
-            .filter(id => data[id].length); // exclude empty sensors
+            .filter(id => data[id].length) // exclude empty sensors
+            .filter(id => /TH1|TH3|U4|J7|heater_power/.test(id));
         return {
             datasets: sensor_ids.map(function (id) {
                 const colors = colorsForSensor(id);
                 return {
-                    label: id,
+                    label: `${board}/${id}`,
                     data: adaptTimestamps(data[id]),
                     borderWidth: 1,
                     borderColor: colors.borderColor,
                     backgroundColor: colors.backgroundColor,
                     fill: id === 'heater_power',
                     xAxisID: 'x',
-                    yAxisID: id?.startsWith('heater') ? 'y2' : 'y1',
+                    yAxisID: /^heater/.test(id) ? 'y2' : 'y1',
                 };
             }),
         };
@@ -82,11 +83,12 @@
         chart.options.scales.x.max = now;
     }
 
-    function updateChartData(chart, newDatasets) {
+    function updateChartData(chart, board, newDatasets) {
         Object.keys(newDatasets).forEach(function (label) {
             let newData = adaptTimestamps(newDatasets[label]);
+            prefix_label = `${board}/${label}`;
 
-            let dataset = chart.data.datasets.find(ds => ds.label === label);
+            let dataset = chart.data.datasets.find(ds => ds.label === prefix_label);
             if (dataset) {
                 // add all new data items (API can return multiple points)
                 dataset.data.push(...newData);
@@ -97,24 +99,26 @@
                 }
             } else {
                 // new sensor has appeared - add as new dataset
-                let newChartData = getChartData({ [label]: newData });
+                let newChartData = getChartData(board, { [label]: newData });
                 chart.data.datasets.push(...newChartData.datasets);
             }
 
             // set latest temp on board status chart
             if (window.boardChart) {
-                let boardDatasets = window.boardChart.data.datasets;
-                let boardDataset = boardDatasets.find(ds => ds.label === label);
-                if (boardDataset) {
-                    if (newData.length) {
-                        boardDataset.data[0]['temp'] = newData[newData.length - 1][1];
-                        boardDataset.hidden = false;
-                    } else {
-                        boardDataset.data[0]['temp'] = null;
-                        boardDataset.hidden = true;
+                Object.values(window.boardChart).forEach(boardChart => {
+                    let boardDatasets = boardChart.data.datasets;
+                    let boardDataset = boardDatasets.find(ds => ds.label === prefix_label);
+                    if (boardDataset) {
+                        if (newData.length) {
+                            boardDataset.data[0]['temp'] = newData[newData.length - 1][1];
+                            boardDataset.hidden = false;
+                        } else {
+                            boardDataset.data[0]['temp'] = null;
+                            boardDataset.hidden = true;
+                        }
+                        boardChart.update();
                     }
-                    window.boardChart.update();
-                }
+                });
             }
         });
     }
@@ -128,12 +132,18 @@
             }
         })
         .then(function (data) {
-            data = data["1"] || data["2"] || {};
+            let chartData = [];
+            for (board in data) {
+                let boardData = getChartData(board, data[board]);
+                chartData.push(...boardData.datasets);
+            }
             const chart = new Chart(ctx, {
                 type: 'line',
                 responsive: true,
                 maintainAspectRatio: false,
-                data: getChartData(data),
+                data: {
+                    datasets: chartData,
+                },
                 options: {
                     scales: {
                         x: {
@@ -177,6 +187,7 @@
                     plugins: {
                         legend: {
                             position: "right",
+                            width: "200",
                         }
                     }
                 },
@@ -187,7 +198,8 @@
                 fetch(host + '/api/data')
                     .then((response) => response.json())
                     .then((newData) => {
-                        updateChartData(chart, newData["2"] || {});
+                        updateChartData(chart, "top", newData["top"] || {});
+                        updateChartData(chart, "bottom", newData["bottom"] || {});
                         updateChartDuration(chart);
                         chart.update();
                     });
@@ -217,8 +229,6 @@
             window.chart = chart;
         })
         .catch((response) => {
-            response.text()
-                .then((text) => console.error("Failed to retrieve log_data:", text))
-                .catch((err) => console.error("Failed to retrieve log_data:", err));
+            console.error("Failed to retrieve log_data:", response)
         });
 })();

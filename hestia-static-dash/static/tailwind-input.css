@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    section {
+        @apply my-10;
+    }
+
+    a {
+        @apply underline text-orange-200;
+    }
+    
+    h3 {
+        @apply text-lg font-bold mt-4 mb-4;
+    }
+    h4 {
+        @apply text-green-600 my-2;
+    }
+
+    input {
+        @apply text-xs px-1 rounded-sm text-zinc-800
+    }
+    :disabled {
+        @apply text-zinc-400 bg-zinc-700
+    }
+
+    button {
+        @apply text-xs font-semibold text-zinc-50 bg-sky-600 px-2 py-1 rounded hover:brightness-125
+    }
+}
+
+@layer components {
+    #board-chart-container {
+        position: relative;
+        height: 400px;
+        width: 480px; /* leave space on RHS for mounted sensors */
+    }
+
+    #board-chart-container::before { /* use ::before element so we can set opacity without affecting chart */
+        background-image: url('/static/hestia-board-top.png');
+        background-size: contain;
+        background-position: left center;
+        background-repeat: no-repeat;
+        position: absolute;
+        content: '';
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 376px; /* calculated: image width / height * 400px */
+        opacity: 0.75;
+        z-index: -1; /* ensure background is behind chart */
+    }
+    
+    #board-chart-container.flip::before {
+        background-image: url('/static/hestia-board-bottom.png');
+        transform: scaleX(-1);
+    }
+}
