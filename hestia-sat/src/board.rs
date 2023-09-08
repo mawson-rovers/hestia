@@ -33,7 +33,7 @@ impl BoardVersion {
 }
 
 impl Display for BoardVersion {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             BoardVersion::V1_1 => f.write_str("v1.1"),
             BoardVersion::V2_0 => f.write_str("v2.0"),
@@ -42,18 +42,22 @@ impl Display for BoardVersion {
     }
 }
 
+/// u8 repr corresponds to I2C bus ID (1 = i2c1, 2 = i2c2)
 #[repr(u8)]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, Deserialize)]
 pub enum BoardId {
-    TOP = 1,
-    BOTTOM = 2,
+    #[serde(alias="top", alias="TOP")]
+    Top = 1,
+
+    #[serde(alias="bottom", alias="BOTTOM")]
+    Bottom = 2,
 }
 
 impl Serialize for BoardId {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
         serializer.serialize_str(match self {
-            BoardId::TOP => "top",
-            BoardId::BOTTOM => "bottom",
+            BoardId::Top => "top",
+            BoardId::Bottom => "bottom",
         })
     }
 }
@@ -63,8 +67,8 @@ impl TryFrom<&str> for BoardId {
 
     fn try_from(value: &str) -> Result<BoardId, Self::Error> {
         match value {
-            "1" => Ok(Self::TOP),
-            "2" => Ok(Self::BOTTOM),
+            "1" => Ok(Self::Top),
+            "2" => Ok(Self::Bottom),
             _ => Err(()),
         }
     }
@@ -75,8 +79,8 @@ impl TryFrom<u8> for BoardId {
 
     fn try_from(value: u8) -> Result<BoardId, Self::Error> {
         match value {
-            1 => Ok(Self::TOP),
-            2 => Ok(Self::BOTTOM),
+            1 => Ok(Self::Top),
+            2 => Ok(Self::Bottom),
             _ => Err(()),
         }
     }
@@ -85,8 +89,8 @@ impl TryFrom<u8> for BoardId {
 impl From<&BoardId> for u8 {
     fn from(value: &BoardId) -> Self {
         match value {
-            BoardId::TOP => 1,
-            BoardId::BOTTOM => 2,
+            BoardId::Top => 1,
+            BoardId::Bottom => 2,
         }
     }
 }
@@ -99,7 +103,20 @@ impl Into<I2cBus> for BoardId {
 
 impl Display for BoardId {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", <u8>::from(self))
+        match self {
+            Self::Top => write!(f, "top"),
+            Self::Bottom => write!(f, "bottom"),
+        }
+    }
+}
+
+impl From<&Board> for BoardId {
+    fn from(board: &Board) -> Self {
+        match board.bus.id {
+            1 => BoardId::Top,
+            2 => BoardId::Bottom,
+            _ => panic!("Unknown board ID: {}", board.bus.id),
+        }
     }
 }
 
@@ -329,7 +346,7 @@ pub struct BoardFlags {
     max_temp: bool,
 }
 
-impl std::fmt::Display for BoardFlags {
+impl Display for BoardFlags {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match (self.on, self.max_temp) {
             (true, true) => write!(f, "ERR_MAX_TEMP"),

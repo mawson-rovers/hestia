@@ -167,7 +167,7 @@ impl SystemStatus {
 
 #[derive(Deserialize)]
 pub(crate) struct BoardStatusUpdate {
-    pub board_id: u8,
+    pub board: BoardId,
     pub heater_mode: Option<HeaterMode>,
     pub heater_duty: Option<u16>,
     pub target_temp: Option<f32>,

@@ -38,11 +38,11 @@ async fn post_status(state: web::Data<AppState>, update: web::Json<BoardStatusUp
     -> impl Responder {
     let update = update.into_inner();
     let payload = Payload::from_config(&state.config);
-    let board = payload.iter().find(|b| b.bus.id == update.board_id);
+    let board = payload.iter().find(|b| b.bus.id == update.board as u8);
     if let Some(board) = board {
         update.apply(board);
     } else {
-        error!("Board ID not found or configured: {}", update.board_id);
+        error!("Board ID not found or configured: {}", update.board);
     }
     Redirect::to("/api/status").see_other()
 }
