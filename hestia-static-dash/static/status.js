@@ -171,4 +171,10 @@
         ev.preventDefault();
         ev.stopPropagation();
     });
+
+    if (host) {
+        document.querySelectorAll(".api-links a").forEach(link => {
+            link.setAttribute("href", host + link.getAttribute("href"));
+        });
+    }
 })();
