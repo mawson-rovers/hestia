@@ -25,7 +25,7 @@
             heaterDuty[board].value = data["heater_duty"] ?? "n/a";
             targetTemp[board].value = data["target_temp"] ?? "n/a";
             targetSensor[board].value = data["target_sensor"] ?? "n/a";
-            targetSensorLabel[board].innerText = targetSensor.value;
+            targetSensorLabel[board].innerText = targetSensor[board].value;
             
             window.boardChart ??= {};
             if (!window.boardChart[board] && data['sensor_info']) {
