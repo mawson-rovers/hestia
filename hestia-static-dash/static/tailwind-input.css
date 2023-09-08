@@ -15,7 +15,7 @@
         @apply text-lg font-bold mt-4 mb-4;
     }
     h4 {
-        @apply text-green-600 my-2;
+        @apply text-sky-400 mt-4 mb-2;
     }
 
     input {
