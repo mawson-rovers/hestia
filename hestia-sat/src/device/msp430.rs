@@ -119,6 +119,12 @@ impl Heater for Msp430 {
         self.write_register(MSP430_WRITE_HEATER_MAX_TEMP, "max temp", adc_val)
     }
 
+    fn read_version(&self) -> ReadResult<SensorReading<String>> {
+        let raw = self.read_register(MSP430_READ_VERSION, "version")?;
+        let display = format!("{:0.1}", f32::from(raw) / 100.0);
+        Ok(SensorReading::new(raw, display))
+    }
+
     fn read_flags(&self) -> ReadResult<SensorReading<BoardFlags>> {
         let raw = self.read_register(MSP430_READ_FLAGS, "flags")?;
         let display: BoardFlags = raw.try_into().or_else(|_| {

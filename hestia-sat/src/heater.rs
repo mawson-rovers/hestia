@@ -41,6 +41,7 @@ pub trait Heater {
     fn read_max_temp(&self) -> ReadResult<SensorReading<f32>>;
     fn write_max_temp(&self, temp: f32);
 
+    fn read_version(&self) -> ReadResult<SensorReading<String>>;
     fn read_flags(&self) -> ReadResult<SensorReading<BoardFlags>>;
 }
 
