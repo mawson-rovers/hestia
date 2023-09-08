@@ -112,7 +112,6 @@
         fetch(host + '/api/status', {
             method: 'POST',
             body: JSON.stringify({
-                'board_id': 2,
                 ...data
             }),
             redirect: "follow",
@@ -129,7 +128,8 @@
     document.querySelectorAll(".set-heater-mode").forEach(el => {
         el.addEventListener('click', () => {
             let mode = el.getAttribute("data-mode");
-            postStatusUpdate({ 'heater_mode': mode });
+            let board = el.getAttribute("data-board");
+            postStatusUpdate({ 'heater_mode': mode, 'board': board });
         });
     });
 
@@ -137,7 +137,8 @@
     document.querySelectorAll(".set-heater-duty").forEach(el => {
         el.addEventListener('click', () => {
             let duty = Number(el.getAttribute('data-duty'));
-            postStatusUpdate({ 'heater_duty': duty });
+            let board = el.getAttribute("data-board");
+            postStatusUpdate({ 'heater_duty': duty, 'board': board });
         });
     });
 
@@ -145,7 +146,8 @@
         const customDuty = document.getElementById("custom-heater-duty");
         el.addEventListener('click', () => {
             let duty = Math.floor(Number(customDuty.value) * 255);
-            postStatusUpdate({ 'heater_duty': duty });
+            let board = el.getAttribute("data-board");
+            postStatusUpdate({ 'heater_duty': duty, 'board': board });
         });
     });
 
@@ -153,7 +155,8 @@
     document.querySelectorAll(".set-target-temp").forEach(el => {
         el.addEventListener('click', () => {
             let temp = Number(el.getAttribute('data-temp'));
-            postStatusUpdate({ 'target_temp': temp });
+            let board = el.getAttribute("data-board");
+            postStatusUpdate({ 'target_temp': temp, 'board': board });
         });
     });
 
@@ -161,7 +164,8 @@
     document.querySelectorAll(".set-target-sensor").forEach(el => {
         el.addEventListener('click', () => {
             let sensor = el.getAttribute('data-sensor');
-            postStatusUpdate({ 'target_sensor': sensor });
+            let board = el.getAttribute("data-board");
+            postStatusUpdate({ 'target_sensor': sensor, 'board': board });
         });
     });
 
