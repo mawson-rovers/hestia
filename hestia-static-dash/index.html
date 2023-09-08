@@ -44,27 +44,27 @@
 
             <div>
                 <h4>Top board</h4>
-                <div class="grid grid-cols-6 gap-2 text-sm w-auto auto-cols-auto">
-                    <div class="col-span-2"><label for="core-temperature-top">Core temperature (°C)</label></div>
+                <div class="grid grid-cols-controls gap-y-2 gap-x-4 text-sm">
+                    <div><label for="core-temperature-top">Core temperature (°C)</label></div>
                     <div><input disabled id="core-temperature-top" size="10" value="n/a"></div>
-                    <div class="col-span-3">
+                    <div>
                         <span id="target-sensor-label-top">n/a</span>
                     </div>
 
-                    <div class="col-span-2"><label for="heater-mode-top">Heater mode</label></div>
+                    <div><label for="heater-mode-top">Heater mode</label></div>
                     <div><input disabled id="heater-mode-top" size="10" value="n/a"></div>
-                    <div class="col-span-3">
+                    <div>
                         <button class="set-heater-mode" data-board="top" data-mode="OFF">Off</button>
                         <button class="set-heater-mode" data-board="top" data-mode="PWM">Power</button>
                         <button class="set-heater-mode" data-board="top" data-mode="PID">Thermostat</button>
                     </div>
 
-                    <div class="col-span-2"><label for="heater-power-top">Heater power (W)</label></div>
-                    <div class="col-span-4"><input disabled id="heater-power-top" size="10" value="n/a"></div>
+                    <div><label for="heater-power-top">Heater power (W)</label></div>
+                    <div class="col-span-2"><input disabled id="heater-power-top" size="10" value="n/a"></div>
 
-                    <div class="col-span-2"><label for="heater-duty-top">Heater duty (0-1)</label></div>
+                    <div><label for="heater-duty-top">Heater duty (0-1)</label></div>
                     <div><input disabled id="heater-duty-top" size="10" value="n/a"></div>
-                    <div class="col-span-3">
+                    <div>
                         <button class="set-heater-duty" data-board="top" data-duty="50">0.2</button>
                         <button class="set-heater-duty" data-board="top" data-duty="130">0.5</button>
                         <button class="set-heater-duty" data-board="top" data-duty="255">1.0</button>
@@ -73,9 +73,9 @@
                         <button class="set-custom-heater-duty-top">Apply</button>
                     </div>
 
-                    <div class="col-span-2"><label for="target-temp-top">Target temp (°C)</label></div>
+                    <div><label for="target-temp-top">Target temp (°C)</label></div>
                     <div><input disabled id="target-temp-top" size="10" value="n/a"></div>
-                    <div class="col-span-3">
+                    <div>
                         <button class="set-target-temp" data-board="top" data-temp="0">0</button>
                         <button class="set-target-temp" data-board="top" data-temp="50">50</button>
                         <button class="set-target-temp" data-board="top" data-temp="60">60</button>
@@ -84,9 +84,9 @@
                         <button class="set-target-temp" data-board="top" data-temp="120">120°C</button>
                     </div>
 
-                    <div class="col-span-2"><label for="target-sensor-top">Target sensor</label></div>
+                    <div><label for="target-sensor-top">Target sensor</label></div>
                     <div><input disabled id="target-sensor-top" size="10" value="n/a"></div>
-                    <div class="col-span-3">
+                    <div>
                         <button class="set-target-sensor" data-board="top" data-sensor="TH1">TH1</button>
                         <button class="set-target-sensor" data-board="top" data-sensor="TH2">TH2</button>
                         <button class="set-target-sensor" data-board="top" data-sensor="TH3">TH3</button>
@@ -97,27 +97,27 @@
             </div>
             <div>
                 <h4>Bottom board</h4>
-                <div class="grid grid-cols-6 gap-2 text-sm w-auto auto-cols-auto">
-                    <div class="col-span-2"><label for="core-temperature-bottom">Core temperature (°C)</label></div>
+                <div class="grid grid-cols-controls gap-y-2 gap-x-4 text-sm">
+                    <div><label for="core-temperature-bottom">Core temperature (°C)</label></div>
                     <div><input disabled id="core-temperature-bottom" size="10" value="n/a"></div>
-                    <div class="col-span-3">
+                    <div>
                         <span id="target-sensor-label-bottom">n/a</span>
                     </div>
 
-                    <div class="col-span-2"><label for="heater-mode-bottom">Heater mode</label></div>
+                    <div><label for="heater-mode-bottom">Heater mode</label></div>
                     <div><input disabled id="heater-mode-bottom" size="10" value="n/a"></div>
-                    <div class="col-span-3">
+                    <div>
                         <button class="set-heater-mode" data-board="bottom" data-mode="OFF">Off</button>
                         <button class="set-heater-mode" data-board="bottom" data-mode="PWM">Power</button>
                         <button class="set-heater-mode" data-board="bottom" data-mode="PID">Thermostat</button>
                     </div>
 
-                    <div class="col-span-2"><label for="heater-power-bottom">Heater power (W)</label></div>
-                    <div class="col-span-4"><input disabled id="heater-power-bottom" size="10" value="n/a"></div>
+                    <div><label for="heater-power-bottom">Heater power (W)</label></div>
+                    <div class="col-span-2"><input disabled id="heater-power-bottom" size="10" value="n/a"></div>
 
-                    <div class="col-span-2"><label for="heater-duty-bottom">Heater duty (0-1)</label></div>
+                    <div><label for="heater-duty-bottom">Heater duty (0-1)</label></div>
                     <div><input disabled id="heater-duty-bottom" size="10" value="n/a"></div>
-                    <div class="col-span-3">
+                    <div>
                         <button class="set-heater-duty" data-board="bottom" data-duty="50">0.2</button>
                         <button class="set-heater-duty" data-board="bottom" data-duty="130">0.5</button>
                         <button class="set-heater-duty" data-board="bottom" data-duty="255">1.0</button>
@@ -126,9 +126,9 @@
                         <button class="set-custom-heater-duty-bottom">Apply</button>
                     </div>
 
-                    <div class="col-span-2"><label for="target-temp-bottom">Target temp (°C)</label></div>
+                    <div><label for="target-temp-bottom">Target temp (°C)</label></div>
                     <div><input disabled id="target-temp-bottom" size="10" value="n/a"></div>
-                    <div class="col-span-3">
+                    <div>
                         <button class="set-target-temp" data-board="bottom" data-temp="0">0</button>
                         <button class="set-target-temp" data-board="bottom" data-temp="50">50</button>
                         <button class="set-target-temp" data-board="bottom" data-temp="60">60</button>
@@ -137,9 +137,9 @@
                         <button class="set-target-temp" data-board="bottom" data-temp="120">120°C</button>
                     </div>
 
-                    <div class="col-span-2"><label for="target-sensor-bottom">Target sensor</label></div>
+                    <div><label for="target-sensor-bottom">Target sensor</label></div>
                     <div><input disabled id="target-sensor-bottom" size="10" value="n/a"></div>
-                    <div class="col-span-3">
+                    <div>
                         <button class="set-target-sensor" data-board="bottom" data-sensor="TH1">TH1</button>
                         <button class="set-target-sensor" data-board="bottom" data-sensor="TH2">TH2</button>
                         <button class="set-target-sensor" data-board="bottom" data-sensor="TH3">TH3</button>

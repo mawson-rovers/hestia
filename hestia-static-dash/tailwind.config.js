@@ -10,6 +10,9 @@ module.exports = {
       colors: {
         'uts-blue': '#0f4beb',
       },
+      gridTemplateColumns: {
+        'controls': 'max-content max-content auto',
+      }
     },
   },
   plugins: [],
