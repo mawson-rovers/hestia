@@ -29,12 +29,12 @@
             
             window.boardChart ??= {};
             if (!window.boardChart[board] && data['sensor_info']) {
-                window.boardChart[board] = newBoardChart(boardChartElement[board], data['sensor_info']);
+                window.boardChart[board] = newBoardChart(board, boardChartElement[board], data['sensor_info']);
             }
         });
     }
 
-    function newBoardChart(ctx, data) {
+    function newBoardChart(board, ctx, data) {
         let mounted = 0;
         return new Chart(ctx, {
             type: 'scatter',
@@ -49,7 +49,7 @@
                     }
                     let colors = window.colorsForSensor(id);
                     return {
-                        label: id,
+                        label: `${board}/${id}`,
                         data: [{x: x, y: y, temp: null}],
                         unit: data[id]['unit'],
                         borderWidth: 1,
@@ -171,7 +171,9 @@
 
     // flip board link
     document.getElementById("board-flip")?.addEventListener('click', (ev) => {
-        document.getElementById("board-chart-container").classList.toggle("flip");
+        document.querySelectorAll(".board-chart-container").forEach(e => {
+            e.classList.toggle("flip");
+        });
         ev.preventDefault();
         ev.stopPropagation();
     });
