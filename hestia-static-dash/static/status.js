@@ -142,11 +142,11 @@
         });
     });
 
-    document.querySelectorAll(".set-custom-heater-duty").forEach(el => {
-        const customDuty = document.getElementById("custom-heater-duty");
+    document.querySelectorAll(".set-custom-heater-duty").forEach(function (el) {
+        const board = el.getAttribute("data-board");
+        const customDuty = document.getElementById(`custom-heater-duty-${board}`);
         el.addEventListener('click', () => {
             let duty = Math.floor(Number(customDuty.value) * 255);
-            let board = el.getAttribute("data-board");
             postStatusUpdate({ 'heater_duty': duty, 'board': board });
         });
     });

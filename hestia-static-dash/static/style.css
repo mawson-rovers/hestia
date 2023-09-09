@@ -51,13 +51,13 @@ ul li {
     margin-bottom: 0; /* don't space out list items */
 }
 
-#board-chart-container {
+.board-chart-container {
     position: relative;
     height: 400px;
     width: 480px; /* leave space on RHS for mounted sensors */
 }
 
-#board-chart-container::before { /* use ::before element so we can set opacity without affecting chart */
+.board-chart-container::before { /* use ::before element so we can set opacity without affecting chart */
     background-image: url('/static/hestia-board-top.png');
     background-size: contain;
     background-position: left center;
@@ -72,7 +72,7 @@ ul li {
     z-index: -1; /* ensure background is behind chart */
 }
 
-#board-chart-container.flip::before {
+.board-chart-container.flip::before {
     background-image: url('/static/hestia-board-bottom.png');
     transform: scaleX(-1);
 
