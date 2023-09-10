@@ -473,11 +473,24 @@ input,
   color: rgb(39 39 42 / var(--tw-text-opacity));
 }
 
-:disabled {
+input:disabled::-moz-placeholder {
   --tw-bg-opacity: 1;
   background-color: rgb(63 63 70 / var(--tw-bg-opacity));
   --tw-text-opacity: 1;
   color: rgb(212 212 216 / var(--tw-text-opacity));
+  -webkit-text-fill-color: rgb(212 212 216);
+  opacity: 1;
+  /* required on iOS */
+}
+
+input:disabled, input:disabled::placeholder {
+  --tw-bg-opacity: 1;
+  background-color: rgb(63 63 70 / var(--tw-bg-opacity));
+  --tw-text-opacity: 1;
+  color: rgb(212 212 216 / var(--tw-text-opacity));
+  -webkit-text-fill-color: rgb(212 212 216);
+  opacity: 1;
+  /* required on iOS */
 }
 
 button {
@@ -680,14 +693,6 @@ button:hover {
 .my-4 {
   margin-top: 1rem;
   margin-bottom: 1rem;
-}
-
-.ml-2 {
-  margin-left: 0.5rem;
-}
-
-.mr-1 {
-  margin-right: 0.25rem;
 }
 
 .flex {

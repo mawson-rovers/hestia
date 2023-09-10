@@ -22,8 +22,10 @@
     select {
         @apply text-xs px-1 py-0.5 rounded-sm text-zinc-800
     }
-    :disabled {
-        @apply text-zinc-300 bg-zinc-700
+    input:disabled, input:disabled::placeholder {
+        @apply text-zinc-300 bg-zinc-700;
+        -webkit-text-fill-color: rgb(212 212 216);
+        opacity: 1; /* required on iOS */
     }
 
     button {
