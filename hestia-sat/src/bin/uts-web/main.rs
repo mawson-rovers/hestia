@@ -93,6 +93,7 @@ async fn main() -> std::io::Result<()> {
         config: config.clone(),
     });
     let addr = ("0.0.0.0", config.http_port);
+    info!("uts-web listening on {:?}...", addr);
     let server = HttpServer::new(move || {
         let cors = Cors::default()
             .allow_any_origin()
@@ -117,6 +118,5 @@ async fn main() -> std::io::Result<()> {
     })
         .bind(addr)?
         .run();
-    info!("uts-web listening on {:?}...", addr);
     server.await
 }
