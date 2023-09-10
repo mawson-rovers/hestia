@@ -33,8 +33,13 @@ impl TimeTempData {
         Self { timestamp: String::from(timestamp), temp: String::from(temp) }
     }
 
-    pub fn new_f32(timestamp: &str, temp: f32) -> Self {
-        Self::new(timestamp, format!("{:0.2}", temp).as_str())
+    pub fn new_f32(timestamp: &str, value: f32) -> Self {
+        let value = if value > 10.0 {
+            format!("{:0.1}", value)
+        } else {
+            format!("{:0.2}", value)
+        };
+        Self::new(timestamp, value.as_str())
     }
 
     fn singleton(timestamp: &str, temp: Option<f32>) -> LinkedList<Self> {

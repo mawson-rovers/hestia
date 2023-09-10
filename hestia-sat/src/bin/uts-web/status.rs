@@ -47,7 +47,7 @@ pub(crate) struct BoardStatus {
 fn serialize_f32<S>(value: &Option<f32>, serializer: S) -> Result<S::Ok, S::Error>
     where S: Serializer {
     match value {
-        Some(value) => serializer.serialize_str(format!("{:0.2}", value).as_str()),
+        Some(value) => serializer.serialize_str(format_f32_3sd(value).as_str()),
         None => serializer.serialize_none(),
     }
 }
@@ -58,11 +58,21 @@ fn serialize_sensor_values<S>(values: &LinkedHashMap<SensorId, Option<f32>>, ser
     let mut map = serializer.serialize_map(Some(values.len()))?;
     for (key, value) in values {
         match value {
-            Some(value) => map.serialize_entry(key, format!("{:0.2}", value).as_str())?,
+            Some(value) => {
+                map.serialize_entry(key, format_f32_3sd(value).as_str())?
+            }
             None => map.serialize_entry(key, &None::<String>)?,
         }
     }
     map.end()
+}
+
+fn format_f32_3sd(value: &f32) -> String {
+    if *value >= 10.0 {
+        format!("{:0.1}", value)
+    } else {
+        format!("{:0.2}", value)
+    }
 }
 
 impl BoardStatus {
