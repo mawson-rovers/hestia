@@ -2,7 +2,6 @@ use std::convert::TryFrom;
 use std::ops::Index;
 use std::slice::Iter;
 use dotenv::dotenv;
-use log::info;
 use serde::Deserialize;
 use crate::board::{Board, BoardId, BoardVersion};
 
@@ -70,8 +69,6 @@ impl Payload {
                 panic!("Configured with unknown board ID: {}", bus);
             }
         }
-        info!("Configured with {} {} boards: {:?}", boards.len(), config.board_version,
-            boards.iter().map(|b| b.bus.path()).collect::<Vec<String>>());
         Self::from_boards(boards)
     }
 

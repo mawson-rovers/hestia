@@ -1,5 +1,5 @@
 use std::convert::{TryFrom, TryInto};
-use std::fmt::{Display, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 use std::rc::Rc;
 use log::{debug, error};
 use serde::{Deserialize, Serialize, Serializer};
@@ -272,9 +272,15 @@ impl Board {
     }
 }
 
-impl std::fmt::Debug for Board {
+impl Display for Board {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Board{{bus: {:?}}})", self.bus)
+        write!(f, "Board({}, {}, {})", self.id, self.version, self.bus)
+    }
+}
+
+impl Debug for Board {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(&self, f)
     }
 }
 
