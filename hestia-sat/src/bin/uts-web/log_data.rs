@@ -7,7 +7,7 @@ use std::path::PathBuf;
 
 use chrono::{Local, ParseError, TimeZone};
 use chrono::format::{DelayedFormat, parse, Parsed};
-use log::{debug, info, warn};
+use log::{debug, warn};
 use serde::Serialize;
 
 use uts_ws1::board;
@@ -41,7 +41,7 @@ fn process_file(reader: BufReader<File>) -> SystemTimeTempData {
         }
     };
 
-    info!("Buffering lines");
+    debug!("Buffering lines");
     let mut lines_to_process: LinkedList<String> = LinkedList::new();
     let mut first_line = 2;
     for line in lines_iter {
@@ -52,12 +52,12 @@ fn process_file(reader: BufReader<File>) -> SystemTimeTempData {
         }
     }
 
-    info!("Starting processing lines");
+    debug!("Starting processing lines");
     let mut result = SystemTimeTempData::new();
     for (index, line) in zip(first_line.., lines_to_process) {
         process_line(index, line, &headers, &mut result);
     }
-    info!("Finished processing lines");
+    debug!("Finished processing lines");
     result
 }
 
@@ -153,7 +153,7 @@ fn sensors_to_include() -> HashSet<&'static str> {
 
 fn open_last_log_file(log_path: Option<&String>) -> Option<BufReader<File>> {
     let log_file = get_last_log_file(log_path?)?;
-    info!("Opening last log file: {}", log_file.display());
+    debug!("Opening last log file: {}", log_file.display());
     let file = File::open(log_file).ok()?;
     Some(BufReader::new(file))
 }
