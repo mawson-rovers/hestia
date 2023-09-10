@@ -1,13 +1,12 @@
 (function () { // prevent leakage into global scope
     const boards = ["top", "bottom"];
     const host = document.body.dataset.fetchHost || "";
-    const coreTemperature = getFieldElements('core-temperature');
+    const temp = getFieldElements('temp');
     const heaterPower = getFieldElements('heater-power');
     const heaterMode = getFieldElements('heater-mode');
     const heaterDuty = getFieldElements('heater-duty');
     const targetTemp = getFieldElements('target-temp');
     const targetSensor = getFieldElements('target-sensor');
-    const targetSensorLabel = getFieldElements('target-sensor-label');
     const boardChartElement = getFieldElements('board-chart');
 
     function getFieldElements(id) {
@@ -19,13 +18,12 @@
     function updateStatus(status_data) {
         boards.forEach(board => {
             let data = status_data[board] || {};
-            coreTemperature[board].value = data["target_sensor_temp"] ?? "n/a";
+            temp[board].value = data["target_sensor_temp"] ?? "n/a";
             heaterPower[board].value = data["heater_power"] ?? "n/a";
             heaterMode[board].value = data['heater_mode'] ?? "n/a";
             heaterDuty[board].value = data["heater_duty"] ?? "n/a";
             targetTemp[board].value = data["target_temp"] ?? "n/a";
             targetSensor[board].value = data["target_sensor"] ?? "n/a";
-            targetSensorLabel[board].innerText = targetSensor[board].value;
             
             window.boardChart ??= {};
             if (!window.boardChart[board] && data['sensor_info']) {
@@ -135,27 +133,21 @@
 
     // heater duty buttons
     document.querySelectorAll(".set-heater-duty").forEach(el => {
+        let board = el.getAttribute("data-board");
+        let values = document.getElementById(`heater-duty-${board}-values`);
         el.addEventListener('click', () => {
-            let duty = Number(el.getAttribute('data-duty'));
+            let duty = Math.round(Number(values.value) * 255);
             let board = el.getAttribute("data-board");
-            postStatusUpdate({ 'heater_duty': duty, 'board': board });
-        });
-    });
-
-    document.querySelectorAll(".set-custom-heater-duty").forEach(function (el) {
-        const board = el.getAttribute("data-board");
-        const customDuty = document.getElementById(`custom-heater-duty-${board}`);
-        el.addEventListener('click', () => {
-            let duty = Math.floor(Number(customDuty.value) * 255);
             postStatusUpdate({ 'heater_duty': duty, 'board': board });
         });
     });
 
     // target temperature buttons
     document.querySelectorAll(".set-target-temp").forEach(el => {
+        let board = el.getAttribute("data-board");
+        let values = document.getElementById(`target-temp-${board}-values`);
         el.addEventListener('click', () => {
-            let temp = Number(el.getAttribute('data-temp'));
-            let board = el.getAttribute("data-board");
+            let temp = Number(values.value);
             postStatusUpdate({ 'target_temp': temp, 'board': board });
         });
     });
