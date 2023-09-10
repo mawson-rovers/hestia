@@ -1,6 +1,7 @@
 use std::fmt;
 use std::iter::zip;
 use linked_hash_map::LinkedHashMap;
+use log::error;
 use serde::{Deserialize, Serialize, Serializer};
 use serde::ser::SerializeMap;
 use uts_ws1::board::{Board, BoardData, BoardDataProvider, BoardId, HEATER_CURR, HEATER_V_HIGH, HEATER_V_LOW};
@@ -185,10 +186,25 @@ pub(crate) struct BoardStatusUpdate {
 }
 
 impl BoardStatusUpdate {
-    pub fn apply(&self, board: &Board) {
-        if let Some(heater_mode) = self.heater_mode {
-            board.write_heater_mode(heater_mode);
+    pub fn apply(&self, payload: &Payload) {
+        let board = payload.iter().find(|b| b.bus.id == self.board as u8);
+        if let Some(board) = board {
+            if let Some(heater_mode) = self.heater_mode {
+                if heater_mode != HeaterMode::OFF {
+                    for other in payload.iter().filter(|b| b.bus.id != self.board as u8) {
+                        other.write_heater_mode(HeaterMode::OFF);
+                    }
+                }
+                board.write_heater_mode(heater_mode);
+            } else {
+                self.update_board(board);
+            }
+        } else {
+            error!("Board ID not found or configured: {}", self.board);
         }
+    }
+
+    fn update_board(&self, board: &Board) {
         if let Some(heater_duty) = self.heater_duty {
             board.write_heater_duty(heater_duty);
         }

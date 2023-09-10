@@ -5,7 +5,7 @@ use actix_web::error::JsonPayloadError;
 use actix_web::http::header;
 use actix_web::middleware::Condition;
 use actix_web::web::Redirect;
-use log::{error, info};
+use log::info;
 use serde::Serialize;
 use data::SystemTimeTempData;
 use uts_ws1::payload::{Config, Payload};
@@ -38,12 +38,7 @@ async fn post_status(state: web::Data<AppState>, update: web::Json<BoardStatusUp
     -> impl Responder {
     let update = update.into_inner();
     let payload = Payload::from_config(&state.config);
-    let board = payload.iter().find(|b| b.bus.id == update.board as u8);
-    if let Some(board) = board {
-        update.apply(board);
-    } else {
-        error!("Board ID not found or configured: {}", update.board);
-    }
+    update.apply(&payload);
     Redirect::to("/api/status").see_other()
 }
 
