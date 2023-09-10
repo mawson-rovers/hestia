@@ -55,7 +55,8 @@ impl I2cBus {
 
     pub fn write_bytes<const LEN: usize>(&self, addr: I2cAddr, reg: I2cReg, buf: &[u8; LEN])
                                      -> io::Result<()> {
-        info!("Writing {} bytes to I2C{} addr/reg {}, {}: {:?}", buf.len(), self.id, addr, reg, buf);
+        info!("Writing {} bytes to I2C{} addr/reg {}, {}: {:02x?}",
+            buf.len(), self.id, addr, reg, buf);
         // don't do anything - just discard the data
         Ok(())
     }
