@@ -18,15 +18,16 @@
         @apply text-sky-400 mt-4 mb-2;
     }
 
-    input {
-        @apply text-xs px-1 rounded-sm text-zinc-800
+    input,
+    select {
+        @apply text-xs px-1 py-0.5 rounded-sm text-zinc-800
     }
     :disabled {
-        @apply text-zinc-400 bg-zinc-700
+        @apply text-zinc-300 bg-zinc-700
     }
 
     button {
-        @apply text-xs font-semibold text-zinc-50 bg-sky-600 px-2 py-1 rounded hover:brightness-125
+        @apply text-xs font-semibold text-zinc-50 bg-sky-600 px-2 py-0.5 rounded hover:brightness-125
     }
 }
 
