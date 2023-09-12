@@ -21,9 +21,9 @@
 </head>
 
 <body data-fetch-host="" class="bg-zinc-950 text-zinc-200 max-w-screen-lg mx-auto px-4">
-    <header id="header" class="container flex flex-row gap-4 my-4 border-zinc-100">
-        <div>
-            <svg width="120" viewBox="0 0 72 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve">
+    <header id="header" class="container flex flex-row gap-4 my-4 border-zinc-100 items-center">
+        <div class="md:w-28 w-16">
+            <svg viewBox="0 0 72 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve">
                 <g>
                     <path style="fill:currentColor;"
                         d="M41.667,10.963L45.972,10.963L45.972,27.275L50.37,27.275L50.37,10.963L54.675,10.963L54.675,7.054L41.667,7.054L41.667,10.963M33.389,21.028C33.389,22.658 32.435,23.674 30.929,23.674C29.391,23.674 28.469,22.658 28.469,21.027L28.469,7.054L24.07,7.054L24.07,21.089C24.07,25.089 26.837,27.583 30.928,27.583C35.018,27.583 37.785,25.09 37.785,21.089L37.785,7.054L33.39,7.054L33.39,21.028M66.06,15.272L63.538,14.318C62.154,13.794 61.908,12.902 61.908,12.317C61.908,11.209 62.708,10.378 64.122,10.378C65.506,10.378 66.428,11.301 66.428,12.748L66.428,13.302L70.549,13.302L70.549,12.84C70.549,9.085 67.966,6.746 64.122,6.746C60.093,6.746 57.756,9.516 57.756,12.594C57.756,15.549 59.294,17.304 62.216,18.411L65.044,19.488C66.305,19.981 66.797,20.658 66.797,21.674C66.797,23.089 65.875,23.92 64.214,23.92C62.554,23.92 61.539,23.15 61.539,21.52L61.539,20.781L57.387,20.781L57.387,21.489C57.387,25.244 60.277,27.583 64.214,27.583C68.519,27.583 70.98,24.967 70.98,21.243C70.98,17.518 68.58,16.226 66.06,15.272M4.821,15.388L2.911,13.476L1,15.388L2.91,17.3L4.822,15.388M9.099,15.844L10.554,17.3L12.464,15.388L10.518,13.44C10.142,13.064 9.631,12.852 9.099,12.852C8.567,12.852 8.056,13.064 7.68,13.44L1,20.125L2.91,22.037L9.1,15.844M8.644,23.95L6.733,22.037L5.278,23.494L3.823,22.037L1.91,23.95L3.857,25.899C4.233,26.276 4.744,26.488 5.276,26.488C5.808,26.488 6.319,26.276 6.695,25.899L8.643,23.949M9.099,27.318L7.644,25.862L5.733,27.775L7.68,29.723C8.056,30.099 8.567,30.311 9.099,30.311C9.631,30.311 10.142,30.099 10.518,29.723L12.465,27.775L10.555,25.862L9.099,27.318M12.92,23.494L11.465,22.037L9.555,23.949L11.502,25.899C11.878,26.276 12.389,26.488 12.921,26.488C13.453,26.488 13.964,26.276 14.34,25.899L16.286,23.95L14.376,22.037L12.92,23.494M13.376,20.124L15.288,22.037L17.198,20.125L15.287,18.212L13.377,20.124M9.099,19.67L7.644,18.213L5.734,20.125L7.68,22.073C8.056,22.449 8.567,22.661 9.099,22.661C9.631,22.661 10.142,22.449 10.518,22.073L17.198,15.388L15.287,13.475L9.099,19.669M11.647,3.152L9.1,0.6L6.551,3.15L9.1,5.702L11.648,3.152M5.92,8.957L7.747,8.957L7.747,12.577C8.58,12.086 9.617,12.086 10.45,12.577L10.45,8.957L12.278,8.957L13.475,10.155L16.023,7.605L13.475,5.055L12.278,6.253L5.92,6.253L4.723,5.055L2.175,7.605L4.723,10.155L5.92,8.957" />
@@ -31,8 +31,8 @@
             </svg>
         </div>
         <div>
-            <h2 class="text-zinc-500">UTS Resilient Space Computing Initiative</h2>
-            <h1 class="text-2xl text-zinc-50">Matilda payload control panel</h1>
+            <h2 class="text-zinc-500 text-sm md:text-base">UTS Resilient Space Computing Initiative</h2>
+            <h1 class="text-xl md:text-2xl text-zinc-50">Matilda payload control panel</h1>
         </div>
     </header>
     <main class="container">
@@ -41,131 +41,156 @@
 
             <div>
                 <h4>Top board</h4>
-                <div class="grid grid-cols-controls gap-y-1 gap-x-4 text-sm leading-6">
-                    <div><label for="temp-top">Temperature (°C)</label></div>
-                    <div class="col-span-2"><input disabled id="temp-top" size="10" value="n/a"></div>
-
-                    <div><label for="heater-power-top">Heater power (W)</label></div>
-                    <div class="col-span-2"><input disabled id="heater-power-top" size="10" value="n/a"></div>
-
-                    <div><label for="target-sensor-top">Target sensor</label></div>
-                    <div><input disabled id="target-sensor-top" size="10" value="n/a"></div>
-                    <div class="leading-6">
-                        <button class="set-target-sensor" data-board="top" data-sensor="TH1">TH1</button>
-                        <button class="set-target-sensor" data-board="top" data-sensor="TH2">TH2</button>
-                        <button class="set-target-sensor" data-board="top" data-sensor="TH3">TH3</button>
-                        <button class="set-target-sensor" data-board="top" data-sensor="J7">J7</button>
-                        <button class="set-target-sensor" data-board="top" data-sensor="J8">J8</button>
+                <div class="flex flex-wrap items-center gap-2">
+                    <div class="board-chart-container relative">
+                        <canvas id="board-chart-top"></canvas>
+                        <a href="#" data-board="top" 
+                            class="board-flip text-xs absolute left-1 bottom-1 no-underline
+                            text-zinc-200 bg-zinc-800 px-0.5 rounded opacity-80
+                            hover:bg-sky-600 hover:opacity-100">
+                            ⮂
+                        </a>
                     </div>
-
-                    <div><label for="heater-mode-top">Heater mode</label></div>
-                    <div><input disabled id="heater-mode-top" size="10" value="n/a"></div>
-                    <div class="leading-6">
-                        <button class="set-heater-mode" data-board="top" data-mode="OFF">Off</button>
-                        <button class="set-heater-mode" data-board="top" data-mode="PWM">Duty</button>
-                        <button class="set-heater-mode" data-board="top" data-mode="PID">Temp</button>
-                    </div>
-
-                    <div><label for="heater-duty-top">Heater duty (0-1)</label></div>
-                    <div><input disabled id="heater-duty-top" size="10" value="n/a"></div>
-                    <div class="leading-6">
-                        <select id="heater-duty-top-values">
-                            <option>0.1</option>
-                            <option>0.2</option>
-                            <option>0.3</option>
-                            <option>0.4</option>
-                            <option>0.5</option>
-                            <option>0.6</option>
-                            <option>0.7</option>
-                            <option>0.8</option>
-                            <option>0.9</option>
-                            <option>1.0</option>
-                        </select>
-                        <button class="set-heater-duty" data-board="top">Apply</button>
-                    </div>
-
-                    <div><label for="target-temp-top">Target temp (°C)</label></div>
-                    <div><input disabled id="target-temp-top" size="10" value="n/a"></div>
-                    <div class="leading-6">
-                        <select id="target-temp-top-values">
-                            <option>0</option>
-                            <option>10</option>
-                            <option>20</option>
-                            <option>30</option>
-                            <option>40</option>
-                            <option>50</option>
-                            <option>60</option>
-                            <option>70</option>
-                            <option>80</option>
-                            <option>90</option>
-                            <option>100</option>
-                        </select>
-                        <button class="set-target-temp" data-board="top">Apply</button>
+    
+                    <div class="grid grid-cols-controls gap-y-1 gap-x-4 text-sm leading-6">
+                        <div><label for="temp-top">Temperature (°C)</label></div>
+                        <div class="col-span-2"><input disabled id="temp-top" size="10" value="n/a"></div>
+    
+                        <div><label for="heater-power-top">Heater power (W)</label></div>
+                        <div class="col-span-2"><input disabled id="heater-power-top" size="10" value="n/a"></div>
+    
+                        <div><label for="target-sensor-top">Target sensor</label></div>
+                        <div><input disabled id="target-sensor-top" size="10" value="n/a"></div>
+                        <div class="leading-6">
+                            <button class="set-target-sensor" data-board="top" data-sensor="TH1">TH1</button>
+                            <button class="set-target-sensor" data-board="top" data-sensor="TH2">TH2</button>
+                            <button class="set-target-sensor" data-board="top" data-sensor="TH3">TH3</button>
+                            <button class="set-target-sensor" data-board="top" data-sensor="J7">J7</button>
+                            <button class="set-target-sensor" data-board="top" data-sensor="J8">J8</button>
+                        </div>
+    
+                        <div><label for="heater-mode-top">Heater mode</label></div>
+                        <div><input disabled id="heater-mode-top" size="10" value="n/a"></div>
+                        <div class="leading-6">
+                            <button class="set-heater-mode" data-board="top" data-mode="OFF">Off</button>
+                            <button class="set-heater-mode" data-board="top" data-mode="PWM">Duty</button>
+                            <button class="set-heater-mode" data-board="top" data-mode="PID">Temp</button>
+                        </div>
+    
+                        <div><label for="heater-duty-top">Heater duty (0-1)</label></div>
+                        <div><input disabled id="heater-duty-top" size="10" value="n/a"></div>
+                        <div class="leading-6">
+                            <select id="heater-duty-top-values">
+                                <option>0.1</option>
+                                <option>0.2</option>
+                                <option>0.3</option>
+                                <option>0.4</option>
+                                <option>0.5</option>
+                                <option>0.6</option>
+                                <option>0.7</option>
+                                <option>0.8</option>
+                                <option>0.9</option>
+                                <option>1.0</option>
+                            </select>
+                            <button class="set-heater-duty" data-board="top">Apply</button>
+                        </div>
+    
+                        <div><label for="target-temp-top">Target temp (°C)</label></div>
+                        <div><input disabled id="target-temp-top" size="10" value="n/a"></div>
+                        <div class="leading-6">
+                            <select id="target-temp-top-values">
+                                <option>0</option>
+                                <option>10</option>
+                                <option>20</option>
+                                <option>30</option>
+                                <option>40</option>
+                                <option>50</option>
+                                <option>60</option>
+                                <option>70</option>
+                                <option>80</option>
+                                <option>90</option>
+                                <option>100</option>
+                            </select>
+                            <button class="set-target-temp" data-board="top">Apply</button>
+                        </div>
                     </div>
                 </div>
             </div>
+
             <div>
                 <h4>Bottom board</h4>
-                <div class="grid grid-cols-controls gap-y-2 gap-x-4 text-sm">
-                    <div><label for="temp-bottom">Temperature (°C)</label></div>
-                    <div class="col-span-2"><input disabled id="temp-bottom" size="10" value="n/a"></div>
 
-                    <div><label for="heater-power-bottom">Heater power (W)</label></div>
-                    <div class="col-span-2"><input disabled id="heater-power-bottom" size="10" value="n/a"></div>
-
-                    <div><label for="target-sensor-bottom">Target sensor</label></div>
-                    <div><input disabled id="target-sensor-bottom" size="10" value="n/a"></div>
-                    <div>
-                        <button class="set-target-sensor" data-board="bottom" data-sensor="TH1">TH1</button>
-                        <button class="set-target-sensor" data-board="bottom" data-sensor="TH2">TH2</button>
-                        <button class="set-target-sensor" data-board="bottom" data-sensor="TH3">TH3</button>
-                        <button class="set-target-sensor" data-board="bottom" data-sensor="J7">J7</button>
-                        <button class="set-target-sensor" data-board="bottom" data-sensor="J8">J8</button>
+                <div class="flex flex-wrap items-center gap-2">
+                    <div class="board-chart-container relative">
+                        <canvas id="board-chart-bottom"></canvas>
+                        <a href="#" data-board="bottom" 
+                            class="board-flip text-xs absolute left-1 bottom-1 no-underline
+                            text-zinc-200 bg-zinc-800 px-0.5 rounded opacity-80
+                            hover:bg-sky-600 hover:opacity-100">
+                            ⮂
+                        </a>
                     </div>
+                    <div class="grid grid-cols-controls gap-y-2 gap-x-4 text-sm">
+                        <div><label for="temp-bottom">Temperature (°C)</label></div>
+                        <div class="col-span-2"><input disabled id="temp-bottom" size="10" value="n/a"></div>
 
-                    <div><label for="heater-mode-bottom">Heater mode</label></div>
-                    <div><input disabled id="heater-mode-bottom" size="10" value="n/a"></div>
-                    <div>
-                        <button class="set-heater-mode" data-board="bottom" data-mode="OFF">Off</button>
-                        <button class="set-heater-mode" data-board="bottom" data-mode="PWM">Duty</button>
-                        <button class="set-heater-mode" data-board="bottom" data-mode="PID">Temp</button>
-                    </div>
+                        <div><label for="heater-power-bottom">Heater power (W)</label></div>
+                        <div class="col-span-2"><input disabled id="heater-power-bottom" size="10" value="n/a"></div>
 
-                    <div><label for="heater-duty-bottom">Heater duty (0-1)</label></div>
-                    <div><input disabled id="heater-duty-bottom" size="10" value="n/a"></div>
-                    <div>
-                        <select id="heater-duty-bottom-values">
-                            <option>0.1</option>
-                            <option>0.2</option>
-                            <option>0.3</option>
-                            <option>0.4</option>
-                            <option>0.5</option>
-                            <option>0.6</option>
-                            <option>0.7</option>
-                            <option>0.8</option>
-                            <option>0.9</option>
-                            <option>1.0</option>
-                        </select>
-                        <button class="set-heater-duty" data-board="bottom">Apply</button>
-                    </div>
+                        <div><label for="target-sensor-bottom">Target sensor</label></div>
+                        <div><input disabled id="target-sensor-bottom" size="10" value="n/a"></div>
+                        <div>
+                            <button class="set-target-sensor" data-board="bottom" data-sensor="TH1">TH1</button>
+                            <button class="set-target-sensor" data-board="bottom" data-sensor="TH2">TH2</button>
+                            <button class="set-target-sensor" data-board="bottom" data-sensor="TH3">TH3</button>
+                            <button class="set-target-sensor" data-board="bottom" data-sensor="J7">J7</button>
+                            <button class="set-target-sensor" data-board="bottom" data-sensor="J8">J8</button>
+                        </div>
 
-                    <div><label for="target-temp-bottom">Target temp (°C)</label></div>
-                    <div><input disabled id="target-temp-bottom" size="10" value="n/a"></div>
-                    <div>
-                        <select id="target-temp-bottom-values">
-                            <option>0</option>
-                            <option>10</option>
-                            <option>20</option>
-                            <option>30</option>
-                            <option>40</option>
-                            <option>50</option>
-                            <option>60</option>
-                            <option>70</option>
-                            <option>80</option>
-                            <option>90</option>
-                            <option>100</option>
-                        </select>
-                        <button class="set-target-temp" data-board="bottom">Apply</button>
+                        <div><label for="heater-mode-bottom">Heater mode</label></div>
+                        <div><input disabled id="heater-mode-bottom" size="10" value="n/a"></div>
+                        <div>
+                            <button class="set-heater-mode" data-board="bottom" data-mode="OFF">Off</button>
+                            <button class="set-heater-mode" data-board="bottom" data-mode="PWM">Duty</button>
+                            <button class="set-heater-mode" data-board="bottom" data-mode="PID">Temp</button>
+                        </div>
+
+                        <div><label for="heater-duty-bottom">Heater duty (0-1)</label></div>
+                        <div><input disabled id="heater-duty-bottom" size="10" value="n/a"></div>
+                        <div>
+                            <select id="heater-duty-bottom-values">
+                                <option>0.1</option>
+                                <option>0.2</option>
+                                <option>0.3</option>
+                                <option>0.4</option>
+                                <option>0.5</option>
+                                <option>0.6</option>
+                                <option>0.7</option>
+                                <option>0.8</option>
+                                <option>0.9</option>
+                                <option>1.0</option>
+                            </select>
+                            <button class="set-heater-duty" data-board="bottom">Apply</button>
+                        </div>
+
+                        <div><label for="target-temp-bottom">Target temp (°C)</label></div>
+                        <div><input disabled id="target-temp-bottom" size="10" value="n/a"></div>
+                        <div>
+                            <select id="target-temp-bottom-values">
+                                <option>0</option>
+                                <option>10</option>
+                                <option>20</option>
+                                <option>30</option>
+                                <option>40</option>
+                                <option>50</option>
+                                <option>60</option>
+                                <option>70</option>
+                                <option>80</option>
+                                <option>90</option>
+                                <option>100</option>
+                            </select>
+                            <button class="set-target-temp" data-board="bottom">Apply</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -183,21 +208,6 @@
 
             <div class="h-[400px] w-[800px]">
                 <canvas id="temperature-chart"></canvas>
-            </div>
-        </section>
-
-        <section id="board-section">
-            <div class="flex justify-between w-[400px] items-end">
-                <h3>Board status</h3>
-                <a href="#" id="board-flip" class="my-4 text-sm">Flip</a>
-            </div>
-            <h4>Top board</h4>
-            <div class="board-chart-container">
-                <canvas id="board-chart-top"></canvas>
-            </div>
-            <h4>Bottom board</h4>
-            <div class="board-chart-container">
-                <canvas id="board-chart-bottom"></canvas>
             </div>
         </section>
 

@@ -462,6 +462,7 @@ h4 {
 
 input,
     select {
+  width: 3rem;
   border-radius: 0.125rem;
   padding-left: 0.25rem;
   padding-right: 0.25rem;
@@ -648,41 +649,37 @@ button:hover {
 }
 
 .board-chart-container {
-  position: relative;
-  height: 400px;
-  width: 480px;
+  height: 200px;
+  width: 240px;
   /* leave space on RHS for mounted sensors */
-}
-
-.board-chart-container::before {
-  /* use ::before element so we can set opacity without affecting chart */
-  background-image: url('/static/hestia-board-top.png');
-  background-size: contain;
-  background-position: left center;
-  background-repeat: no-repeat;
-  position: absolute;
-  content: '';
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: 376px;
-  /* calculated: image width / height * 400px */
-  opacity: 0.75;
-  z-index: -1;
-  /* ensure background is behind chart */
-}
-
-.board-chart-container.flip::before {
-  background-image: url('/static/hestia-board-bottom.png');
-  transform: scaleX(-1);
 }
 
 .visible {
   visibility: visible;
 }
 
+.absolute {
+  position: absolute;
+}
+
+.relative {
+  position: relative;
+}
+
+.bottom-1 {
+  bottom: 0.25rem;
+}
+
+.left-1 {
+  left: 0.25rem;
+}
+
 .col-span-2 {
   grid-column: span 2 / span 2;
+}
+
+.col-span-3 {
+  grid-column: span 3 / span 3;
 }
 
 .mx-auto {
@@ -690,9 +687,18 @@ button:hover {
   margin-right: auto;
 }
 
+.my-2 {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
 .my-4 {
   margin-top: 1rem;
   margin-bottom: 1rem;
+}
+
+.mr-1 {
+  margin-right: 0.25rem;
 }
 
 .flex {
@@ -711,12 +717,28 @@ button:hover {
   height: 400px;
 }
 
-.w-\[400px\] {
-  width: 400px;
+.w-\[200px\] {
+  width: 200px;
+}
+
+.w-\[240px\] {
+  width: 240px;
 }
 
 .w-\[800px\] {
   width: 800px;
+}
+
+.w-\[120px\] {
+  width: 120px;
+}
+
+.w-28 {
+  width: 7rem;
+}
+
+.w-16 {
+  width: 4rem;
 }
 
 .max-w-screen-lg {
@@ -735,8 +757,20 @@ button:hover {
   flex-direction: row;
 }
 
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.items-start {
+  align-items: flex-start;
+}
+
 .items-end {
   align-items: flex-end;
+}
+
+.items-center {
+  align-items: center;
 }
 
 .justify-between {
@@ -745,6 +779,10 @@ button:hover {
 
 .gap-4 {
   gap: 1rem;
+}
+
+.gap-2 {
+  gap: 0.5rem;
 }
 
 .gap-x-4 {
@@ -760,14 +798,33 @@ button:hover {
   row-gap: 0.5rem;
 }
 
+.rounded {
+  border-radius: 0.25rem;
+}
+
 .border-zinc-100 {
   --tw-border-opacity: 1;
   border-color: rgb(244 244 245 / var(--tw-border-opacity));
 }
 
+.bg-zinc-800 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(39 39 42 / var(--tw-bg-opacity));
+}
+
 .bg-zinc-950 {
   --tw-bg-opacity: 1;
   background-color: rgb(9 9 11 / var(--tw-bg-opacity));
+}
+
+.px-0 {
+  padding-left: 0px;
+  padding-right: 0px;
+}
+
+.px-0\.5 {
+  padding-left: 0.125rem;
+  padding-right: 0.125rem;
 }
 
 .px-4 {
@@ -794,6 +851,16 @@ button:hover {
   line-height: 1.25rem;
 }
 
+.text-xs {
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+.text-xl {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+}
+
 .leading-6 {
   line-height: 1.5rem;
 }
@@ -813,6 +880,45 @@ button:hover {
   color: rgb(113 113 122 / var(--tw-text-opacity));
 }
 
+.no-underline {
+  text-decoration-line: none;
+}
+
+.opacity-80 {
+  opacity: 0.8;
+}
+
 .filter {
   filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
+}
+
+.hover\:bg-sky-600:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(2 132 199 / var(--tw-bg-opacity));
+}
+
+.hover\:opacity-100:hover {
+  opacity: 1;
+}
+
+@media (min-width: 640px) {
+  .sm\:w-16 {
+    width: 4rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .md\:w-28 {
+    width: 7rem;
+  }
+
+  .md\:text-2xl {
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
+
+  .md\:text-base {
+    font-size: 1rem;
+    line-height: 1.5rem;
+  }
 }

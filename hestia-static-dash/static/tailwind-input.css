@@ -20,7 +20,7 @@
 
     input,
     select {
-        @apply text-xs px-1 py-0.5 rounded-sm text-zinc-800
+        @apply text-xs px-1 py-0.5 rounded-sm text-zinc-800 w-12
     }
     input:disabled, input:disabled::placeholder {
         @apply text-zinc-300 bg-zinc-700;
@@ -35,28 +35,7 @@
 
 @layer components {
     .board-chart-container {
-        position: relative;
-        height: 400px;
-        width: 480px; /* leave space on RHS for mounted sensors */
-    }
-
-    .board-chart-container::before { /* use ::before element so we can set opacity without affecting chart */
-        background-image: url('/static/hestia-board-top.png');
-        background-size: contain;
-        background-position: left center;
-        background-repeat: no-repeat;
-        position: absolute;
-        content: '';
-        top: 0;
-        bottom: 0;
-        left: 0;
-        width: 376px; /* calculated: image width / height * 400px */
-        opacity: 0.75;
-        z-index: -1; /* ensure background is behind chart */
-    }
-    
-    .board-chart-container.flip::before {
-        background-image: url('/static/hestia-board-bottom.png');
-        transform: scaleX(-1);
+        height: 200px;
+        width: 240px; /* leave space on RHS for mounted sensors */
     }
 }

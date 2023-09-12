@@ -4,74 +4,85 @@
     let durationMins = location.hash && location.hash.match(/d\d+/) ?
         location.hash.match(/d(\d+)/)[1] : 30; // default to 30 mins
 
-    const colorPalette = [
-        "hsl(211, 36%, 47%)",
-        "hsl(204, 52%, 75%)",
-        "hsl(30, 82%, 55%)",
-        "hsl(30, 87%, 72%)",
-        "hsl(113, 34%, 46%)",
-        "hsl(109, 43%, 64%)",
-        "hsl(47, 58%, 44%)",
-        "hsl(45, 75%, 65%)",
-        "hsl(177, 35%, 43%)",
-        "hsl(172, 27%, 61%)",
-        "hsl(359, 64%, 60%)",
-        "hsl(1, 86%, 78%)",
-        "hsl(12, 4%, 44%)",
-        "hsl(18, 8%, 68%)",
-        "hsl(338, 47%, 62%)",
-        "hsl(341, 66%, 84%)",
-        "hsl(315, 23%, 57%)",
-        "hsl(315, 31%, 72%)",
-        "hsl(21, 23%, 48%)",
-        "hsl(18, 33%, 72%)",
+    const series = [
+        {
+            label: "top/TH1",
+            color: "hsl(190, 100%, 50%)",
+        },
+        {
+            label: "top/TH3",
+            color: "hsl(210, 100%, 50%)",
+        },
+        {
+            label: "top/U4",
+            color: "hsl(225, 67%, 50%)",
+        },
+        {
+            label: "top/J7",
+            color: "hsl(265, 100%, 40%)",
+        },
+        {
+            label: "top/heater_power",
+            color: "hsla(347, 100%, 54%, 0.5)",
+            borderColor: "hsl(347, 100%, 54%)",
+            fill: true,
+            yAxisID: "y2",
+        },
+        {
+            label: "bottom/TH1",
+            color: "hsl(80, 100%, 50%)",
+        },
+        {
+            label: "bottom/TH3",
+            color: "hsl(110, 100%, 50%)",
+        },
+        {
+            label: "bottom/U4",
+            color: "hsl(125, 67%, 40%)",
+        },
+        {
+            label: "bottom/J7",
+            color: "hsl(165, 100%, 50%)",
+        },
+        {
+            label: "bottom/heater_power",
+            color: "hsla(36, 100%, 54%, 0.5)",
+            borderColor: "hsl(36, 100%, 54%)",
+            fill: true,
+            yAxisID: "y2",
+        },
     ];
-    const heaterColors = {
-        borderColor: 'hsl(347, 100%, 69%)',
-        backgroundColor: 'hsla(347, 100%, 69%, 0.5)',
-    };
-    const savedColors = {};
     Chart.defaults.color = 'rgba(255, 255, 255, 0.9)';
     Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.2)';
 
-    window.colorsForSensor = function (sensor_id) {
-        if (sensor_id === 'heater_power') {
-            return heaterColors;
-        }
-        if (!savedColors[sensor_id]) {
-            const counter = Object.keys(savedColors).length;
-            const color = colorPalette[counter % colorPalette.length];
-            savedColors[sensor_id] = {
-                borderColor: color,
-                backgroundColor: color.replace(/^hsl/, "hsla").replace(/\)$/, ", 0.5)"),
-            };
-        }
-        return savedColors[sensor_id];
-    };
+    function colorForTemp(temp) {
+        let constrained = Math.max(Math.min(temp, 100), 0);
+        let hue = 224 - Math.round(constrained / 100 * 224)
+        return `hsla(${hue}, 100%, 50%, 0.4)`;
+    }
+
+    const borderColor = color => color.replace(/^hsl/, "hsla").replace(/\)$/, ", 0.5)");
 
     // convert our timestamps to ISO8601 format to make Luxon happy
     const adaptTimestamps = seriesData =>
         seriesData.map(([timestamp, value]) => [timestamp.replace(' ', 'T'), value]);
 
-    function getChartData(board, data) {
-        let sensor_ids = Object.keys(data)
-            .filter(id => data[id].length) // exclude empty sensors
-            .filter(id => /TH1|TH3|U4|J7|heater_power/.test(id));
-        return {
-            datasets: sensor_ids.map(function (id) {
-                const colors = colorsForSensor(id);
-                return {
-                    label: `${board}/${id}`,
-                    data: adaptTimestamps(data[id]),
-                    borderWidth: 1,
-                    borderColor: colors.borderColor,
-                    backgroundColor: colors.backgroundColor,
-                    fill: id === 'heater_power',
-                    xAxisID: 'x',
-                    yAxisID: /^heater/.test(id) ? 'y2' : 'y1',
-                };
-            }),
-        };
+    function getChartData(payloadData) {
+        return series.map(function (s) {
+            let [board, id] = s.label.split("/");
+            let data = board in payloadData && id in payloadData[board] ?
+                payloadData[board][id] : [];
+            return {
+                label: s.label,
+                data: adaptTimestamps(data),
+                borderWidth: 1,
+                borderColor: s.borderColor || borderColor(s.color),
+                backgroundColor: s.color,
+                fill: s.fill || false,
+                xAxisID: 'x',
+                yAxisID: s.yAxisID || "y1",
+            };
+        });
     }
 
     function minsToMillis(minutes) {
@@ -100,9 +111,7 @@
                     dataset.data.shift();
                 }
             } else {
-                // new sensor has appeared - add as new dataset
-                let newChartData = getChartData(board, { [label]: newData });
-                chart.data.datasets.push(...newChartData.datasets);
+                // Ignore other data
             }
 
             // set latest temp on board status chart
@@ -112,7 +121,9 @@
                     let boardDataset = boardDatasets.find(ds => ds.label === prefix_label);
                     if (boardDataset) {
                         if (newData.length) {
-                            boardDataset.data[0]['temp'] = newData[newData.length - 1][1];
+                            let temp = newData[newData.length - 1][1];
+                            boardDataset.data[0]['temp'] = temp;
+                            boardDataset.backgroundColor = colorForTemp(temp);
                             boardDataset.hidden = false;
                         } else {
                             boardDataset.data[0]['temp'] = null;
@@ -133,18 +144,13 @@
                 throw response;
             }
         })
-        .then(function (data) {
-            let chartData = [];
-            for (board in data) {
-                let boardData = getChartData(board, data[board]);
-                chartData.push(...boardData.datasets);
-            }
+        .then(function (payloadData) {
             const chart = new Chart(ctx, {
                 type: 'line',
                 responsive: true,
                 maintainAspectRatio: false,
                 data: {
-                    datasets: chartData,
+                    datasets: getChartData(payloadData),
                 },
                 options: {
                     scales: {

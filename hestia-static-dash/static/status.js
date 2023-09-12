@@ -24,57 +24,84 @@
             heaterDuty[board].value = data["heater_duty"] ?? "n/a";
             targetTemp[board].value = data["target_temp"] ?? "n/a";
             targetSensor[board].value = data["target_sensor"] ?? "n/a";
-            
+
             window.boardChart ??= {};
             if (!window.boardChart[board] && data['sensor_info']) {
-                window.boardChart[board] = newBoardChart(board, boardChartElement[board], data['sensor_info']);
+                window.boardChart[board] = newBoardChart(
+                    board, boardChartElement[board], data['sensor_info']);
             }
         });
     }
 
     function newBoardChart(board, ctx, data) {
         let mounted = 0;
+        let datasets = Object.keys(data)
+            .filter(id => !/^Circuit/.test(data[id]['label'])) // exclude non-temp data
+            .map(id => {
+                let x = Math.abs(data[id]['pos_x']);
+                let y = Math.abs(data[id]['pos_y']);
+                let isMounted = (data[id]['label'] === "Mounted");
+                if (isMounted) {
+                    mounted += 1;
+                    x = 96;
+                    y = 90 - mounted * 10;
+                }
+                return {
+                    label: `${board}/${id}`,
+                    data: [{ x: x, y: y, temp: null }],
+                    unit: data[id]['unit'],
+                    borderWidth: -20,  // get rid of the space left by the axes
+                    backgroundColor: 'hsla(0, 0%, 100%, 0.2)',
+                    pointRadius: isMounted ? 8.0 : 16.0,
+                    hoverPointRadius: isMounted ? 12.0 : 20.0,
+                };
+            });
+
+        const topImage = new Image();
+        topImage.src = '/static/hestia-board-top.png';
+        const bottomImage = new Image();
+        bottomImage.src = '/static/hestia-board-bottom-flipped.png';
+
+        const plugin = {
+            id: 'boardBackground',
+            beforeDraw: (chart) => {
+                let image = chart.options.flipped ? bottomImage : topImage;
+                if (image.complete) {
+                    const ctx = chart.ctx;
+                    const { top, left, bottom, right } = chart.chartArea;
+                    ctx.drawImage(image, left, top, left + (right - left) * 0.8, bottom);
+                } else {
+                    image.onload = () => chart.draw();
+                }
+            }
+        };
+
         return new Chart(ctx, {
             type: 'scatter',
             data: {
-                datasets: Object.keys(data).map(id => {
-                    let x = Math.abs(data[id]['pos_x']);
-                    let y = Math.abs(data[id]['pos_y']);
-                    if (x === 0.0 && y === 0.0) {
-                        mounted += 1;
-                        x = 96;
-                        y = 92 - mounted * 5;
-                    }
-                    let colors = window.colorsForSensor(id);
-                    return {
-                        label: `${board}/${id}`,
-                        data: [{x: x, y: y, temp: null}],
-                        unit: data[id]['unit'],
-                        borderWidth: 1,
-                        borderColor: colors.borderColor,
-                        backgroundColor: colors.backgroundColor,
-                    };
-                })
+                datasets: datasets,
             },
+            plugins: [plugin],
             options: {
                 aspectRatio: 1.2,
+                flipped: false,
                 scales: {
                     // scales are adjusted so plot aligns with background image
                     x: {
-                        min: 3.0,
-                        max: 113.0, // x > 92 used for mounted sensors
+                        min: 0.0,
+                        max: 112.0, // x > 92 used for mounted sensors
                         display: false,
                     },
                     y: {
-                        min: 3.0,
-                        max: 92.0,
+                        min: -2.0,
+                        max: 96.0,
                         display: false,
                     }
                 },
                 elements: {
                     point: {
-                        radius: 8.0,
-                        hoverRadius: 12.0,
+                        radius: 16.0,
+                        hoverRadius: 20.0,
                     },
                 },
                 plugins: {
@@ -161,13 +188,18 @@
         });
     });
 
-    // flip board link
-    document.getElementById("board-flip")?.addEventListener('click', (ev) => {
-        document.querySelectorAll(".board-chart-container").forEach(e => {
-            e.classList.toggle("flip");
+    // flip board links
+    document.querySelectorAll(".board-flip").forEach(el => {
+        let board = el.getAttribute("data-board");
+        el.addEventListener('click', (ev) => {
+            if (board in window.boardChart) {
+                let options = window.boardChart[board].options;
+                options.flipped = !options.flipped;
+                window.boardChart[board].update('none');
+            }
+            ev.preventDefault();
+            ev.stopPropagation();
         });
-        ev.preventDefault();
-        ev.stopPropagation();
     });
 
     if (host) {

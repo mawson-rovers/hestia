@@ -26,11 +26,21 @@
             .then(data => updateLogFiles(data));
     }
 
+    const createLogFileElement = (logFile) =>
+        createElementFromHtml(`<li><a href="${logFile.url}">${logFile.name}</a></li>`);
+    const detailsTemplate = `<details class="text-sm my-2">
+        <summary>Older files</summary>
+        <ul class="list-disc pl-4 text-sm"></ul>
+        </details>`;
+
     function updateLogFiles(data) {
         if (!arraysEqual(data, lastLogs)) {
-            logFileList.replaceChildren(...data.map(logFile => {
-                return createElementFromHtml(`<li><a href="${logFile.url}">${logFile.name}</a></li>`);
-            }));
+            logFileList.replaceChildren(...data.filter((_, i) => i <= 10)
+                .map(createLogFileElement));
+            if (data.length > 10) {
+                let details = logFileList.parentElement.appendChild(createElementFromHtml(detailsTemplate));
+                details.lastElementChild.append(...data.filter((_, i) => i > 10).map(createLogFileElement));
+            }
         }
         lastLogs = data;
     }
