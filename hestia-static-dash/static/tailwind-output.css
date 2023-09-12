@@ -678,10 +678,6 @@ button:hover {
   grid-column: span 2 / span 2;
 }
 
-.col-span-3 {
-  grid-column: span 3 / span 3;
-}
-
 .mx-auto {
   margin-left: auto;
   margin-right: auto;
@@ -695,10 +691,6 @@ button:hover {
 .my-4 {
   margin-top: 1rem;
   margin-bottom: 1rem;
-}
-
-.mr-1 {
-  margin-right: 0.25rem;
 }
 
 .flex {
@@ -717,28 +709,12 @@ button:hover {
   height: 400px;
 }
 
-.w-\[200px\] {
-  width: 200px;
-}
-
-.w-\[240px\] {
-  width: 240px;
+.w-16 {
+  width: 4rem;
 }
 
 .w-\[800px\] {
   width: 800px;
-}
-
-.w-\[120px\] {
-  width: 120px;
-}
-
-.w-28 {
-  width: 7rem;
-}
-
-.w-16 {
-  width: 4rem;
 }
 
 .max-w-screen-lg {
@@ -761,10 +737,6 @@ button:hover {
   flex-wrap: wrap;
 }
 
-.items-start {
-  align-items: flex-start;
-}
-
 .items-end {
   align-items: flex-end;
 }
@@ -777,12 +749,12 @@ button:hover {
   justify-content: space-between;
 }
 
-.gap-4 {
-  gap: 1rem;
-}
-
 .gap-2 {
   gap: 0.5rem;
+}
+
+.gap-4 {
+  gap: 1rem;
 }
 
 .gap-x-4 {
@@ -841,24 +813,19 @@ button:hover {
   padding-left: 1rem;
 }
 
-.text-2xl {
-  font-size: 1.5rem;
-  line-height: 2rem;
-}
-
 .text-sm {
   font-size: 0.875rem;
   line-height: 1.25rem;
 }
 
-.text-xs {
-  font-size: 0.75rem;
-  line-height: 1rem;
-}
-
 .text-xl {
   font-size: 1.25rem;
   line-height: 1.75rem;
+}
+
+.text-xs {
+  font-size: 0.75rem;
+  line-height: 1rem;
 }
 
 .leading-6 {
@@ -899,12 +866,6 @@ button:hover {
 
 .hover\:opacity-100:hover {
   opacity: 1;
-}
-
-@media (min-width: 640px) {
-  .sm\:w-16 {
-    width: 4rem;
-  }
 }
 
 @media (min-width: 768px) {
