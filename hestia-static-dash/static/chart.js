@@ -31,6 +31,8 @@
         backgroundColor: 'hsla(347, 100%, 69%, 0.5)',
     };
     const savedColors = {};
+    Chart.defaults.color = 'rgba(255, 255, 255, 0.9)';
+    Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.2)';
 
     window.colorsForSensor = function (sensor_id) {
         if (sensor_id === 'heater_power') {
@@ -155,12 +157,15 @@
                                     minute: 'HH:mm:ss',
                                 },
                             },
+                            grid: {
+                                display: false,
+                            },
                             min: new Date(new Date().getTime() - minsToMillis(durationMins)),
                             max: new Date(),
                         },
                         y1: {
                             beginAtZero: true,
-                            suggestedMax: 80.0,
+                            suggestedMax: 100.0,
                             title: {
                                 display: true,
                                 text: 'Temperature (°C)',
@@ -188,8 +193,8 @@
                         legend: {
                             position: "right",
                             width: "200",
-                        }
-                    }
+                        },
+                    },
                 },
             });
 
