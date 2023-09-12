@@ -56,8 +56,8 @@
     Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.2)';
 
     function colorForTemp(temp) {
-        let constrained = Math.max(Math.min(temp, 100), 0);
-        let hue = 224 - Math.round(constrained / 100 * 224)
+        let constrained = Math.max(Math.min(temp, 80), 0);
+        let hue = 224 - Math.round(constrained / 80 * 224);
         return `hsla(${hue}, 100%, 50%, 0.4)`;
     }
 
