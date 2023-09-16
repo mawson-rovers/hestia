@@ -85,6 +85,7 @@ inline unsigned int update_pid(unsigned int value) {
     return (unsigned int) out; // max and min ensure conversion is safe: 0 < out < 2^15
 }
 
+unsigned int startup_led_toggles = 6;
 unsigned int ta_count = 0;
 
 // Timer A interrupt handler
@@ -112,6 +113,12 @@ void __attribute__ ((interrupt(TIMERA0_VECTOR))) Timer_A(void)
         } else {
             CCR2 = 0;
             P5OUT &= ~(LED_YELLOW); // turn off PID indicator LED
+        }
+
+        // flash startup indicator 3 times
+        if (startup_led_toggles != 0) {
+            P5OUT ^= LED_GREEN;
+            startup_led_toggles--;
         }
     }
 }
