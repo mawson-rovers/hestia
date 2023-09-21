@@ -30,8 +30,8 @@ unsigned int counter = 0;
 unsigned int max_temp = TEMP_120C; // Set to zero to disable max_temp check
 
 // PID control variables
-#define K_P         7       // PID proportional gain
-#define K_I_SHIFT   7       // PID integral shift right bits
+#define K_P         3       // PID proportional gain
+#define K_I_SHIFT   3       // PID integral shift right bits
 #define MAX_OUT     1000
 #define MIN_OUT     0
 
@@ -44,8 +44,7 @@ volatile uint32_t ema_filter_state[ADC_SENSOR_COUNT] = {
         ema_start, ema_start, ema_start, ema_start,
 };
 
-int error_sum = 0;
-
+int32_t error_sum = 0;
 
 int main(void) {
     WDTCTL = WDTPW | WDTHOLD;   // Stop watchdog timer
@@ -78,8 +77,10 @@ void initTimer() {
 
 inline unsigned int update_pid(unsigned int value) {
     int error = (int) set_point - (int) value; // both inputs must be positive and <=2^12 (ADC values)
-    error_sum += error;
-    int out = K_P * error + (error_sum >> K_I_SHIFT); // MSP430 ABI maintains sign in arithmetic right-shift
+    error_sum += (error >> K_I_SHIFT);
+    if (error_sum > MAX_OUT) error_sum = MAX_OUT;
+    if (error_sum < MIN_OUT) error_sum = MIN_OUT;
+    int out = K_P * error + ((int16_t) error_sum); // MSP430 ABI maintains sign in arithmetic right-shift
     if (out > MAX_OUT) out = MAX_OUT;
     else if (out < MIN_OUT) out = MIN_OUT;
     return (unsigned int) out; // max and min ensure conversion is safe: 0 < out < 2^15
