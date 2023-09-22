@@ -310,7 +310,7 @@ pub fn calc_heater_current(version: BoardVersion, v_low: f32, v_curr: f32) -> f3
         BoardVersion::V1_1 => 0.0,
         BoardVersion::V2_0 => v_curr,
         _ => if v_curr < 3.0 && v_low < 3.0 {
-            (v_low - v_curr) / CURRENT_SENSE_R_OHMS
+            (v_low - v_curr).max(0.0) / CURRENT_SENSE_R_OHMS
         } else {
             0.0
         },
