@@ -327,18 +327,10 @@ void __attribute__ ((interrupt(ADC12_VECTOR))) ADC12_ISR(void)
     adc_readings[2] = ADC12MEM2;
     adc_readings[3] = ADC12MEM3;
     adc_readings[4] = ADC12MEM4;
-    if (heater_mode == HEATER_MODE_PWM && !is_pwm_heating_on()) {
-        // don't capture voltage & current readings while heater is disabled in PWM mode
-
-        ADC12IFG = 0x00; // manually reset the ADC12 interrupt vector since we aren't reading all the values
-    } else {
-        // TODO average voltage readings in PID mode
-        adc_readings[5] = ADC12MEM5;
-        adc_readings[6] = ADC12MEM6;
-        adc_readings[7] = ADC12MEM7;
-
-        // IFG is cleared by reads
-    }
+    adc_readings[5] = ADC12MEM5;
+    adc_readings[6] = ADC12MEM6;
+    adc_readings[7] = ADC12MEM7;
+    // IFG is cleared by reads
 
     for (int i = 0; i < ADC_SENSOR_COUNT; i++) {
         if (apply_lpf[i]) {
