@@ -12,6 +12,12 @@ const USR_LIB: &'static str = "arm-buildroot-linux-gnueabihf/sysroot/usr/lib";
 const TEST_FILE: &str = "libsqlite3.so";
 
 fn main() {
+    let arch = env::var("CARGO_CFG_TARGET_ARCH").unwrap();
+    if arch != "arm" {
+        // do nothing if not cross-compiling
+        return;
+    }
+
     let toolchain_path = match env::var(TOOLCHAIN_ENV_VAR) {
         Ok(v) => v,
         Err(e) => panic!(

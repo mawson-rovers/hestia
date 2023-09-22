@@ -1,14 +1,17 @@
 use std::fmt;
 use std::iter::zip;
+
 use linked_hash_map::LinkedHashMap;
 use log::error;
 use serde::{Deserialize, Serialize, Serializer};
 use serde::ser::SerializeMap;
-use uts_ws1::board::{Board, BoardData, BoardDataProvider, BoardId, HEATER_CURR, HEATER_V_HIGH, HEATER_V_LOW};
-use uts_ws1::heater::{HeaterMode, TargetSensor};
-use uts_ws1::reading::SensorReading;
+
 use uts_ws1::{board, ReadResult};
+use uts_ws1::board::{Board, BoardData, BoardDataProvider, BoardId};
+use uts_ws1::board::{V_CURR_AVG, V_HIGH_AVG, V_LOW_AVG};
+use uts_ws1::heater::{HeaterMode, TargetSensor};
 use uts_ws1::payload::{Config, Payload};
+use uts_ws1::reading::SensorReading;
 use uts_ws1::sensors::{Sensor, SensorId, SensorInterface};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -114,9 +117,9 @@ fn get_sensor_value(sensor_id: &Option<SensorId>, sensor_values: &LinkedHashMap<
 }
 
 fn calculate_power(board: &Board, sensor_values: &LinkedHashMap<SensorId, Option<f32>>) -> Option<f32> {
-    let v_high: f32 = sensor_values.get(HEATER_V_HIGH.id)?.clone()?;
-    let v_low: f32 = sensor_values.get(HEATER_V_LOW.id)?.clone()?;
-    let v_curr: f32 = sensor_values.get(HEATER_CURR.id)?.clone()?;
+    let v_high: f32 = sensor_values.get(V_HIGH_AVG.id)?.clone()?;
+    let v_low: f32 = sensor_values.get(V_LOW_AVG.id)?.clone()?;
+    let v_curr: f32 = sensor_values.get(V_CURR_AVG.id)?.clone()?;
     Some(board.calc_heater_power(v_high, v_low, v_curr))
 }
 

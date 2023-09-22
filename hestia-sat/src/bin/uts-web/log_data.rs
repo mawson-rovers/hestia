@@ -112,9 +112,9 @@ fn process_line(index: usize, line: String, headers: &Vec<Option<&'static str>>,
                            TimeTempData::new(&timestamp, value));
             }
 
-            if sensor_id == "heater_v_high" { v_high = value.parse().ok() }
-            if sensor_id == "heater_v_low" { v_low = value.parse().ok() }
-            if sensor_id == "heater_curr" { v_curr = value.parse().ok() }
+            if sensor_id == "v_high_avg" { v_high = value.parse().ok() }
+            if sensor_id == "v_low_avg" { v_low = value.parse().ok() }
+            if sensor_id == "v_curr_avg" { v_curr = value.parse().ok() }
             if sensor_id == "heater_mode" { mode = Some(value) }
             if sensor_id == "heater_duty" { duty = value.parse().ok() }
         }
@@ -209,7 +209,7 @@ mod tests {
     use std::path::PathBuf;
     use std::time::Instant;
 
-    use log::{debug, info};
+    use log::info;
 
     use crate::data::SystemTimeTempData;
     use crate::log_data::{parse_headers, process_file, process_line, sensors_to_include};
@@ -225,28 +225,27 @@ mod tests {
         let last = Instant::now();
 
         let result = process_file(reader);
-        info!("process_file took {} µs for {} records",
-            Instant::now().duration_since(last).as_micros(),
-            result.0.front().unwrap().1.0.front().unwrap().1.len());
-        // 21 Aug, 15:03 process_file took 501057 µs for 1500 records
-        // 21 Aug, 17:11 process_file took 302426 µs for 1500 records
-        // 21 Aug, 18:01 process_file took 231437 µs for 1500 records
-        // 23 Aug, 08:29 process_file took 102304 µs for 1500 records
-        // 23 Aug, 16:38 process_file took 93899 µs for 1500 records
+        let took_micros = Instant::now().duration_since(last).as_micros();
+        assert!(took_micros < 150_000, "processing took {} µs, should be less than 150 ms", took_micros);
         let last = Instant::now();
 
         let json = serde_json::to_string_pretty(&result).unwrap();
-        info!("json took {} µs", Instant::now().duration_since(last).as_micros());
-        // 21 Aug, 15:03 json took 353179 µs
-        // 21 Aug, 18:01 json took 226329 µs
-        // 23 Aug, 16:38 json took 79663 µs
-        let last = Instant::now();
+        let took_micros = Instant::now().duration_since(last).as_micros();
+        assert!(took_micros < 100_000, "json took {} µs, should be less than 100 ms", took_micros);
 
-        assert_eq!(&json[0..512], "{}", "");
-        info!("assert_eq took {} µs", Instant::now().duration_since(last).as_micros());
+        let expected_json = r#"{
+  "bottom": {
+    "TH1": [
+      [
+        "2023-08-16 14:13:37.264318",
+        "1962"
+      ],
+      [
+        "2023"#;
+        assert_eq!(&json[0..120], expected_json);
     }
 
-    // #[test]
+    #[test]
     fn test_process_line() {
         let last = Instant::now();
         let _ = env_logger::try_init();
@@ -257,18 +256,30 @@ mod tests {
             25.01,24.64,25.34,25.10,24.52,,,,,,,5.03,5.03,0.01,OFF,0.86,TH1,255");
         let mut result = SystemTimeTempData::new();
 
-        debug!("test setup took {} µs", Instant::now().duration_since(last).as_micros());
+        info!("test setup took {} µs", Instant::now().duration_since(last).as_micros());
         let last = Instant::now();
 
         process_line(25, line, &headers, &mut result);
-        debug!("processing line took {} µs", Instant::now().duration_since(last).as_micros());
+        info!("processing line took {} µs", Instant::now().duration_since(last).as_micros());
+        let took_micros = Instant::now().duration_since(last).as_micros();
+        assert!(took_micros < 5000, "processing took {} µs, should be less than 5000 µs", took_micros);
         let last = Instant::now();
 
         let json = serde_json::to_string_pretty(&result).unwrap();
-        debug!("json took {} µs", Instant::now().duration_since(last).as_micros());
-        let last = Instant::now();
+        info!("json took {} µs", Instant::now().duration_since(last).as_micros());
+        let took_micros = Instant::now().duration_since(last).as_micros();
+        assert!(took_micros < 500, "json took {} µs, should be less than 500 µs", took_micros);
 
-        assert_eq!(json, "{}");
-        debug!("assert_eq took {} µs", Instant::now().duration_since(last).as_micros());
+        assert_eq!(&json[0..140], r#"{
+  "bottom": {
+    "TH1": [
+      [
+        "2023-08-17 14:17:15.406834",
+        "24.57"
+      ]
+    ],
+    "TH2": [
+      [
+        "2023"#);
     }
 }

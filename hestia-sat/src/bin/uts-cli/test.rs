@@ -21,7 +21,7 @@ struct TestData<'a> {
     heater_duty: u16,
     heater_voltage: f32,
     heater_curr: f32,
-    sensor_readings: [ReadResult<SensorReading<f32>>; 17],
+    sensor_readings: [ReadResult<SensorReading<f32>>; 20],
 }
 
 impl TestData<'_> {
@@ -170,12 +170,12 @@ fn read_board(board: &Board) -> TestData {
     let heater_mode = data.heater_mode.unwrap().display_value;
     let target_sensor = data.target_sensor.unwrap().display_value.id;
     let heater_duty = data.heater_duty.unwrap().display_value;
-    let [sensor_readings @ .., heater_v_high, heater_v_low, heater_v_curr] = data.sensors;
-    let heater_v_high = heater_v_high.unwrap().display_value;
-    let heater_v_low = heater_v_low.unwrap().display_value;
-    let heater_v_curr = heater_v_curr.unwrap().display_value;
-    let heater_voltage = board.calc_heater_voltage(heater_v_high, heater_v_low);
-    let heater_curr = board.calc_heater_current(heater_v_low, heater_v_curr);
+    let [sensor_readings @ .., v_high_avg, v_low_avg, v_curr_avg] = data.sensors;
+    let v_high_avg = v_high_avg.unwrap().display_value;
+    let v_low_avg = v_low_avg.unwrap().display_value;
+    let v_curr_avg = v_curr_avg.unwrap().display_value;
+    let heater_voltage = board.calc_heater_voltage(v_high_avg, v_low_avg);
+    let heater_curr = board.calc_heater_current(v_low_avg, v_curr_avg);
     TestData {
         board,
         target_sensor_temp,

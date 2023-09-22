@@ -189,11 +189,11 @@ fn show_status(board: Board) {
         let heater_mode = data.heater_mode
             .map(|m| m.to_string())
             .unwrap_or(String::from("#err"));
-        let [.., heater_v_high, heater_v_low, heater_v_curr] = data.sensors;
-        let heater_v_high = heater_v_high.unwrap().display_value;
-        let heater_v_low = heater_v_low.unwrap().display_value;
-        let heater_v_curr = heater_v_curr.unwrap().display_value;
-        let heater_curr = board.calc_heater_current(heater_v_low, heater_v_curr);
+        let [.., v_high, v_low, v_curr] = data.sensors;
+        let v_high = v_high.unwrap().display_value;
+        let v_low = v_low.unwrap().display_value;
+        let v_curr = v_curr.unwrap().display_value;
+        let heater_curr = board.calc_heater_current(v_low, v_curr);
         println!("board:{} {} temp:{} heater:{} target:{} max:{} sensor:{} duty:{} V:{:0.2}/{:0.2} I:{:0.2} {}",
                  board.bus,
                  board.version,
@@ -203,8 +203,8 @@ fn show_status(board: Board) {
                  format_reading(data.max_temp),
                  board.get_target_sensor().map(|s| s.id).unwrap_or("#err"),
                  board.read_heater_duty().unwrap(),
-                 heater_v_high,
-                 heater_v_low,
+                 v_high,
+                 v_low,
                  heater_curr,
                  data.flags.unwrap(),
         );

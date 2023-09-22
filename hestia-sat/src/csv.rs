@@ -128,7 +128,7 @@ impl<T> From<SensorReading<T>> for CsvData
     }
 }
 
-pub const CSV_FIELD_COUNT: usize = 28;
+pub const CSV_FIELD_COUNT: usize = 31;
 
 pub const CSV_HEADERS: [&'static str; CSV_FIELD_COUNT] = [
     "UTC",
@@ -150,9 +150,12 @@ pub const CSV_HEADERS: [&'static str; CSV_FIELD_COUNT] = [
     "J14",
     "J15",
     "J16",
-    "heater_v_high",
-    "heater_v_low",
-    "heater_curr",
+    "v_high",
+    "v_low",
+    "v_curr",
+    "v_high_avg",
+    "v_low_avg",
+    "v_curr_avg",
     "heater_mode",
     "target_temp",
     "target_sensor",

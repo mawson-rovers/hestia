@@ -152,11 +152,15 @@ const J14: Sensor = Sensor::mounted("J14", SensorInterface::ADS7828, 0x05);
 const J15: Sensor = Sensor::mounted("J15", SensorInterface::ADS7828, 0x06);
 const J16: Sensor = Sensor::mounted("J16", SensorInterface::ADS7828, 0x07);
 
-pub const HEATER_V_HIGH: Sensor = Sensor::circuit("heater_v_high", SensorInterface::MSP430Voltage, 0x08);
-pub const HEATER_V_LOW: Sensor = Sensor::circuit("heater_v_low", SensorInterface::MSP430Voltage, 0x06);
-pub const HEATER_CURR: Sensor = Sensor::circuit("heater_curr", SensorInterface::MSP430Current, 0x07);
+pub const V_HIGH: Sensor = Sensor::circuit("v_high", SensorInterface::MSP430Voltage, 0x08);
+pub const V_LOW: Sensor = Sensor::circuit("v_low", SensorInterface::MSP430Voltage, 0x06);
+pub const V_CURR: Sensor = Sensor::circuit("v_curr", SensorInterface::MSP430Current, 0x07);
 
-pub const SENSOR_COUNT: usize = 20;
+pub const V_HIGH_AVG: Sensor = Sensor::circuit("v_high_avg", SensorInterface::MSP430Voltage, 0x38);
+pub const V_LOW_AVG: Sensor = Sensor::circuit("v_low_avg", SensorInterface::MSP430Voltage, 0x36);
+pub const V_CURR_AVG: Sensor = Sensor::circuit("v_curr_avg", SensorInterface::MSP430Current, 0x37);
+
+pub const SENSOR_COUNT: usize = 23;
 pub static ALL_SENSORS: &[Sensor; SENSOR_COUNT] = &[
     TH1,
     TH2,
@@ -175,9 +179,12 @@ pub static ALL_SENSORS: &[Sensor; SENSOR_COUNT] = &[
     J14,
     J15,
     J16,
-    HEATER_V_HIGH,
-    HEATER_V_LOW,
-    HEATER_CURR,
+    V_HIGH,
+    V_LOW,
+    V_CURR,
+    V_HIGH_AVG,
+    V_LOW_AVG,
+    V_CURR_AVG,
 ];
 
 pub const CURRENT_SENSE_R_OHMS: f32 = 0.05;
@@ -273,37 +280,37 @@ impl Board {
             .collect::<Vec<ReadResult<SensorReading<f32>>>>()
     }
 
-    pub fn calc_heater_power(&self, heater_v_high: f32, heater_v_low: f32, heater_v_curr: f32) -> f32 {
-        calc_heater_power(self.version, heater_v_high, heater_v_low, heater_v_curr)
+    pub fn calc_heater_power(&self, v_high: f32, v_low: f32, v_curr: f32) -> f32 {
+        calc_heater_power(self.version, v_high, v_low, v_curr)
     }
     
-    pub fn calc_heater_voltage(&self, heater_v_high: f32, heater_v_low: f32) -> f32 {
-        calc_heater_voltage(self.version, heater_v_high, heater_v_low)
+    pub fn calc_heater_voltage(&self, v_high: f32, v_low: f32) -> f32 {
+        calc_heater_voltage(self.version, v_high, v_low)
     }
 
-    pub fn calc_heater_current(&self, heater_v_low: f32, heater_v_curr: f32) -> f32 {
-        calc_heater_current(self.version, heater_v_low, heater_v_curr)
+    pub fn calc_heater_current(&self, v_low: f32, v_curr: f32) -> f32 {
+        calc_heater_current(self.version, v_low, v_curr)
     }
 }
 
-pub fn calc_heater_power(version: BoardVersion, heater_v_high: f32, heater_v_low: f32, heater_v_curr: f32) -> f32 {
-    calc_heater_voltage(version, heater_v_high, heater_v_low) *
-        calc_heater_current(version, heater_v_low, heater_v_curr)
+pub fn calc_heater_power(version: BoardVersion, v_high: f32, v_low: f32, v_curr: f32) -> f32 {
+    calc_heater_voltage(version, v_high, v_low) *
+        calc_heater_current(version, v_low, v_curr)
 }
 
-pub fn calc_heater_voltage(version: BoardVersion, heater_v_high: f32, heater_v_low: f32) -> f32 {
+pub fn calc_heater_voltage(version: BoardVersion, v_high: f32, v_low: f32) -> f32 {
     match version {
         BoardVersion::V1_1 => 0.0,
-        _ => (heater_v_high - heater_v_low).max(0.0),
+        _ => (v_high - v_low).max(0.0),
     }
 }
 
-pub fn calc_heater_current(version: BoardVersion, heater_v_low: f32, heater_v_curr: f32) -> f32 {
+pub fn calc_heater_current(version: BoardVersion, v_low: f32, v_curr: f32) -> f32 {
     match version {
         BoardVersion::V1_1 => 0.0,
-        BoardVersion::V2_0 => heater_v_curr,
-        _ => if heater_v_curr < 3.0 && heater_v_low < 3.0 {
-            (heater_v_low - heater_v_curr) / CURRENT_SENSE_R_OHMS
+        BoardVersion::V2_0 => v_curr,
+        _ => if v_curr < 3.0 && v_low < 3.0 {
+            (v_low - v_curr) / CURRENT_SENSE_R_OHMS
         } else {
             0.0
         },
@@ -339,7 +346,7 @@ impl BoardDataProvider for Board {
             return None;
         }
 
-        let sensors: [_; 20] = sensors.try_into().expect("invalid sensor reading count");
+        let sensors: [_; SENSOR_COUNT] = sensors.try_into().expect("invalid sensor reading count");
         return Some(BoardData {
             sensors,
             heater_mode: self.heater.read_mode(),
