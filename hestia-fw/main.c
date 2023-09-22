@@ -44,6 +44,10 @@ volatile uint32_t ema_filter_state[ADC_SENSOR_COUNT] = {
         ema_start, ema_start, ema_start, ema_start,
 };
 
+// low-pass filter threshold for heater measurements
+#define LPF_MAX 2048
+const uint8_t apply_lpf[ADC_SENSOR_COUNT] = {0, 0, 0, 0, 0, 1, 1, 0};
+
 int32_t error_sum = 0;
 
 int main(void) {
@@ -336,8 +340,13 @@ void __attribute__ ((interrupt(ADC12_VECTOR))) ADC12_ISR(void)
         // IFG is cleared by reads
     }
 
-    for (int i=0; i<ADC_SENSOR_COUNT; i++) {
-        adc_avg[i] = update_ema_filter(i, adc_readings[i]);
+    for (int i = 0; i < ADC_SENSOR_COUNT; i++) {
+        if (apply_lpf[i]) {
+            adc_avg[i] = update_ema_filter(i,
+                                           adc_readings[i] < LPF_MAX ? adc_readings[i] : 0);
+        } else {
+            adc_avg[i] = update_ema_filter(i, adc_readings[i]);
+        }
     }
 
     __bic_SR_register_on_exit(CPUOFF);      // Clear CPUOFF bit from 0(SR)
