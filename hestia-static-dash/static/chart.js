@@ -14,7 +14,7 @@
             color: "hsl(210, 100%, 50%)",
         },
         {
-            label: "top/U4",
+            label: "top/U7",
             color: "hsl(225, 67%, 50%)",
         },
         {
@@ -23,7 +23,7 @@
         },
         {
             label: "top/heater_power",
-            color: "hsla(347, 100%, 54%, 0.5)",
+            color: "hsla(347, 100%, 54%, 0.3)",
             borderColor: "hsl(347, 100%, 54%)",
             fill: true,
             yAxisID: "y2",
@@ -37,7 +37,7 @@
             color: "hsl(110, 100%, 50%)",
         },
         {
-            label: "bottom/U4",
+            label: "bottom/U7",
             color: "hsl(125, 67%, 40%)",
         },
         {
@@ -46,7 +46,7 @@
         },
         {
             label: "bottom/heater_power",
-            color: "hsla(36, 100%, 54%, 0.5)",
+            color: "hsla(36, 100%, 54%, 0.3)",
             borderColor: "hsl(36, 100%, 54%)",
             fill: true,
             yAxisID: "y2",
