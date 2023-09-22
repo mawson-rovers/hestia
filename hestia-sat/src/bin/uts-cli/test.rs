@@ -5,7 +5,7 @@ use std::time::Duration;
 
 use colored::{ColoredString, Colorize};
 
-use uts_ws1::board::{Board, BoardDataProvider, BoardVersion};
+use uts_ws1::board::{Board, BoardDataProvider};
 use uts_ws1::heater::HeaterMode;
 use uts_ws1::payload::Payload;
 use uts_ws1::reading::SensorReading;
@@ -170,17 +170,12 @@ fn read_board(board: &Board) -> TestData {
     let heater_mode = data.heater_mode.unwrap().display_value;
     let target_sensor = data.target_sensor.unwrap().display_value.id;
     let heater_duty = data.heater_duty.unwrap().display_value;
-    let [sensor_readings @ .., heater_v_high, heater_v_low, heater_curr] = data.sensors;
+    let [sensor_readings @ .., heater_v_high, heater_v_low, heater_v_curr] = data.sensors;
     let heater_v_high = heater_v_high.unwrap().display_value;
     let heater_v_low = heater_v_low.unwrap().display_value;
-    let heater_curr = heater_curr.unwrap().display_value;
-    let (heater_voltage, heater_curr) = match board.version {
-        BoardVersion::V1_1 => (0.0, 0.0),
-        BoardVersion::V2_0 => (heater_v_high - heater_v_low, heater_curr),
-        BoardVersion::V2_2 => (
-            heater_v_high - heater_v_low,
-            (heater_v_low - heater_curr) / 0.05),
-    };
+    let heater_v_curr = heater_v_curr.unwrap().display_value;
+    let heater_voltage = board.calc_heater_voltage(heater_v_high, heater_v_low);
+    let heater_curr = board.calc_heater_current(heater_v_low, heater_v_curr);
     TestData {
         board,
         target_sensor_temp,

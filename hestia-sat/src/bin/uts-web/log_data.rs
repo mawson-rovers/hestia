@@ -11,12 +11,11 @@ use log::{debug, warn};
 use serde::Serialize;
 
 use uts_ws1::board;
-use uts_ws1::board::BoardId;
+use uts_ws1::board::{BoardId, BoardVersion};
 use uts_ws1::csv::TIMESTAMP_FORMAT_ITEMS;
 use uts_ws1::payload::Config;
 
 use crate::data::{SystemTimeTempData, TimeTempData};
-use crate::status;
 
 pub fn read_logs(config: &Config) -> SystemTimeTempData {
     if let Some(reader) = open_last_log_file(config.log_path.as_ref()) {
@@ -102,7 +101,7 @@ fn process_line(index: usize, line: String, headers: &Vec<Option<&'static str>>,
     };
 
     // pull out some additional data for calculated fields
-    let (mut v_high, mut v_low, mut curr) = (None::<f32>, None::<f32>, None::<f32>);
+    let (mut v_high, mut v_low, mut v_curr) = (None::<f32>, None::<f32>, None::<f32>);
     let (mut mode, mut duty) = (None::<&str>, None::<f32>);
 
     for i in 2..headers.len() {
@@ -115,15 +114,15 @@ fn process_line(index: usize, line: String, headers: &Vec<Option<&'static str>>,
 
             if sensor_id == "heater_v_high" { v_high = value.parse().ok() }
             if sensor_id == "heater_v_low" { v_low = value.parse().ok() }
-            if sensor_id == "heater_curr" { curr = value.parse().ok() }
+            if sensor_id == "heater_curr" { v_curr = value.parse().ok() }
             if sensor_id == "heater_mode" { mode = Some(value) }
             if sensor_id == "heater_duty" { duty = value.parse().ok() }
         }
     }
 
     // calculate heater power and add it too
-    if let (Some(v_high), Some(v_low), Some(curr)) = (v_high, v_low, curr) {
-        let power = status::heater_power(v_high, v_low, curr);
+    if let (Some(v_high), Some(v_low), Some(v_curr)) = (v_high, v_low, v_curr) {
+        let power = board::calc_heater_power(BoardVersion::V2_2, v_high, v_low, v_curr);
         result.add(board_id, "heater_power",
                    TimeTempData::new_f32(&timestamp, power));
     }

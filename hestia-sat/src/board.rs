@@ -46,10 +46,10 @@ impl Display for BoardVersion {
 #[repr(u8)]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, Deserialize)]
 pub enum BoardId {
-    #[serde(alias="top", alias="TOP")]
+    #[serde(alias = "top", alias = "TOP")]
     Top = 1,
 
-    #[serde(alias="bottom", alias="BOTTOM")]
+    #[serde(alias = "bottom", alias = "BOTTOM")]
     Bottom = 2,
 }
 
@@ -121,11 +121,11 @@ impl From<&Board> for BoardId {
 }
 
 pub const TH1: Sensor = Sensor::new("TH1", SensorInterface::MSP430, 0x01,
-                                "Centre", -42.0135, 43.18);
+                                    "Centre", -42.0135, 43.18);
 pub const TH2: Sensor = Sensor::new("TH2", SensorInterface::MSP430, 0x02,
-                                "Top-left of heater", -35.7124, 54.61);
+                                    "Top-left of heater", -35.7124, 54.61);
 pub const TH3: Sensor = Sensor::new("TH3", SensorInterface::MSP430, 0x03,
-                                "Bottom-right of heater", -53.88, 33.496);
+                                    "Bottom-right of heater", -53.88, 33.496);
 
 const U4: Sensor = Sensor::new("U4", SensorInterface::MAX31725, 0x48,
                                "Top-left", -15.976, 75.225);
@@ -180,6 +180,8 @@ pub static ALL_SENSORS: &[Sensor; SENSOR_COUNT] = &[
     HEATER_CURR,
 ];
 
+pub const CURRENT_SENSE_R_OHMS: f32 = 0.05;
+
 pub struct Board {
     pub id: BoardId,
     pub version: BoardVersion,
@@ -212,7 +214,7 @@ impl Board {
         let reg = s.addr.into();
         if !version.is_sensor_enabled(&s) {
             debug!("Disabling sensor: {}", s);
-            return Box::new(DisabledSensor::new(name))
+            return Box::new(DisabledSensor::new(name));
         }
         match s.iface {
             SensorInterface::MSP430 => Box::new(Msp430TempSensor::new(bus, name, reg)),
@@ -269,6 +271,42 @@ impl Board {
         self.sensors.iter()
             .map(|s| s.read())
             .collect::<Vec<ReadResult<SensorReading<f32>>>>()
+    }
+
+    pub fn calc_heater_power(&self, heater_v_high: f32, heater_v_low: f32, heater_v_curr: f32) -> f32 {
+        calc_heater_power(self.version, heater_v_high, heater_v_low, heater_v_curr)
+    }
+    
+    pub fn calc_heater_voltage(&self, heater_v_high: f32, heater_v_low: f32) -> f32 {
+        calc_heater_voltage(self.version, heater_v_high, heater_v_low)
+    }
+
+    pub fn calc_heater_current(&self, heater_v_low: f32, heater_v_curr: f32) -> f32 {
+        calc_heater_current(self.version, heater_v_low, heater_v_curr)
+    }
+}
+
+pub fn calc_heater_power(version: BoardVersion, heater_v_high: f32, heater_v_low: f32, heater_v_curr: f32) -> f32 {
+    calc_heater_voltage(version, heater_v_high, heater_v_low) *
+        calc_heater_current(version, heater_v_low, heater_v_curr)
+}
+
+pub fn calc_heater_voltage(version: BoardVersion, heater_v_high: f32, heater_v_low: f32) -> f32 {
+    match version {
+        BoardVersion::V1_1 => 0.0,
+        _ => (heater_v_high - heater_v_low).max(0.0),
+    }
+}
+
+pub fn calc_heater_current(version: BoardVersion, heater_v_low: f32, heater_v_curr: f32) -> f32 {
+    match version {
+        BoardVersion::V1_1 => 0.0,
+        BoardVersion::V2_0 => heater_v_curr,
+        _ => if heater_v_curr < 3.0 && heater_v_low < 3.0 {
+            (heater_v_low - heater_v_curr) / CURRENT_SENSE_R_OHMS
+        } else {
+            0.0
+        },
     }
 }
 
