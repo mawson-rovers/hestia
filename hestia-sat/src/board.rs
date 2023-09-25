@@ -5,7 +5,7 @@ use log::{debug, error};
 use serde::{Deserialize, Serialize, Serializer};
 
 use crate::{ReadResult};
-use crate::csv::CSV_FIELD_COUNT;
+use crate::csv::CSV_RAW_FIELD_COUNT;
 use crate::heater::{Heater, HeaterMode, TargetSensor};
 use crate::device::ads7828::Ads7828Sensor;
 use crate::device::i2c::I2cBus;
@@ -280,16 +280,30 @@ impl Board {
             .collect::<Vec<ReadResult<SensorReading<f32>>>>()
     }
 
-    pub fn calc_heater_power(&self, v_high: f32, v_low: f32, v_curr: f32) -> f32 {
-        calc_heater_power(self.version, v_high, v_low, v_curr)
-    }
-    
-    pub fn calc_heater_voltage(&self, v_high: f32, v_low: f32) -> f32 {
-        calc_heater_voltage(self.version, v_high, v_low)
+    pub fn calc_heater_power(&self,
+                             v_high: ReadResult<SensorReading<f32>>,
+                             v_low: ReadResult<SensorReading<f32>>,
+                             v_curr: ReadResult<SensorReading<f32>>) -> ReadResult<f32> {
+        let v_high = v_high?.display_value;
+        let v_low = v_low?.display_value;
+        let v_curr = v_curr?.display_value;
+        Ok(calc_heater_power(self.version, v_high, v_low, v_curr))
     }
 
-    pub fn calc_heater_current(&self, v_low: f32, v_curr: f32) -> f32 {
-        calc_heater_current(self.version, v_low, v_curr)
+    pub fn calc_heater_voltage(&self,
+                               v_high: ReadResult<SensorReading<f32>>,
+                               v_low: ReadResult<SensorReading<f32>>) -> ReadResult<f32> {
+        let v_high = v_high?.display_value;
+        let v_low = v_low?.display_value;
+        Ok(calc_heater_voltage(self.version, v_high, v_low))
+    }
+
+    pub fn calc_heater_current(&self,
+                               v_low: ReadResult<SensorReading<f32>>,
+                               v_curr: ReadResult<SensorReading<f32>>) -> ReadResult<f32> {
+        let v_low = v_low?.display_value;
+        let v_curr = v_curr?.display_value;
+        Ok(calc_heater_current(self.version, v_low, v_curr))
     }
 }
 
@@ -370,9 +384,9 @@ pub struct BoardData {
 }
 
 impl BoardData {
-    pub fn get_raw_data(self) -> [ReadResult<u16>; CSV_FIELD_COUNT - 2] {
+    pub fn get_raw_data(self) -> [ReadResult<u16>; CSV_RAW_FIELD_COUNT - 2] {
         let readings = &self.sensors;
-        let mut result = Vec::with_capacity(CSV_FIELD_COUNT - 2);
+        let mut result = Vec::with_capacity(CSV_RAW_FIELD_COUNT - 2);
         for reading in readings {
             result.push(match reading {
                 Ok(reading) => Ok(reading.raw_value),

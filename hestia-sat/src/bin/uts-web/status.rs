@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize, Serializer};
 use serde::ser::SerializeMap;
 
 use uts_ws1::{board, ReadResult};
-use uts_ws1::board::{Board, BoardData, BoardDataProvider, BoardId};
+use uts_ws1::board::{Board, BoardData, BoardDataProvider, BoardId, calc_heater_power};
 use uts_ws1::board::{V_CURR_AVG, V_HIGH_AVG, V_LOW_AVG};
 use uts_ws1::heater::{HeaterMode, TargetSensor};
 use uts_ws1::payload::{Config, Payload};
@@ -117,10 +117,10 @@ fn get_sensor_value(sensor_id: &Option<SensorId>, sensor_values: &LinkedHashMap<
 }
 
 fn calculate_power(board: &Board, sensor_values: &LinkedHashMap<SensorId, Option<f32>>) -> Option<f32> {
-    let v_high: f32 = sensor_values.get(V_HIGH_AVG.id)?.clone()?;
-    let v_low: f32 = sensor_values.get(V_LOW_AVG.id)?.clone()?;
-    let v_curr: f32 = sensor_values.get(V_CURR_AVG.id)?.clone()?;
-    Some(board.calc_heater_power(v_high, v_low, v_curr))
+    let v_high = sensor_values.get(V_HIGH_AVG.id)?.clone()?;
+    let v_low = sensor_values.get(V_LOW_AVG.id)?.clone()?;
+    let v_curr = sensor_values.get(V_CURR_AVG.id)?.clone()?;
+    Some(calc_heater_power(board.version, v_high, v_low, v_curr))
 }
 
 fn to_sensor_info<const N: usize>(sensors: &[Sensor; N]) -> LinkedHashMap<String, SensorInfo> {

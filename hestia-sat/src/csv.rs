@@ -128,9 +128,9 @@ impl<T> From<SensorReading<T>> for CsvData
     }
 }
 
-pub const CSV_FIELD_COUNT: usize = 31;
+pub const CSV_RAW_FIELD_COUNT: usize = 31;
 
-pub const CSV_HEADERS: [&'static str; CSV_FIELD_COUNT] = [
+pub const CSV_RAW_HEADERS: [&'static str; CSV_RAW_FIELD_COUNT] = [
     "UTC",
     "board",
     "TH1",
@@ -156,6 +156,39 @@ pub const CSV_HEADERS: [&'static str; CSV_FIELD_COUNT] = [
     "v_high_avg",
     "v_low_avg",
     "v_curr_avg",
+    "heater_mode",
+    "target_temp",
+    "target_sensor",
+    "heater_duty",
+    "max_temp",
+    "flags",
+];
+
+pub const CSV_DISPLAY_FIELD_COUNT: usize = 28;
+
+pub const CSV_DISPLAY_HEADERS: [&'static str; CSV_DISPLAY_FIELD_COUNT] = [
+    "UTC",
+    "board",
+    "TH1",
+    "TH2",
+    "TH3",
+    "U4",
+    "U5",
+    "U6",
+    "U7",
+    "TH4",
+    "TH5",
+    "TH6",
+    "J7",
+    "J8",
+    "J12",
+    "J13",
+    "J14",
+    "J15",
+    "J16",
+    "heater_voltage",
+    "heater_curr",
+    "heater_power",
     "heater_mode",
     "target_temp",
     "target_sensor",
@@ -195,40 +228,72 @@ impl CsvWriter {
         }
     }
 
-    pub fn write_headers(&mut self) {
+    pub fn write_raw_headers(&mut self) {
         if self.write_headers {
-            self.write_line(CSV_HEADERS.map(|s| s.to_string()))
+            self.write_line(CSV_RAW_HEADERS.map(|s| s.to_string()))
+                .expect("Failed to write header to new CSV file");
+        }
+    }
+
+    pub fn write_display_headers(&mut self) {
+        if self.write_headers {
+            self.write_line(CSV_DISPLAY_HEADERS.map(|s| s.to_string()))
                 .expect("Failed to write header to new CSV file");
         }
     }
 
     pub fn write_raw_data(&mut self, timestamp: DateTime<Utc>, board: &Board,
-                          raw_data: &[ReadResult<u16>; CSV_FIELD_COUNT - 2]) {
+                          raw_data: &[ReadResult<u16>; CSV_RAW_FIELD_COUNT - 2]) {
         let mut data: Vec<CsvData> = vec![timestamp.into(), board.into()];
         data.extend(raw_data.iter().map(|d| CsvData::from(d)));
-        let data: [CsvData; CSV_FIELD_COUNT] = data.try_into().expect("Array sizes didn't match");
+        let data: [CsvData; CSV_RAW_FIELD_COUNT] = data.try_into().expect("Array sizes didn't match");
         self.write_data(data).unwrap_or_else(|e| eprint!("Failed to write to log file: {:?}", e));
     }
 
     pub fn write_display_data(&mut self, timestamp: DateTime<Utc>, board: &Board,
                               board_data: &BoardData) {
-        let mut data: Vec<CsvData> = vec![timestamp.into(), board.into()];
-        data.extend(board_data.sensors.iter().map(|d| CsvData::from(d)));
-        data.extend(Some(CsvData::from(&board_data.heater_mode)));
-        data.extend(Some(CsvData::from(&board_data.target_temp)));
-        data.extend(Some(CsvData::from(&board_data.target_sensor)));
-        data.extend(Some(CsvData::from(&board_data.heater_duty)));
-        data.extend(Some(CsvData::from(&board_data.max_temp)));
-        data.extend(Some(CsvData::from(&board_data.flags)));
-        let data: [CsvData; CSV_FIELD_COUNT] = data.try_into().expect("Array sizes didn't match");
+        let [.., v_high_avg, v_low_avg, v_curr_avg] = &board_data.sensors;
+        let heater_voltage = board.calc_heater_voltage(v_high_avg.clone(), v_low_avg.clone());
+        let heater_curr = board.calc_heater_current(v_low_avg.clone(), v_curr_avg.clone());
+        let heater_power = board.calc_heater_power(v_high_avg.clone(), v_low_avg.clone(), v_curr_avg.clone());
+        let data: [CsvData; CSV_DISPLAY_FIELD_COUNT] = [
+            timestamp.into(),
+            board.into(),
+            CsvData::from(&board_data.sensors[0]),
+            CsvData::from(&board_data.sensors[1]),
+            CsvData::from(&board_data.sensors[2]),
+            CsvData::from(&board_data.sensors[3]),
+            CsvData::from(&board_data.sensors[4]),
+            CsvData::from(&board_data.sensors[5]),
+            CsvData::from(&board_data.sensors[6]),
+            CsvData::from(&board_data.sensors[7]),
+            CsvData::from(&board_data.sensors[8]),
+            CsvData::from(&board_data.sensors[9]),
+            CsvData::from(&board_data.sensors[10]),
+            CsvData::from(&board_data.sensors[11]),
+            CsvData::from(&board_data.sensors[12]),
+            CsvData::from(&board_data.sensors[13]),
+            CsvData::from(&board_data.sensors[14]),
+            CsvData::from(&board_data.sensors[15]),
+            CsvData::from(&board_data.sensors[16]),
+            CsvData::from(heater_voltage),
+            CsvData::from(heater_curr),
+            CsvData::from(heater_power),
+            CsvData::from(&board_data.heater_mode),
+            CsvData::from(&board_data.target_temp),
+            CsvData::from(&board_data.target_sensor),
+            CsvData::from(&board_data.heater_duty),
+            CsvData::from(&board_data.max_temp),
+            CsvData::from(&board_data.flags),
+        ];
         self.write_data(data).unwrap_or_else(|e| eprint!("Failed to write to log file: {:?}", e));
     }
 
-    pub fn write_data(&mut self, data: [CsvData; CSV_FIELD_COUNT]) -> io::Result<()> {
+    pub fn write_data<const LEN: usize>(&mut self, data: [CsvData; LEN]) -> io::Result<()> {
         self.write_line(data.map(|d| d.into()))
     }
 
-    fn write_line(&mut self, line: [String; CSV_FIELD_COUNT]) -> io::Result<()>
+    fn write_line<const LEN: usize>(&mut self, line: [String; LEN]) -> io::Result<()>
     {
         let mut write_delim = false;
         let mut writer = (self.open_writer)()?;
