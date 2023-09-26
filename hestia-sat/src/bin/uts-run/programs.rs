@@ -22,7 +22,7 @@ impl Programs {
     pub fn load(config: &Config) -> Self {
         let file = config.program_file.as_ref()
             .expect("Set UTS_PROGRAM_FILE to location of uts-programs.toml");
-        let str = fs::read_to_string(&file).expect("uts-programs.toml not found");
+        let str = fs::read_to_string(file).expect("uts-programs.toml not found");
         toml::from_str(&str).expect("Failed to parse uts-programs.toml")
     }
 

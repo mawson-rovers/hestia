@@ -87,8 +87,8 @@ pub fn run_test(duration: Option<u8>) {
 }
 
 fn nominal_temperature(reading: SensorReading<f32>) -> bool {
-    return reading.display_value > 10.0 &&
-        reading.display_value < 40.0;
+    reading.display_value > 10.0 &&
+        reading.display_value < 40.0
 }
 
 fn color_result(result: bool) -> ColoredString {

@@ -11,7 +11,7 @@ use log::{debug, warn};
 use serde::Serialize;
 
 use uts_ws1::board;
-use uts_ws1::board::{BoardId, BoardVersion};
+use uts_ws1::board::BoardId;
 use uts_ws1::csv::TIMESTAMP_FORMAT_ITEMS;
 use uts_ws1::payload::Config;
 
@@ -62,7 +62,7 @@ fn process_file(reader: BufReader<File>) -> SystemTimeTempData {
 
 fn parse_headers(line: &str, sensor_whitelist: &HashSet<&'static str>) -> Vec<Option<&'static str>> {
     let mut whitelist = sensor_whitelist.clone();
-    line.split(",").map(|s| {
+    line.split(',').map(|s| {
         whitelist.take(s)   // None for headers not in the whitelist
     }).collect()
 }
@@ -80,7 +80,7 @@ fn parse_timestamp(value: &str) -> Result<String, ParseError> {
 
 fn process_line(index: usize, line: String, headers: &Vec<Option<&'static str>>,
                 result: &mut SystemTimeTempData) {
-    let values: Vec<&str> = line.split(",").collect();
+    let values: Vec<&str> = line.split(',').collect();
     debug!("Read CSV values: {:?}", values);
 
     let timestamp = match parse_timestamp(values[0]) {
@@ -106,7 +106,7 @@ fn process_line(index: usize, line: String, headers: &Vec<Option<&'static str>>,
     for i in 2..headers.len() {
         if let Some(sensor_id) = headers[i] {
             let value = values[i];
-            if value.len() > 0 {
+            if !value.is_empty() {
                 result.add(board_id, sensor_id,
                            TimeTempData::new(&timestamp, value));
             }

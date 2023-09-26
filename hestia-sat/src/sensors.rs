@@ -66,7 +66,7 @@ impl Sensor {
 }
 
 fn adc_range_check(adc_val: u16) -> ReadResult<u16> {
-    if adc_val < ADC_MIN_VALUE || adc_val >= ADC_MAX_VALUE {
+    if !(ADC_MIN_VALUE..ADC_MAX_VALUE).contains(&adc_val) {
         Err(ReadError::ValueOutOfRange)
     } else {
         Ok(adc_val)
@@ -82,7 +82,7 @@ pub(crate) fn adc_val_to_temp(adc_val: u16, adc_resolution: u16) -> ReadResult<f
 }
 
 pub(crate) fn temp_to_adc_val(temp: f32) -> u16 {
-    assert!(temp >= -55.0 && temp <= 150.0, "temp out of range");
+    assert!((-55.0..=150.0).contains(&temp), "temp out of range");
     (MSP430_ADC_RESOLUTION as f32 / (f32::exp((1.0 / (temp + ZERO_CELSIUS_IN_KELVIN) - INV_NB21K00103_REF_TEMP_K) *
                  NB21K00103_B_VALUE) + 1.0)) as u16
 }

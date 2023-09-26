@@ -95,9 +95,9 @@ impl From<&BoardId> for u8 {
     }
 }
 
-impl Into<I2cBus> for BoardId {
-    fn into(self) -> I2cBus {
-        I2cBus::from(u8::from(&self))
+impl From<BoardId> for I2cBus {
+    fn from(value: BoardId) -> Self {
+        I2cBus::from(u8::from(&value))
     }
 }
 
@@ -361,7 +361,7 @@ impl BoardDataProvider for Board {
         }
 
         let sensors: [_; SENSOR_COUNT] = sensors.try_into().expect("invalid sensor reading count");
-        return Some(BoardData {
+        Some(BoardData {
             sensors,
             heater_mode: self.heater.read_mode(),
             target_temp: self.heater.read_target_temp(),
@@ -369,7 +369,7 @@ impl BoardDataProvider for Board {
             heater_duty: self.heater.read_duty(),
             max_temp: self.heater.read_max_temp(),
             flags: self.heater.read_flags(),
-        });
+        })
     }
 }
 

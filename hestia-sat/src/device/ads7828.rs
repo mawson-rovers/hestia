@@ -35,8 +35,7 @@ impl Ads7828Sensor {
 
     pub(crate) fn ads7828_command(addr: I2cAddr) -> I2cReg {
         // set SD = 1, PD0 = 1 (see ADS7828 datasheet, p11)
-        let result = I2cReg(0x84 | (Self::ads7828_channel_select(addr.0) << 4));
-        result
+        I2cReg(0x84 | (Self::ads7828_channel_select(addr.0) << 4))
     }
 
     fn ads7828_channel_select(addr: u8) -> u8 {
@@ -54,7 +53,7 @@ impl Display for Ads7828Sensor {
 
 impl ReadableSensor for Ads7828Sensor {
     fn read(&self) -> ReadResult<SensorReading<f32>> {
-        let raw_value = self.device.read_register(self.reg, &*self.name)?;
+        let raw_value = self.device.read_register(self.reg, &self.name)?;
         let display_value = adc_val_to_temp(raw_value, ADS7828_ADC_RESOLUTION)?;
         Ok(SensorReading::new(raw_value, display_value))
     }

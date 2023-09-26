@@ -32,17 +32,11 @@ enum State<'a> {
 
 impl<'a> PartialEq for State<'a> {
     fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (State::Heating { .. }, State::Heating { .. }) => true,
-            (State::Cooling { .. }, State::Cooling { .. }) => true,
-            (State::Done, State::Done) => true,
-            (State::Failed { .. }, State::Failed { .. }) => true,
-            _ => false,
-        }
-    }
-
-    fn ne(&self, other: &Self) -> bool {
-        !self.eq(other)
+        matches!((self, other),
+            (State::Heating { .. }, State::Heating { .. }) |
+            (State::Cooling { .. }, State::Cooling { .. }) |
+            (State::Done, State::Done) |
+            (State::Failed { .. }, State::Failed { .. }))
     }
 }
 
@@ -114,7 +108,8 @@ impl std::fmt::Display for State<'_> {
             State::Heating { program, end_time } => {
                 write!(f, "State::Heating(end_time: {}, temp_abort: {:.2}, thermostat: {})",
                        end_time.format("%T.%3f"), program.temp_abort,
-                       program.thermostat.map(|v| format!("{:.2}", v)).unwrap_or(format!("#empty")))
+                       program.thermostat.map(|v| format!("{:.2}", v))
+                           .unwrap_or(String::from("#empty")))
             }
             State::Cooling { program } => write!(f, "State::Cooling({})", program.cool_temp),
             State::FinishedProgram => write!(f, "State::FinishedProgram"),
@@ -223,7 +218,7 @@ impl<'a> Iterator for PayloadEvents<'a> {
         if self.buffer.is_empty() {
             self.buffer.push(Event::Time); // always put something in the buffer
             for board in self.payload {
-                if let Some(reading) = read_board(&board, board.into()) {
+                if let Some(reading) = read_board(board, board.into()) {
                     self.buffer.push(reading);
                 }
             }

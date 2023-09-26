@@ -6,7 +6,7 @@ use std::path::Path;
 const TOOLCHAIN_ENV_VAR: &str = "BBB_TOOLCHAIN";
 
 // location of libraries within the toolchain - this will be added to the linker path
-const USR_LIB: &'static str = "arm-buildroot-linux-gnueabihf/sysroot/usr/lib";
+const USR_LIB: &str = "arm-buildroot-linux-gnueabihf/sysroot/usr/lib";
 
 // we check for the existence of this file to make sure deps are there
 const TEST_FILE: &str = "libsqlite3.so";

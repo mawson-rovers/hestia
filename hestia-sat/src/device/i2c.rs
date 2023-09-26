@@ -57,7 +57,7 @@ impl I2cBus {
     }
 
     fn open_bus(&self) -> io::Result<I2c<std::fs::File>> {
-        I2c::from_path(&self.path())
+        I2c::from_path(self.path())
     }
 
     fn read_bytes<const LEN: usize>(&self, addr: I2cAddr, reg: I2cReg) -> io::Result<[u8; LEN]> {
@@ -183,7 +183,7 @@ impl LoggingI2cDevice {
 
     /// Writes a value to the I2C register on the device. Logs a warning if it fails,
     /// debug if it succeeds.
-    pub fn write_register(&self, reg: I2cReg, desc: &str, data: u16) -> () {
+    pub fn write_register(&self, reg: I2cReg, desc: &str, data: u16) {
         debug!("{}: Setting {} to value <{}> (addr {}, reg {})",
             self, desc, self.device.addr, reg, data);
         match self.device.write_u16(reg, data) {

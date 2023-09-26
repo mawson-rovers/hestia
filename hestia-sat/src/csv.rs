@@ -52,7 +52,7 @@ pub enum CsvData {
     Error,
 }
 
-pub const TIMESTAMP_FORMAT: &'static str = "%Y-%m-%d %T.%6f";
+pub const TIMESTAMP_FORMAT: &str = "%Y-%m-%d %T.%6f";
 
 lazy_static! {
     pub static ref TIMESTAMP_FORMAT_ITEMS: Vec<Item<'static>> =
@@ -130,7 +130,7 @@ impl<T> From<SensorReading<T>> for CsvData
 
 pub const CSV_RAW_FIELD_COUNT: usize = 31;
 
-pub const CSV_RAW_HEADERS: [&'static str; CSV_RAW_FIELD_COUNT] = [
+pub const CSV_RAW_HEADERS: [&str; CSV_RAW_FIELD_COUNT] = [
     "UTC",
     "board",
     "TH1",
@@ -166,7 +166,7 @@ pub const CSV_RAW_HEADERS: [&'static str; CSV_RAW_FIELD_COUNT] = [
 
 pub const CSV_DISPLAY_FIELD_COUNT: usize = 28;
 
-pub const CSV_DISPLAY_HEADERS: [&'static str; CSV_DISPLAY_FIELD_COUNT] = [
+pub const CSV_DISPLAY_HEADERS: [&str; CSV_DISPLAY_FIELD_COUNT] = [
     "UTC",
     "board",
     "TH1",
@@ -245,7 +245,7 @@ impl CsvWriter {
     pub fn write_raw_data(&mut self, timestamp: DateTime<Utc>, board: &Board,
                           raw_data: &[ReadResult<u16>; CSV_RAW_FIELD_COUNT - 2]) {
         let mut data: Vec<CsvData> = vec![timestamp.into(), board.into()];
-        data.extend(raw_data.iter().map(|d| CsvData::from(d)));
+        data.extend(raw_data.iter().map(CsvData::from));
         let data: [CsvData; CSV_RAW_FIELD_COUNT] = data.try_into().expect("Array sizes didn't match");
         self.write_data(data).unwrap_or_else(|e| eprint!("Failed to write to log file: {:?}", e));
     }

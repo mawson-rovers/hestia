@@ -95,7 +95,7 @@ impl BoardStatus {
         let target_temp = from_reading(data.target_temp).map(|t| t.round());
         let target_sensor = from_reading(data.target_sensor).map(|s| s.id);
         let target_sensor_temp = get_sensor_value(&target_sensor, &sensor_values);
-        let heater_power = calculate_power(&board, &sensor_values);
+        let heater_power = calculate_power(board, &sensor_values);
         BoardStatus {
             sensor_info: to_sensor_info(board::ALL_SENSORS),
             sensor_values,
@@ -112,14 +112,14 @@ impl BoardStatus {
 fn get_sensor_value(sensor_id: &Option<SensorId>, sensor_values: &LinkedHashMap<SensorId, Option<f32>>) -> Option<f32> {
     match sensor_id {
         None => None,
-        Some(sensor_id) => sensor_values.get(sensor_id)?.clone()
+        Some(sensor_id) => *sensor_values.get(sensor_id)?
     }
 }
 
 fn calculate_power(board: &Board, sensor_values: &LinkedHashMap<SensorId, Option<f32>>) -> Option<f32> {
-    let v_high = sensor_values.get(V_HIGH_AVG.id)?.clone()?;
-    let v_low = sensor_values.get(V_LOW_AVG.id)?.clone()?;
-    let v_curr = sensor_values.get(V_CURR_AVG.id)?.clone()?;
+    let v_high = (*sensor_values.get(V_HIGH_AVG.id)?)?;
+    let v_low = (*sensor_values.get(V_LOW_AVG.id)?)?;
+    let v_curr = (*sensor_values.get(V_CURR_AVG.id)?)?;
     Some(calc_heater_power(board.version, v_high, v_low, v_curr))
 }
 
