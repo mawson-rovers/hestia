@@ -101,7 +101,6 @@ fn process_line(index: usize, line: String, headers: &Vec<Option<&'static str>>,
     };
 
     // pull out some additional data for calculated fields
-    let (mut v_high, mut v_low, mut v_curr) = (None::<f32>, None::<f32>, None::<f32>);
     let (mut mode, mut duty) = (None::<&str>, None::<f32>);
 
     for i in 2..headers.len() {
@@ -112,19 +111,9 @@ fn process_line(index: usize, line: String, headers: &Vec<Option<&'static str>>,
                            TimeTempData::new(&timestamp, value));
             }
 
-            if sensor_id == "v_high_avg" { v_high = value.parse().ok() }
-            if sensor_id == "v_low_avg" { v_low = value.parse().ok() }
-            if sensor_id == "v_curr_avg" { v_curr = value.parse().ok() }
             if sensor_id == "heater_mode" { mode = Some(value) }
             if sensor_id == "heater_duty" { duty = value.parse().ok() }
         }
-    }
-
-    // calculate heater power and add it too
-    if let (Some(v_high), Some(v_low), Some(v_curr)) = (v_high, v_low, v_curr) {
-        let power = board::calc_heater_power(BoardVersion::V2_2, v_high, v_low, v_curr);
-        result.add(board_id, "heater_power",
-                   TimeTempData::new_f32(&timestamp, power));
     }
 
     // add derived value for heater_duty between 0.0 and 1.0, depending on mode
@@ -146,6 +135,9 @@ fn sensors_to_include() -> HashSet<&'static str> {
     for sensor in board::ALL_SENSORS {
         result.insert(sensor.id);
     }
+    result.insert("heater_voltage");
+    result.insert("heater_current");
+    result.insert("heater_power");
     result.insert("target_temp");
     result
 }
