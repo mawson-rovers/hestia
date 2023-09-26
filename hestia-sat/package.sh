@@ -14,10 +14,10 @@ set -x # echo commands from now on
 rm -r $OUT
 mkdir -p $OUT/{bin,www,nginx,systemd}
 
-cp "target/$TARGET/debug/"uts-{cli,log,web,run} $OUT/bin/
-cp -R ./{nginx,systemd} $OUT/
-cp ./uts-programs.toml $OUT/uts-programs-example.toml
-cp -R ../hestia-static-dash/* $OUT/www/
+cp -p "target/$TARGET/debug/"uts-{cli,log,web,run} $OUT/bin/
+cp -p ./uts-programs.toml $OUT/uts-programs-example.toml
+cp -Rp ./{nginx,systemd} $OUT/
+cp -Rp ../hestia-static-dash/* $OUT/www/
 
 tar zcf "$ARCHIVE" --strip-components 2 --exclude '.DS_Store' $OUT
 
