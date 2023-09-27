@@ -40,6 +40,9 @@ pub struct Config {
     /// Enable CORS for remote API access, defaults to false
     #[serde(default)]
     pub cors_enable: bool,
+    
+    /// Installation directory, used for uts-update
+    pub install_path: Option<String>,
 }
 
 impl Config {
