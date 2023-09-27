@@ -45,7 +45,7 @@ fn update(install_path: &Path, dry_run: bool) -> Result<(), Box<dyn Error>> {
         .set_header(reqwest::header::ACCEPT, "application/octet-stream".parse()?)
         .download_to(&tmp_tarball)?;
     tmp_tarball.sync_all()?;
-    println!("Download completed, file size: {}", tmp_tarball.metadata()?.len());
+    debug!("Download completed, file size: {}", tmp_tarball.metadata()?.len());
 
     let dry_run_path = install_path.join("update_test");
     let path = if dry_run {
