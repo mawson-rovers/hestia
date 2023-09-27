@@ -1,21 +1,25 @@
-use std::error::Error;
 use std::{env, fs};
+use std::error::Error;
 use std::path::Path;
-use log::info;
+
+use colored::Colorize;
+use log::{debug, info};
+
 use uts_ws1::payload::Config;
 
 fn main() {
-    let dry_run = env::args().any(|a| a == "-n" || a == "-d");
     let config = Config::read();
-    match config.install_path {
-        None => panic!("Set UTS_INSTALL_PATH to installation path for self-update"),
-        Some(install_path) => {
-            let install_path = Path::new(&install_path);
-            assert!(install_path.exists(), "UTS_INSTALL_PATH does not exist: {}",
-                    install_path.display());
-            update(install_path, dry_run).unwrap()
-        }
-    }
+    let Some(install_path) = config.install_path else {
+        panic!("Set UTS_INSTALL_PATH to installation path for self-update");
+    };
+    let install_path = Path::new(&install_path);
+    assert!(install_path.exists(), "UTS_INSTALL_PATH does not exist: {}",
+            install_path.display());
+
+    let dry_run = env::args().any(|a| a == "-n" || a == "-d");
+    info!("Running self-update in {} mode",
+        if dry_run { "dry run".cyan() } else { "live".green() });
+    update(install_path, dry_run).unwrap()
 }
 
 fn update(install_path: &Path, dry_run: bool) -> Result<(), Box<dyn Error>> {
@@ -24,6 +28,7 @@ fn update(install_path: &Path, dry_run: bool) -> Result<(), Box<dyn Error>> {
         .repo_name("hestia")
         .build()?
         .fetch()?;
+    debug!("Found releases: {:#?}", releases);
 
     // get the first available release
     let asset = releases[0].asset_for(self_update::get_target(), None).unwrap();
