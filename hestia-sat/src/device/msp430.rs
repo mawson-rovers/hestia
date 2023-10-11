@@ -57,9 +57,9 @@ impl Msp430 {
 impl Heater for Msp430 {
     fn read_mode(&self) -> ReadResult<SensorReading<HeaterMode>> {
         let raw = self.read_register(MSP430_READ_HEATER_MODE, "heater mode")?;
-        let display: HeaterMode = raw.try_into().or_else(|_| {
+        let display: HeaterMode = raw.try_into().map_err(|_| {
             warn!("{}: Invalid heater mode: {:?}", self.device, raw);
-            Err(ValueOutOfRange)
+            ValueOutOfRange
         })?;
         Ok(SensorReading::new(raw, display))
     }
@@ -119,11 +119,17 @@ impl Heater for Msp430 {
         self.write_register(MSP430_WRITE_HEATER_MAX_TEMP, "max temp", adc_val)
     }
 
+    fn read_version(&self) -> ReadResult<SensorReading<String>> {
+        let raw = self.read_register(MSP430_READ_VERSION, "version")?;
+        let display = format!("{:0.1}", f32::from(raw) / 100.0);
+        Ok(SensorReading::new(raw, display))
+    }
+
     fn read_flags(&self) -> ReadResult<SensorReading<BoardFlags>> {
         let raw = self.read_register(MSP430_READ_FLAGS, "flags")?;
-        let display: BoardFlags = raw.try_into().or_else(|_| {
+        let display: BoardFlags = raw.try_into().map_err(|_| {
             warn!("{}: Invalid flags: {:?}", self.device, raw);
-            Err(ValueOutOfRange)
+            ValueOutOfRange
         })?;
         Ok(SensorReading::new(raw, display))
     }
@@ -151,7 +157,7 @@ impl Display for Msp430TempSensor {
 
 impl ReadableSensor for Msp430TempSensor {
     fn read(&self) -> ReadResult<SensorReading<f32>> {
-        let raw_value = self.device.read_register(self.reg, &*self.name)?;
+        let raw_value = self.device.read_register(self.reg, &self.name)?;
         let display_value = adc_val_to_temp(raw_value, MSP430_ADC_RESOLUTION)?;
         Ok(SensorReading::new(raw_value, display_value))
     }
@@ -179,7 +185,7 @@ impl Display for Msp430VoltageSensor {
 
 impl ReadableSensor for Msp430VoltageSensor {
     fn read(&self) -> ReadResult<SensorReading<f32>> {
-        let raw_value = self.device.read_register(self.reg, &*self.name)?;
+        let raw_value = self.device.read_register(self.reg, &self.name)?;
         let display_value = raw_value as f32 / (MSP430_ADC_RESOLUTION as f32) *
             MSP430_ADC_V_REF * MSP430_V_DIVIDER_FACTOR;
         Ok(SensorReading::new(raw_value, display_value))
@@ -208,7 +214,7 @@ impl Display for Msp430CurrentSensor {
 
 impl ReadableSensor for Msp430CurrentSensor {
     fn read(&self) -> ReadResult<SensorReading<f32>> {
-        let raw_value = self.device.read_register(self.reg, &*self.name)?;
+        let raw_value = self.device.read_register(self.reg, &self.name)?;
         let display_value = raw_value as f32 / (MSP430_ADC_RESOLUTION as f32) * MSP430_ADC_V_REF;
         Ok(SensorReading::new(raw_value, display_value))
     }

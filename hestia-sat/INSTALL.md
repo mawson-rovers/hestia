@@ -75,6 +75,21 @@ debian@b2:~$ cd ~/bin
 debian@b2:~$ ln -s ~/uts/bin/* .
 ```
 
+### Set up default environment in .bashrc and .env
+
+```shell
+debian@b2:~$ echo "export TZ=Australia/Sydney" >> ~/.bashrc
+```
+
+```shell
+debian@b2:~$ cat > ~/.env
+RUST_LOG=info
+RUST_BACKTRACE=1
+UTS_I2C_BUS=1,2
+```
+
+Hit Ctrl-D to exit and save the .env file.
+
 ### Reboot
 
 Restart the Beaglebone to make sure everything has started properly:

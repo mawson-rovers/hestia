@@ -1,11 +1,13 @@
+use std::io;
 use actix_cors::Cors;
 use actix_files::NamedFile;
 use actix_web::{App, get, post, HttpResponse, HttpServer, middleware, Responder, web};
 use actix_web::error::JsonPayloadError;
 use actix_web::http::header;
+use actix_web::http::header::ContentDisposition;
 use actix_web::middleware::Condition;
 use actix_web::web::Redirect;
-use log::{error, info};
+use log::info;
 use serde::Serialize;
 use data::SystemTimeTempData;
 use uts_ws1::payload::{Config, Payload};
@@ -38,12 +40,7 @@ async fn post_status(state: web::Data<AppState>, update: web::Json<BoardStatusUp
     -> impl Responder {
     let update = update.into_inner();
     let payload = Payload::from_config(&state.config);
-    let board = payload.iter().find(|b| b.bus.id == update.board_id);
-    if let Some(board) = board {
-        update.apply(board);
-    } else {
-        error!("Board ID not found or configured: {}", update.board_id);
-    }
+    update.apply(&payload);
     Redirect::to("/api/status").see_other()
 }
 
@@ -67,10 +64,11 @@ async fn get_log_files(state: web::Data<AppState>) -> impl Responder {
 }
 
 #[get("/log/{name}")]
-async fn download_log(state: web::Data<AppState>, path: web::Path<String>) -> impl Responder {
+async fn download_log(state: web::Data<AppState>, path: web::Path<String>) -> io::Result<NamedFile> {
     let name = path.into_inner();
     let log_file = log_data::get_log_file(&state.config, &name);
-    NamedFile::open(log_file)
+    let result = NamedFile::open(log_file)?;
+    Ok(result.set_content_disposition(ContentDisposition::attachment(name)))
 }
 
 fn pretty_json<T>(result: &T) -> HttpResponse
@@ -93,6 +91,7 @@ async fn main() -> std::io::Result<()> {
         config: config.clone(),
     });
     let addr = ("0.0.0.0", config.http_port);
+    info!("uts-web listening on {:?}...", addr);
     let server = HttpServer::new(move || {
         let cors = Cors::default()
             .allow_any_origin()
@@ -117,6 +116,5 @@ async fn main() -> std::io::Result<()> {
     })
         .bind(addr)?
         .run();
-    info!("uts-web listening on {:?}...", addr);
     server.await
 }

@@ -30,8 +30,8 @@ unsigned int counter = 0;
 unsigned int max_temp = TEMP_120C; // Set to zero to disable max_temp check
 
 // PID control variables
-#define K_P         7       // PID proportional gain
-#define K_I_SHIFT   7       // PID integral shift right bits
+#define K_P         3       // PID proportional gain
+#define K_I_SHIFT   3       // PID integral shift right bits
 #define MAX_OUT     1000
 #define MIN_OUT     0
 
@@ -44,8 +44,11 @@ volatile uint32_t ema_filter_state[ADC_SENSOR_COUNT] = {
         ema_start, ema_start, ema_start, ema_start,
 };
 
-int error_sum = 0;
+// low-pass filter threshold for heater measurements
+#define LPF_MAX 2048
+const uint8_t apply_lpf[ADC_SENSOR_COUNT] = {0, 0, 0, 0, 0, 1, 1, 0};
 
+int32_t error_sum = 0;
 
 int main(void) {
     WDTCTL = WDTPW | WDTHOLD;   // Stop watchdog timer
@@ -78,13 +81,16 @@ void initTimer() {
 
 inline unsigned int update_pid(unsigned int value) {
     int error = (int) set_point - (int) value; // both inputs must be positive and <=2^12 (ADC values)
-    error_sum += error;
-    int out = K_P * error + (error_sum >> K_I_SHIFT); // MSP430 ABI maintains sign in arithmetic right-shift
+    error_sum += (error >> K_I_SHIFT);
+    if (error_sum > MAX_OUT) error_sum = MAX_OUT;
+    if (error_sum < MIN_OUT) error_sum = MIN_OUT;
+    int out = K_P * error + ((int16_t) error_sum); // MSP430 ABI maintains sign in arithmetic right-shift
     if (out > MAX_OUT) out = MAX_OUT;
     else if (out < MIN_OUT) out = MIN_OUT;
     return (unsigned int) out; // max and min ensure conversion is safe: 0 < out < 2^15
 }
 
+unsigned int startup_led_toggles = 6;
 unsigned int ta_count = 0;
 
 // Timer A interrupt handler
@@ -112,6 +118,12 @@ void __attribute__ ((interrupt(TIMERA0_VECTOR))) Timer_A(void)
         } else {
             CCR2 = 0;
             P5OUT &= ~(LED_YELLOW); // turn off PID indicator LED
+        }
+
+        // flash startup indicator 3 times
+        if (startup_led_toggles != 0) {
+            P5OUT ^= LED_GREEN;
+            startup_led_toggles--;
         }
     }
 }
@@ -315,21 +327,18 @@ void __attribute__ ((interrupt(ADC12_VECTOR))) ADC12_ISR(void)
     adc_readings[2] = ADC12MEM2;
     adc_readings[3] = ADC12MEM3;
     adc_readings[4] = ADC12MEM4;
-    if (heater_mode == HEATER_MODE_PWM && !is_pwm_heating_on()) {
-        // don't capture voltage & current readings while heater is disabled in PWM mode
+    adc_readings[5] = ADC12MEM5;
+    adc_readings[6] = ADC12MEM6;
+    adc_readings[7] = ADC12MEM7;
+    // IFG is cleared by reads
 
-        ADC12IFG = 0x00; // manually reset the ADC12 interrupt vector since we aren't reading all the values
-    } else {
-        // TODO average voltage readings in PID mode
-        adc_readings[5] = ADC12MEM5;
-        adc_readings[6] = ADC12MEM6;
-        adc_readings[7] = ADC12MEM7;
-
-        // IFG is cleared by reads
-    }
-
-    for (int i=0; i<ADC_SENSOR_COUNT; i++) {
-        adc_avg[i] = update_ema_filter(i, adc_readings[i]);
+    for (int i = 0; i < ADC_SENSOR_COUNT; i++) {
+        if (apply_lpf[i]) {
+            adc_avg[i] = update_ema_filter(i,
+                                           adc_readings[i] < LPF_MAX ? adc_readings[i] : 0);
+        } else {
+            adc_avg[i] = update_ema_filter(i, adc_readings[i]);
+        }
     }
 
     __bic_SR_register_on_exit(CPUOFF);      // Clear CPUOFF bit from 0(SR)

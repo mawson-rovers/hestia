@@ -66,10 +66,6 @@ impl PartialEq for ReadError {
             (_, _) => false,
         }
     }
-
-    fn ne(&self, other: &Self) -> bool {
-        !self.eq(other)
-    }
 }
 
 pub type ReadResult<T> = Result<T, ReadError>;

@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    section {
+        @apply my-10;
+    }
+
+    a {
+        @apply underline text-orange-200;
+    }
+    
+    h3 {
+        @apply text-lg font-bold mt-4 mb-4;
+    }
+    h4 {
+        @apply text-sky-400 mt-4 mb-2;
+    }
+
+    input,
+    select {
+        @apply text-xs px-1 py-0.5 rounded-sm text-zinc-800 w-12
+    }
+    input:disabled, input:disabled::placeholder {
+        @apply text-zinc-300 bg-zinc-700;
+        -webkit-text-fill-color: rgb(212 212 216);
+        opacity: 1; /* required on iOS */
+    }
+
+    button {
+        @apply text-xs font-semibold text-zinc-50 bg-sky-600 px-2 py-0.5 rounded hover:brightness-125
+    }
+}
+
+@layer components {
+    .board-chart-container {
+        height: 200px;
+        width: 240px; /* leave space on RHS for mounted sensors */
+    }
+}

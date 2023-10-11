@@ -1,6 +1,7 @@
 use std::io;
 use byteorder::{BigEndian, LittleEndian, ByteOrder};
 use crate::device::i2c::{I2cAddr, I2cBus, I2cReg};
+use log::info;
 
 impl I2cBus {
     pub fn path(&self) -> String {
@@ -52,9 +53,11 @@ impl I2cBus {
         Ok(data)
     }
 
-    pub fn write_bytes<const LEN: usize>(&self, _addr: I2cAddr, _reg: I2cReg, _buf: &[u8; LEN])
+    pub fn write_bytes<const LEN: usize>(&self, addr: I2cAddr, reg: I2cReg, buf: &[u8; LEN])
                                      -> io::Result<()> {
-        // do nothing
+        info!("Writing {} bytes to I2C{} addr/reg {}, {}: {:02x?}",
+            buf.len(), self.id, addr, reg, buf);
+        // don't do anything - just discard the data
         Ok(())
     }
 }

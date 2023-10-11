@@ -1,6 +1,7 @@
 (function () { // prevent leakage into global scope
     const host = document.body.dataset.fetchHost || "";
     const logFileList = document.getElementById('log-files');
+    const olderLogFileList = document.getElementById('older-log-files');
 
     let lastLogs = [];
 
@@ -26,11 +27,17 @@
             .then(data => updateLogFiles(data));
     }
 
+    const createLogFileElement = (logFile) =>
+        createElementFromHtml(`<li><a href="${logFile.url}">${logFile.name}</a></li>`);
+
     function updateLogFiles(data) {
         if (!arraysEqual(data, lastLogs)) {
-            logFileList.replaceChildren(...data.map(logFile => {
-                return createElementFromHtml(`<li><a href="${logFile.url}">${logFile.name}</a></li>`);
-            }));
+            logFileList.replaceChildren(...data.filter((_, i) => i <= 10)
+                .map(createLogFileElement));
+            if (data.length > 10) {
+                olderLogFileList.parentElement.classList.remove("hidden");
+                olderLogFileList.replaceChildren(...data.filter((_, i) => i > 10).map(createLogFileElement))
+            }
         }
         lastLogs = data;
     }

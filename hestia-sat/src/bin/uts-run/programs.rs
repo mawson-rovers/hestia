@@ -7,7 +7,7 @@ use serde::Deserialize;
 use duration_str::deserialize_duration_chrono;
 use lazy_static::lazy_static;
 use serial_int::{SerialGenerator};
-use uts_ws1::board::Board;
+use uts_ws1::board::BoardId;
 use uts_ws1::payload::Config;
 
 #[derive(Debug, PartialEq, Clone, Deserialize)]
@@ -22,7 +22,7 @@ impl Programs {
     pub fn load(config: &Config) -> Self {
         let file = config.program_file.as_ref()
             .expect("Set UTS_PROGRAM_FILE to location of uts-programs.toml");
-        let str = fs::read_to_string(&file).expect("uts-programs.toml not found");
+        let str = fs::read_to_string(file).expect("uts-programs.toml not found");
         toml::from_str(&str).expect("Failed to parse uts-programs.toml")
     }
 
@@ -46,7 +46,7 @@ pub struct Program {
     #[serde(default = "generate_program_id")]
     pub id: u8,
     pub name: String,
-    pub heat_board: HeatBoard,
+    pub heat_board: BoardId,
     #[serde(deserialize_with = "deserialize_duration_chrono")]
     pub heat_time: Duration,
     #[serde(default = "default_heat_duty")]
@@ -60,34 +60,5 @@ pub struct Program {
 impl std::fmt::Display for Program {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "Program {{ id: {}, name: \"{}\" }}", self.id, self.name)
-    }
-}
-
-/// u8 repr corresponds to I2C bus ID (1 = i2c1, 2 = i2c2)
-#[repr(u8)]
-#[derive(Debug, PartialEq, Clone, Deserialize, Copy)]
-pub enum HeatBoard {
-    #[serde(alias="top", alias="TOP")]
-    Top = 1,
-    #[serde(alias="bottom", alias="BOTTOM")]
-    Bottom = 2,
-}
-
-impl std::fmt::Display for HeatBoard {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            HeatBoard::Top => write!(f, "top"),
-            HeatBoard::Bottom => write!(f, "bottom"),
-        }
-    }
-}
-
-impl From<&Board> for HeatBoard {
-    fn from(board: &Board) -> Self {
-        match board.bus.id {
-            1 => HeatBoard::Top,
-            2 => HeatBoard::Bottom,
-            _ => panic!("Unknown board ID: {}", board.bus.id),
-        }
     }
 }

@@ -1,11 +1,11 @@
 use std::convert::{TryFrom, TryInto};
-use std::fmt::Formatter;
+use std::fmt::{Debug, Display, Formatter};
 use std::rc::Rc;
 use log::{debug, error};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize, Serializer};
 
 use crate::{ReadResult};
-use crate::csv::CSV_FIELD_COUNT;
+use crate::csv::CSV_RAW_FIELD_COUNT;
 use crate::heater::{Heater, HeaterMode, TargetSensor};
 use crate::device::ads7828::Ads7828Sensor;
 use crate::device::i2c::I2cBus;
@@ -32,8 +32,8 @@ impl BoardVersion {
     }
 }
 
-impl std::fmt::Display for BoardVersion {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl Display for BoardVersion {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             BoardVersion::V1_1 => f.write_str("v1.1"),
             BoardVersion::V2_0 => f.write_str("v2.0"),
@@ -42,12 +42,90 @@ impl std::fmt::Display for BoardVersion {
     }
 }
 
+/// u8 repr corresponds to I2C bus ID (1 = i2c1, 2 = i2c2)
+#[repr(u8)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, Deserialize)]
+pub enum BoardId {
+    #[serde(alias = "top", alias = "TOP")]
+    Top = 1,
+
+    #[serde(alias = "bottom", alias = "BOTTOM")]
+    Bottom = 2,
+}
+
+impl Serialize for BoardId {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+        serializer.serialize_str(match self {
+            BoardId::Top => "top",
+            BoardId::Bottom => "bottom",
+        })
+    }
+}
+
+impl TryFrom<&str> for BoardId {
+    type Error = ();
+
+    fn try_from(value: &str) -> Result<BoardId, Self::Error> {
+        match value {
+            "1" => Ok(Self::Top),
+            "2" => Ok(Self::Bottom),
+            _ => Err(()),
+        }
+    }
+}
+
+impl TryFrom<u8> for BoardId {
+    type Error = ();
+
+    fn try_from(value: u8) -> Result<BoardId, Self::Error> {
+        match value {
+            1 => Ok(Self::Top),
+            2 => Ok(Self::Bottom),
+            _ => Err(()),
+        }
+    }
+}
+
+impl From<&BoardId> for u8 {
+    fn from(value: &BoardId) -> Self {
+        match value {
+            BoardId::Top => 1,
+            BoardId::Bottom => 2,
+        }
+    }
+}
+
+impl From<BoardId> for I2cBus {
+    fn from(value: BoardId) -> Self {
+        I2cBus::from(u8::from(&value))
+    }
+}
+
+impl Display for BoardId {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Top => write!(f, "top"),
+            Self::Bottom => write!(f, "bottom"),
+        }
+    }
+}
+
+impl From<&Board> for BoardId {
+    fn from(board: &Board) -> Self {
+        match board.bus.id {
+            1 => BoardId::Top,
+            2 => BoardId::Bottom,
+            _ => panic!("Unknown board ID: {}", board.bus.id),
+        }
+    }
+}
+
 pub const TH1: Sensor = Sensor::new("TH1", SensorInterface::MSP430, 0x01,
-                                "Centre", -42.0135, 43.18);
+                                    "Centre", -42.0135, 43.18);
 pub const TH2: Sensor = Sensor::new("TH2", SensorInterface::MSP430, 0x02,
-                                "Top-left of heater", -35.7124, 54.61);
+                                    "Top-left of heater", -35.7124, 54.61);
 pub const TH3: Sensor = Sensor::new("TH3", SensorInterface::MSP430, 0x03,
-                                "Bottom-right of heater", -53.88, 33.496);
+                                    "Bottom-right of heater", -53.88, 33.496);
 
 const U4: Sensor = Sensor::new("U4", SensorInterface::MAX31725, 0x48,
                                "Top-left", -15.976, 75.225);
@@ -74,11 +152,15 @@ const J14: Sensor = Sensor::mounted("J14", SensorInterface::ADS7828, 0x05);
 const J15: Sensor = Sensor::mounted("J15", SensorInterface::ADS7828, 0x06);
 const J16: Sensor = Sensor::mounted("J16", SensorInterface::ADS7828, 0x07);
 
-pub const HEATER_V_HIGH: Sensor = Sensor::circuit("heater_v_high", SensorInterface::MSP430Voltage, 0x08);
-pub const HEATER_V_LOW: Sensor = Sensor::circuit("heater_v_low", SensorInterface::MSP430Voltage, 0x06);
-pub const HEATER_CURR: Sensor = Sensor::circuit("heater_curr", SensorInterface::MSP430Current, 0x07);
+pub const V_HIGH: Sensor = Sensor::circuit("v_high", SensorInterface::MSP430Voltage, 0x08);
+pub const V_LOW: Sensor = Sensor::circuit("v_low", SensorInterface::MSP430Voltage, 0x06);
+pub const V_CURR: Sensor = Sensor::circuit("v_curr", SensorInterface::MSP430Current, 0x07);
 
-pub const SENSOR_COUNT: usize = 20;
+pub const V_HIGH_AVG: Sensor = Sensor::circuit("v_high_avg", SensorInterface::MSP430Voltage, 0x38);
+pub const V_LOW_AVG: Sensor = Sensor::circuit("v_low_avg", SensorInterface::MSP430Voltage, 0x36);
+pub const V_CURR_AVG: Sensor = Sensor::circuit("v_curr_avg", SensorInterface::MSP430Current, 0x37);
+
+pub const SENSOR_COUNT: usize = 23;
 pub static ALL_SENSORS: &[Sensor; SENSOR_COUNT] = &[
     TH1,
     TH2,
@@ -97,12 +179,18 @@ pub static ALL_SENSORS: &[Sensor; SENSOR_COUNT] = &[
     J14,
     J15,
     J16,
-    HEATER_V_HIGH,
-    HEATER_V_LOW,
-    HEATER_CURR,
+    V_HIGH,
+    V_LOW,
+    V_CURR,
+    V_HIGH_AVG,
+    V_LOW_AVG,
+    V_CURR_AVG,
 ];
 
+pub const CURRENT_SENSE_R_OHMS: f32 = 0.05;
+
 pub struct Board {
+    pub id: BoardId,
     pub version: BoardVersion,
     pub bus: I2cBus,
     pub heater: Rc<dyn Heater>,
@@ -110,12 +198,13 @@ pub struct Board {
 }
 
 impl Board {
-    pub fn new(version: BoardVersion, bus: u8) -> Self {
-        let sensors = Board::get_readable_sensors(version, bus.into(), ALL_SENSORS);
-        let msp430 = Msp430::new(bus.into());
+    pub fn new(id: BoardId, version: BoardVersion) -> Self {
+        let sensors = Board::get_readable_sensors(version, id.into(), ALL_SENSORS);
+        let msp430 = Msp430::new(id.into());
         Board {
+            id,
             version,
-            bus: bus.into(),
+            bus: id.into(),
             heater: Rc::new(msp430),
             sensors,
         }
@@ -132,7 +221,7 @@ impl Board {
         let reg = s.addr.into();
         if !version.is_sensor_enabled(&s) {
             debug!("Disabling sensor: {}", s);
-            return Box::new(DisabledSensor::new(name))
+            return Box::new(DisabledSensor::new(name));
         }
         match s.iface {
             SensorInterface::MSP430 => Box::new(Msp430TempSensor::new(bus, name, reg)),
@@ -190,11 +279,67 @@ impl Board {
             .map(|s| s.read())
             .collect::<Vec<ReadResult<SensorReading<f32>>>>()
     }
+
+    pub fn calc_heater_power(&self,
+                             v_high: ReadResult<SensorReading<f32>>,
+                             v_low: ReadResult<SensorReading<f32>>,
+                             v_curr: ReadResult<SensorReading<f32>>) -> ReadResult<f32> {
+        let v_high = v_high?.display_value;
+        let v_low = v_low?.display_value;
+        let v_curr = v_curr?.display_value;
+        Ok(calc_heater_power(self.version, v_high, v_low, v_curr))
+    }
+
+    pub fn calc_heater_voltage(&self,
+                               v_high: ReadResult<SensorReading<f32>>,
+                               v_low: ReadResult<SensorReading<f32>>) -> ReadResult<f32> {
+        let v_high = v_high?.display_value;
+        let v_low = v_low?.display_value;
+        Ok(calc_heater_voltage(self.version, v_high, v_low))
+    }
+
+    pub fn calc_heater_current(&self,
+                               v_low: ReadResult<SensorReading<f32>>,
+                               v_curr: ReadResult<SensorReading<f32>>) -> ReadResult<f32> {
+        let v_low = v_low?.display_value;
+        let v_curr = v_curr?.display_value;
+        Ok(calc_heater_current(self.version, v_low, v_curr))
+    }
 }
 
-impl std::fmt::Debug for Board {
+pub fn calc_heater_power(version: BoardVersion, v_high: f32, v_low: f32, v_curr: f32) -> f32 {
+    calc_heater_voltage(version, v_high, v_low) *
+        calc_heater_current(version, v_low, v_curr)
+}
+
+pub fn calc_heater_voltage(version: BoardVersion, v_high: f32, v_low: f32) -> f32 {
+    match version {
+        BoardVersion::V1_1 => 0.0,
+        _ => (v_high - v_low).max(0.0),
+    }
+}
+
+pub fn calc_heater_current(version: BoardVersion, v_low: f32, v_curr: f32) -> f32 {
+    match version {
+        BoardVersion::V1_1 => 0.0,
+        BoardVersion::V2_0 => v_curr,
+        _ => if v_curr < 3.0 && v_low < 3.0 {
+            (v_low - v_curr).max(0.0) / CURRENT_SENSE_R_OHMS
+        } else {
+            0.0
+        },
+    }
+}
+
+impl Display for Board {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Board{{bus: {:?}}})", self.bus)
+        write!(f, "Board({}, {}, {})", self.id, self.version, self.bus)
+    }
+}
+
+impl Debug for Board {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(&self, f)
     }
 }
 
@@ -215,8 +360,8 @@ impl BoardDataProvider for Board {
             return None;
         }
 
-        let sensors: [_; 20] = sensors.try_into().expect("invalid sensor reading count");
-        return Some(BoardData {
+        let sensors: [_; SENSOR_COUNT] = sensors.try_into().expect("invalid sensor reading count");
+        Some(BoardData {
             sensors,
             heater_mode: self.heater.read_mode(),
             target_temp: self.heater.read_target_temp(),
@@ -224,7 +369,7 @@ impl BoardDataProvider for Board {
             heater_duty: self.heater.read_duty(),
             max_temp: self.heater.read_max_temp(),
             flags: self.heater.read_flags(),
-        });
+        })
     }
 }
 
@@ -239,9 +384,9 @@ pub struct BoardData {
 }
 
 impl BoardData {
-    pub fn get_raw_data(self) -> [ReadResult<u16>; CSV_FIELD_COUNT - 2] {
+    pub fn get_raw_data(self) -> [ReadResult<u16>; CSV_RAW_FIELD_COUNT - 2] {
         let readings = &self.sensors;
-        let mut result = Vec::with_capacity(CSV_FIELD_COUNT - 2);
+        let mut result = Vec::with_capacity(CSV_RAW_FIELD_COUNT - 2);
         for reading in readings {
             result.push(match reading {
                 Ok(reading) => Ok(reading.raw_value),
@@ -266,7 +411,7 @@ pub struct BoardFlags {
     max_temp: bool,
 }
 
-impl std::fmt::Display for BoardFlags {
+impl Display for BoardFlags {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match (self.on, self.max_temp) {
             (true, true) => write!(f, "ERR_MAX_TEMP"),

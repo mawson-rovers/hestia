@@ -41,9 +41,9 @@ impl<'a> LogWriter<'a> {
     }
 
     pub fn write_header_if_new(&mut self) {
-        self.writer.write_headers();
+        self.writer.write_display_headers();
         if let Some(raw_writer) = &mut self.raw_writer {
-            raw_writer.write_headers();
+            raw_writer.write_raw_headers();
         }
     }
 

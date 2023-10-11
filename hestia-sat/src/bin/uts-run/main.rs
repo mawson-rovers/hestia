@@ -9,10 +9,10 @@ use std::thread::sleep;
 use chrono::{DateTime, Duration, Utc};
 use lazy_static::lazy_static;
 use log::{debug, info};
-use uts_ws1::board::Board;
+use uts_ws1::board::{Board, BoardId};
 use uts_ws1::heater::{HeaterMode, TargetSensor};
 use uts_ws1::payload::{Config, Payload};
-use crate::programs::{HeatBoard, Program, Programs};
+use crate::programs::{Program, Programs};
 
 #[derive(Debug)]
 enum State<'a> {
@@ -32,24 +32,18 @@ enum State<'a> {
 
 impl<'a> PartialEq for State<'a> {
     fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (State::Heating { .. }, State::Heating { .. }) => true,
-            (State::Cooling { .. }, State::Cooling { .. }) => true,
-            (State::Done, State::Done) => true,
-            (State::Failed { .. }, State::Failed { .. }) => true,
-            _ => false,
-        }
-    }
-
-    fn ne(&self, other: &Self) -> bool {
-        !self.eq(other)
+        matches!((self, other),
+            (State::Heating { .. }, State::Heating { .. }) |
+            (State::Cooling { .. }, State::Cooling { .. }) |
+            (State::Done, State::Done) |
+            (State::Failed { .. }, State::Failed { .. }))
     }
 }
 
 #[derive(Debug, Clone, PartialEq)]
 enum Event<'a> {
     TemperatureReading {
-        board: HeatBoard,
+        board: BoardId,
         temp_sensor: &'a str,
         temp: f32,
     },
@@ -114,7 +108,8 @@ impl std::fmt::Display for State<'_> {
             State::Heating { program, end_time } => {
                 write!(f, "State::Heating(end_time: {}, temp_abort: {:.2}, thermostat: {})",
                        end_time.format("%T.%3f"), program.temp_abort,
-                       program.thermostat.map(|v| format!("{:.2}", v)).unwrap_or(format!("#empty")))
+                       program.thermostat.map(|v| format!("{:.2}", v))
+                           .unwrap_or(String::from("#empty")))
             }
             State::Cooling { program } => write!(f, "State::Cooling({})", program.cool_temp),
             State::FinishedProgram => write!(f, "State::FinishedProgram"),
@@ -223,7 +218,7 @@ impl<'a> Iterator for PayloadEvents<'a> {
         if self.buffer.is_empty() {
             self.buffer.push(Event::Time); // always put something in the buffer
             for board in self.payload {
-                if let Some(reading) = read_board(&board, board.into()) {
+                if let Some(reading) = read_board(board, board.into()) {
                     self.buffer.push(reading);
                 }
             }
@@ -232,7 +227,7 @@ impl<'a> Iterator for PayloadEvents<'a> {
     }
 }
 
-fn read_board<'a>(board: &Board, heat_board: HeatBoard) -> Option<Event<'a>> {
+fn read_board<'a>(board: &Board, heat_board: BoardId) -> Option<Event<'a>> {
     let sensor = board.get_target_sensor().ok()?;
     let reading = board.read_target_sensor_temp().ok()?;
     Some(Event::TemperatureReading {
@@ -250,6 +245,8 @@ pub fn main() {
 
     let config = Config::read();
     let payload = Payload::from_config(&config);
+    info!("Configured with {} boards: {:?}", payload.iter().len(), payload.iter());
+
     let programs = Programs::load(&config);
     info!("Loaded programs:\n{:#?}", programs);
 
@@ -265,9 +262,10 @@ pub fn main() {
 #[cfg(test)]
 mod tests {
     use chrono::Duration;
+    use uts_ws1::board::BoardId;
     use uts_ws1::payload::Payload;
     use crate::{Event, PayloadController, PayloadEvents, State};
-    use crate::programs::{HeatBoard, Program};
+    use crate::programs::Program;
 
     const TH1: &str = "TH1";
     const J7: &str = "J7";
@@ -284,7 +282,7 @@ mod tests {
                 temp_abort: 80.0,
                 thermostat: None,
                 cool_temp: 40.0,
-                heat_board: HeatBoard::Top,
+                heat_board: BoardId::Top,
                 heat_duty: 1.0,
             },
             Program {
@@ -295,35 +293,35 @@ mod tests {
                 temp_abort: 100.0,
                 thermostat: Some(80.0),
                 cool_temp: 30.0,
-                heat_board: HeatBoard::Bottom,
+                heat_board: BoardId::Bottom,
                 heat_duty: 1.0,
             },
         ];
 
         let events: Vec<Event> = vec![
             Event::Time,
-            Event::TemperatureReading { board: HeatBoard::Top, temp: 55.0, temp_sensor: TH1 },
-            Event::TemperatureReading { board: HeatBoard::Top, temp: 105.0, temp_sensor: TH1 },
+            Event::TemperatureReading { board: BoardId::Top, temp: 55.0, temp_sensor: TH1 },
+            Event::TemperatureReading { board: BoardId::Top, temp: 105.0, temp_sensor: TH1 },
             Event::Time,
             Event::Time,
-            Event::TemperatureReading { board: HeatBoard::Top, temp: 60.0, temp_sensor: TH1 },
-            Event::TemperatureReading { board: HeatBoard::Bottom, temp: 80.0, temp_sensor: J7 },
+            Event::TemperatureReading { board: BoardId::Top, temp: 60.0, temp_sensor: TH1 },
+            Event::TemperatureReading { board: BoardId::Bottom, temp: 80.0, temp_sensor: J7 },
             Event::Time,
-            Event::TemperatureReading { board: HeatBoard::Top, temp: 35.0, temp_sensor: TH1 },
-            Event::TemperatureReading { board: HeatBoard::Bottom, temp: 120.0, temp_sensor: J7 },
-            Event::TemperatureReading { board: HeatBoard::Bottom, temp: 100.0, temp_sensor: J7 },
-            Event::Time,
-            Event::Time,
-            Event::TemperatureReading { board: HeatBoard::Top, temp: 120.0, temp_sensor: TH1 },
-            Event::TemperatureReading { board: HeatBoard::Bottom, temp: 90.0, temp_sensor: J7 },
+            Event::TemperatureReading { board: BoardId::Top, temp: 35.0, temp_sensor: TH1 },
+            Event::TemperatureReading { board: BoardId::Bottom, temp: 120.0, temp_sensor: J7 },
+            Event::TemperatureReading { board: BoardId::Bottom, temp: 100.0, temp_sensor: J7 },
             Event::Time,
             Event::Time,
-            Event::TemperatureReading { board: HeatBoard::Top, temp: 60.0, temp_sensor: TH1 },
-            Event::TemperatureReading { board: HeatBoard::Bottom, temp: 60.0, temp_sensor: J7 },
+            Event::TemperatureReading { board: BoardId::Top, temp: 120.0, temp_sensor: TH1 },
+            Event::TemperatureReading { board: BoardId::Bottom, temp: 90.0, temp_sensor: J7 },
+            Event::Time,
+            Event::Time,
+            Event::TemperatureReading { board: BoardId::Top, temp: 60.0, temp_sensor: TH1 },
+            Event::TemperatureReading { board: BoardId::Bottom, temp: 60.0, temp_sensor: J7 },
             Event::Time,
             Event::Time,
             Event::Time,
-            Event::TemperatureReading { board: HeatBoard::Bottom, temp: 30.0, temp_sensor: J7 },
+            Event::TemperatureReading { board: BoardId::Bottom, temp: 30.0, temp_sensor: J7 },
             Event::Time,
         ];
 
@@ -342,7 +340,7 @@ mod tests {
         let _ = env_logger::try_init();
         let payload = Payload::single_board(1);
         let mut events = PayloadEvents::new(&payload);
-        let board = HeatBoard::Top;
+        let board = BoardId::Top;
         assert_eq!(Some(Event::TemperatureReading { board, temp_sensor: "TH1", temp: 25.191437 }),
                    events.next());
         assert_eq!(Some(Event::Time),
@@ -354,7 +352,7 @@ mod tests {
 
         let payload = Payload::single_board(2);
         let mut events = PayloadEvents::new(&payload);
-        let board = HeatBoard::Bottom;
+        let board = BoardId::Bottom;
         assert_eq!(Some(Event::TemperatureReading { board, temp_sensor: "TH1", temp: 25.191437 }),
                    events.next());
         assert_eq!(Some(Event::Time),
