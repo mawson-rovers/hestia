@@ -14,7 +14,7 @@ It will fail until you have correctly set up the cross-compiler for the BBB.
 
 * Add the target for your Rust environment with: 
   `rustup target add arm-unknown-linux-gnueabihf`
-* Install the ARM Linux cross-compiler `arm-unknown-linux-gnueabi` from
+* Install the ARM Linux cross-compiler `arm-unknown-linux-gnueabihf` from
   [osx-arm-linux-toolchains](https://github.com/thinkski/osx-arm-linux-toolchains), and symlink
   the `bin/arm-unknown-linux-gnueabihf-gcc` command to your PATH as `arm-linux-gcc`. (It needs to match the
   linker configuration in `.cargo/config.toml`.)
