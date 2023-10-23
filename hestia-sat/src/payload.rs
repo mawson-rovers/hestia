@@ -2,7 +2,7 @@ use std::convert::TryFrom;
 use std::ops::Index;
 use std::slice::Iter;
 use dotenv::dotenv;
-use log::{info, LevelFilter};
+use log::LevelFilter;
 use serde::Deserialize;
 use syslog::Facility;
 use crate::board::{Board, BoardId, BoardVersion};
