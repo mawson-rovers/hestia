@@ -6,7 +6,7 @@ Written in Rust, conforming to the [Cube-OS interfaces](https://github.com/Cube-
 
 ## Cross-compiling for BeagleBone
 
-The build the code, just run `cargo build`.
+To build the code, just run `cargo build`.
 
 It will fail until you have correctly set up the cross-compiler for the BBB.
 
