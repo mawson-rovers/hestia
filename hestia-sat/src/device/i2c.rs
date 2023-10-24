@@ -146,6 +146,10 @@ impl I2cDevice {
     }
 }
 
+enum ResultType {
+    Ok,
+    Err,
+}
 
 /// Wrapper around I2cDevice that provides logging about what is going on, with a read/write API
 /// for named u16 registers.
@@ -153,6 +157,8 @@ impl I2cDevice {
 pub struct LoggingI2cDevice {
     name: String,
     device: I2cDevice,
+    last_read_status: Option<ResultType>,
+    last_write_status: Option<ResultType>,
 }
 
 impl std::fmt::Display for LoggingI2cDevice {
@@ -163,15 +169,16 @@ impl std::fmt::Display for LoggingI2cDevice {
 
 impl LoggingI2cDevice {
     pub fn new(name: String, device: I2cDevice) -> LoggingI2cDevice {
-        LoggingI2cDevice { name, device }
+        LoggingI2cDevice { name, device, last_read_status: None, last_write_status: None }
     }
 
-    pub fn read_register(&self, reg: I2cReg, desc: &str) -> crate::ReadResult<u16> {
+    pub fn read_register(&mut self, reg: I2cReg, desc: &str) -> crate::ReadResult<u16> {
         debug!("{}: Reading {} from addr {}, reg {}",
             self, desc, self.device.addr, reg);
         match self.device.read_u16(reg) {
             Ok(result) => {
                 debug!("{}: Read value <{}> from {}", self, result, desc);
+                self.last_read_status = Some(ResultType::Ok);
                 Ok(result)
             },
             Err(e) => {
@@ -183,7 +190,7 @@ impl LoggingI2cDevice {
 
     /// Writes a value to the I2C register on the device. Logs a warning if it fails,
     /// debug if it succeeds.
-    pub fn write_register(&self, reg: I2cReg, desc: &str, data: u16) {
+    pub fn write_register(&mut self, reg: I2cReg, desc: &str, data: u16) {
         debug!("{}: Setting {} to value <{}> (addr {}, reg {})",
             self, desc, self.device.addr, reg, data);
         match self.device.write_u16(reg, data) {
