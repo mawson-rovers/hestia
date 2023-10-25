@@ -8,6 +8,7 @@ use std::path::Path;
 use chrono::{DateTime, Utc};
 use chrono::format::{StrftimeItems, Item};
 use lazy_static::lazy_static;
+use log::error;
 
 use crate::board::{Board, BoardData, BoardFlags};
 use crate::heater::HeaterMode;
@@ -247,7 +248,7 @@ impl CsvWriter {
         let mut data: Vec<CsvData> = vec![timestamp.into(), board.into()];
         data.extend(raw_data.iter().map(CsvData::from));
         let data: [CsvData; CSV_RAW_FIELD_COUNT] = data.try_into().expect("Array sizes didn't match");
-        self.write_data(data).unwrap_or_else(|e| eprint!("Failed to write to log file: {:?}", e));
+        self.write_data(data).unwrap_or_else(|e| error!("Failed to write to log file: {:?}", e));
     }
 
     pub fn write_display_data(&mut self, timestamp: DateTime<Utc>, board: &Board,
@@ -286,7 +287,7 @@ impl CsvWriter {
             CsvData::from(&board_data.max_temp),
             CsvData::from(&board_data.flags),
         ];
-        self.write_data(data).unwrap_or_else(|e| eprint!("Failed to write to log file: {:?}", e));
+        self.write_data(data).unwrap_or_else(|e| error!("Failed to write to log file: {:?}", e));
     }
 
     pub fn write_data<const LEN: usize>(&mut self, data: [CsvData; LEN]) -> io::Result<()> {

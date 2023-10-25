@@ -2,7 +2,9 @@ use std::convert::TryFrom;
 use std::ops::Index;
 use std::slice::Iter;
 use dotenv::dotenv;
+use log::LevelFilter;
 use serde::Deserialize;
+use syslog::Facility;
 use crate::board::{Board, BoardId, BoardVersion};
 
 fn default_i2c_bus() -> Vec<u8> { vec![1, 2] }
@@ -43,13 +45,24 @@ pub struct Config {
     
     /// Installation directory, used for uts-update
     pub install_path: Option<String>,
+
+    /// Send error logging to syslog instead of console
+    #[serde(default)]
+    pub syslog: bool,
 }
 
 impl Config {
     pub fn read() -> Config {
         dotenv().ok();
-        let _ = env_logger::try_init(); // don't fail if called multiple times
-        envy::prefixed("UTS_").from_env().unwrap()
+        let config: Config = envy::prefixed("UTS_").from_env().unwrap();
+        if config.syslog {
+            syslog::init(Facility::LOG_USER, LevelFilter::Info, None)
+                .expect("Failed to initialise syslog");
+            eprintln!("Sending log output to syslog")
+        } else {
+            let _ = env_logger::try_init(); // don't fail if called multiple times
+        }
+        config
     }
 }
 
