@@ -53,3 +53,21 @@ docker run -it -v "$PWD":/usr/cubeos \
 ```
 
 There is also a script `run-docker.sh` that does this.
+
+## Running
+
+### Environment variables
+
+The Hestia binaries can be configured by setting the following environment variables.
+
+| variable            | default | description                                                                      |
+|---------------------|---------|----------------------------------------------------------------------------------|
+| `UTS_LOG_PATH`      |         | Log file directory                                                               |
+| `UTS_I2C_BUS`       | `1,2`   | List of active I2C bus numbers                                                   |
+| `UTS_BOARD_VERSION` | `V2_2`  | Board version, used for switching some address settings [`V1_1`, `V2_0`, `V2_2`] |
+| `UTS_LOG_INTERVAL`  | `5`     | Duration between logging output in seconds                                       |
+| `UTS_PROGRAM_FILE`  |         | Location of program config file, e.g. `/home/debian/uts/uts-programs.toml`       |
+| `UTS_HTTP_PORT`     | `5000`  | Port used for HTTP dashboard                                                     |
+| `UTS_CORS_ENABLE`   | `false` | Enable CORS for remote API access                                                |
+| `UTS_INSTALL_PATH`  |         | Installation directory, used for `uts-update`                                    |
+| `UTS_SYSLOG`        | `false` | Send error logging to syslog instead of console                                  |
