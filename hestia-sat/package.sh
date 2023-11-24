@@ -14,7 +14,7 @@ set -x # echo commands from now on
 rm -r $OUT
 mkdir -p $OUT/{bin,www}
 
-cp -p "target/$TARGET/debug/"uts-{cli,log,web,run,update} $OUT/bin/
+cp -p "target/$TARGET/release/"uts-{cli,log,web,run,update} $OUT/bin/
 cp -p ./uts-programs.toml $OUT/uts-programs-example.toml
 cp -Rp ../hestia-static-dash/* $OUT/www/
 
