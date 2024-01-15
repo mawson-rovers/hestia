@@ -2,6 +2,7 @@ name: "Kibot PCB build"
 
 # Run the workflow on pushes with PCB or kibot config changes
 on:
+  workflow_dispatch:
   push:
     paths:
       - 'hestia-pcb/**'
