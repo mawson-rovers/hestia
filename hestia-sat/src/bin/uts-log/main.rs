@@ -19,7 +19,7 @@ fn loop_logger_for_day(config: &Config) {
     let payload = Payload::from_config(config);
     info!("Configured with {} boards: {:?}", payload.iter().len(), payload.iter());
 
-    let mut writer = LogWriter::create_file_writer(log_path, &payload, &start_date);
+    let mut writer = LogWriter::create_file_writer(log_path, &payload, &start_date, config.compress_logs);
     writer.write_header_if_new();
 
     loop {

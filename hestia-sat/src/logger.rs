@@ -18,17 +18,17 @@ impl<'a> LogWriter<'a> {
         LogWriter { writer, raw_writer: None, payload }
     }
 
-    pub fn create_file_writer(path: &String, payload: &'a Payload, start_date: &DateTime<Utc>) -> LogWriter<'a> {
+    pub fn create_file_writer(path: &String, payload: &'a Payload, start_date: &DateTime<Utc>, compressed: bool) -> LogWriter<'a> {
         let log_path = Path::new(&path);
         fs::create_dir_all(log_path)
             .expect("Log path does not exist and could not be created: {}");
-        let writer = Self::new_csv_writer(start_date, log_path, false);
-        let raw_writer = Self::new_csv_writer(start_date, log_path, true);
+        let writer = Self::new_csv_writer(start_date, log_path, false, compressed);
+        let raw_writer = Self::new_csv_writer(start_date, log_path, true, compressed);
 
         LogWriter { writer, raw_writer: Some(raw_writer), payload }
     }
 
-    fn new_csv_writer(start_date: &DateTime<Utc>, log_path: &Path, raw_log: bool) -> CsvWriter {
+    fn new_csv_writer(start_date: &DateTime<Utc>, log_path: &Path, raw_log: bool, compressed: bool) -> CsvWriter {
         let filename = &format!("uts-data-{}{}.csv",
                                 start_date.format("%Y-%m-%d"),
                                 if raw_log { "-raw" } else { "" });
@@ -37,7 +37,11 @@ impl<'a> LogWriter<'a> {
                   if raw_log { "raw" } else { "temp" },
                   file_path.display());
         let is_new = !file_path.exists();
-        CsvWriter::file(file_path, is_new)
+        return if compressed {
+            CsvWriter::compressed_file(file_path, is_new)
+        } else {
+            CsvWriter::file(file_path, is_new)
+        }
     }
 
     pub fn write_header_if_new(&mut self) {

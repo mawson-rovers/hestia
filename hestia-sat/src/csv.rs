@@ -10,6 +10,9 @@ use chrono::format::{StrftimeItems, Item};
 use lazy_static::lazy_static;
 use log::error;
 
+use bzip2::Compression;
+use bzip2::write::BzEncoder;
+
 use crate::board::{Board, BoardData, BoardFlags};
 use crate::heater::HeaterMode;
 use crate::reading::SensorReading;
@@ -211,6 +214,22 @@ impl CsvWriter {
             open_writer: Box::new(|| Ok(Box::new(io::stdout()))),
             line_ending: LineEnding::LF,
             write_headers: true,
+        }
+    }
+
+    pub fn compressed_file<P: AsRef<Path> + 'static>(path: P, is_new: bool) -> CsvWriter {
+        let options = OpenOptions::new()
+            .create(true)
+            .append(true)
+            .clone();
+        CsvWriter {
+            open_writer: Box::new(move || {
+                let file = options.open(&path)?;
+                let encoder = BzEncoder::new(file, Compression::fast());
+                Ok(Box::new(encoder))
+            }),
+            line_ending: LineEnding::CRLF,
+            write_headers: is_new,
         }
     }
 
