@@ -35,3 +35,22 @@ $ sudo connmanctl
 
 (For the TP-Link AC600 Wi-Fi dongle - the one with the antenna - install the
 [rtl8812au](https://github.com/aircrack-ng/rtl8812au.git) driver instead.)
+
+### Update the hostname
+
+Update the following files to set your Beaglebone to a unique hostname (we normally use b1, b2, etc).
+
+* `/etc/hostname`
+* `/etc/hosts`
+
+Then change the hostname on the Avahi mDNS daemon. This allows you to ping `b7.local` (for example) over the network.
+
+```sh
+$ sudo hostname b7
+$ sudo avahi-set-host-name b7
+```
+
+You just need to do this once; the OS and mDNS daemon will pick up the settings from `/etc/hostname` on the next reboot.
+
+The Beaglebone should now be accessible via SSH over Wi-Fi.  Continue with the instructions in [INSTALL.md](INSTALL.md)
+to install and configure the software.

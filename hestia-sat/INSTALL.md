@@ -1,3 +1,5 @@
+## Upload the software
+
 Use the `upload.sh` script to copy everything from your local machine to the Beaglebone:
 
 ```shell
@@ -86,6 +88,9 @@ debian@b2:~$ cat > ~/.env
 RUST_LOG=info
 RUST_BACKTRACE=1
 UTS_I2C_BUS=1,2
+UTS_INSTALL_PATH=/home/debian/uts
+UTS_LOG_PATH=/home/debian/uts/logs
+UTS_PROGRAM_FILE=/home/debian/uts/uts-programs.toml
 ```
 
 Hit Ctrl-D to exit and save the .env file.
