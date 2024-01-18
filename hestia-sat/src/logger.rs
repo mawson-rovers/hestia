@@ -29,9 +29,10 @@ impl<'a> LogWriter<'a> {
     }
 
     fn new_csv_writer(start_date: &DateTime<Utc>, log_path: &Path, raw_log: bool, compressed: bool) -> CsvWriter {
-        let filename = &format!("uts-data-{}{}.csv",
+        let filename = &format!("uts-data-{}{}.csv{}",
                                 start_date.format("%Y-%m-%d"),
-                                if raw_log { "-raw" } else { "" });
+                                if raw_log { "-raw" } else { "" },
+                                if compressed { ".bz2" } else { "" });
         let file_path = log_path.join(filename);
         info!("Logging {} sensor data to {}...",
                   if raw_log { "raw" } else { "temp" },
