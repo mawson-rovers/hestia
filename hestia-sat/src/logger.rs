@@ -38,7 +38,7 @@ impl<'a> LogWriter<'a> {
                   if raw_log { "raw" } else { "temp" },
                   file_path.display());
         let is_new = !file_path.exists();
-        return if compressed {
+        if compressed {
             CsvWriter::compressed_file(file_path, is_new)
         } else {
             CsvWriter::file(file_path, is_new)
