@@ -1,6 +1,9 @@
 mod test;
 
-use std::thread;
+use std::env::set_var;
+use std::process::{exit};
+use std::{env, thread};
+use std::io::{stdout, Write};
 use std::time::Duration;
 use chrono::Utc;
 use clap::{Parser, Subcommand};
@@ -90,6 +93,12 @@ enum Command {
         /// temperature in °C
         temp: f32,
     },
+
+    /// Run a toml program file by name
+    Run {
+        program_name: String,
+    }
+
 }
 
 #[derive(Subcommand)]
@@ -111,6 +120,7 @@ pub fn main() {
             Command::TargetSensor { board, target_sensor } => do_target_sensor(*board, *target_sensor),
             Command::Duty { board, duty } => do_your_duty(*board, *duty),
             Command::Max { board, temp } => do_max(*board, *temp),
+            Command::Run {program_name } => do_run(program_name),
         },
         None => do_status()
     }
@@ -120,6 +130,28 @@ fn do_max(board: u8, temp: f32) {
     let board = single_board(board);
     board.write_max_temp(temp);
     show_status(board);
+}
+
+fn do_run(program_name: &str) {
+    let mut path_to_bin = env::current_dir().expect("Could not get current dir");
+    path_to_bin.push("uts-run");
+    let run_bin = path_to_bin.as_path();
+
+    let mut path_to_program = env::current_dir().expect("Could not get current dir");
+    path_to_program.push(program_name);
+    path_to_program.set_extension("toml");
+    let program = path_to_program.as_path();
+
+    println!("Will run {}", program.display());
+    let _ = stdout().flush();
+
+    set_var("UTS_PROGRAM_FILE", program);
+    let status = std::process::Command::new(run_bin)
+        .status()
+        .expect("Failed to execute uts-run");
+
+    let code = status.code().unwrap_or_default();
+    exit(code)
 }
 
 fn do_your_duty(board: u8, duty: u16) {
