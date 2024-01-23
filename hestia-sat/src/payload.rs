@@ -20,6 +20,9 @@ pub struct Config {
     /// Log file directory
     pub log_path: Option<String>,
 
+    #[serde(default)]
+    pub compress_logs: bool,
+
     /// List of active I2C bus numbers
     #[serde(default = "default_i2c_bus")]
     pub i2c_bus: Vec<u8>,
