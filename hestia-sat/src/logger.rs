@@ -32,7 +32,7 @@ impl<'a> LogWriter<'a> {
         let filename = &format!("uts-data-{}{}.csv{}",
                                 start_date.format("%Y-%m-%d"),
                                 if raw_log { "-raw" } else { "" },
-                                if compressed { ".bz2" } else { "" });
+                                if compressed { ".gz" } else { "" });
         let file_path = log_path.join(filename);
         info!("Logging {} sensor data to {}...",
                   if raw_log { "raw" } else { "temp" },

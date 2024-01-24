@@ -6,12 +6,11 @@ use std::io::Write;
 use std::path::Path;
 
 use chrono::{DateTime, Utc};
-use chrono::format::{StrftimeItems, Item};
+use chrono::format::{Item, StrftimeItems};
+use flate2::Compression;
+use flate2::write::GzEncoder;
 use lazy_static::lazy_static;
 use log::error;
-
-use bzip2::Compression;
-use bzip2::write::BzEncoder;
 
 use crate::board::{Board, BoardData, BoardFlags};
 use crate::heater::HeaterMode;
@@ -225,7 +224,7 @@ impl CsvWriter {
         CsvWriter {
             open_writer: Box::new(move || {
                 let file = options.open(&path)?;
-                let encoder = BzEncoder::new(file, Compression::fast());
+                let encoder = GzEncoder::new(file, Compression::fast());
                 Ok(Box::new(encoder))
             }),
             line_ending: LineEnding::CRLF,
