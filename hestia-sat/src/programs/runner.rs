@@ -9,9 +9,9 @@ use chrono::{DateTime, Duration, Utc};
 use lazy_static::lazy_static;
 use log::{debug, info};
 
-use uts_ws1::board::{Board, BoardId};
-use uts_ws1::heater::{HeaterMode, TargetSensor};
-use uts_ws1::payload::Payload;
+use crate::board::{Board, BoardId};
+use crate::heater::{HeaterMode, TargetSensor};
+use crate::payload::Payload;
 
 use crate::programs::Program;
 
@@ -251,11 +251,11 @@ fn read_board<'a>(board: &Board, heat_board: BoardId) -> Option<Event<'a>> {
 mod tests {
     use chrono::Duration;
 
-    use uts_ws1::board::BoardId;
-    use uts_ws1::payload::Payload;
+    use crate::board::BoardId;
+    use crate::payload::Payload;
 
     use crate::programs::Program;
-    use crate::runner::{Event, PayloadController, PayloadEvents, State};
+    use crate::programs::runner::{Event, PayloadController, PayloadEvents, State};
 
     const TH1: &str = "TH1";
     const J7: &str = "J7";

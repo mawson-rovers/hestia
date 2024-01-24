@@ -3,11 +3,8 @@ use log::info;
 
 use uts_ws1::payload::{Config, Payload};
 
-use crate::programs::Programs;
-use crate::runner::{PayloadController, PayloadEvents};
-
-mod programs;
-mod runner;
+use uts_ws1::programs::Programs;
+use uts_ws1::programs::runner::{PayloadController, PayloadEvents};
 
 pub fn main() {
     let config = Config::read();
@@ -22,6 +19,6 @@ pub fn main() {
         let program_list = &mut programs.iter();
         let mut controller = PayloadController::new(&payload, program_list);
         controller.run(&mut events, Duration::seconds(1));
-        if !programs.run_loop || controller.is_aborted() { break }
+        if !programs.run_loop || controller.is_aborted() { break; }
     }
 }

@@ -13,10 +13,10 @@ pub mod heater;
 pub mod logger;
 pub mod reading;
 pub mod sensors;
+pub mod programs;
 
 // private modules
 mod device;
-
 
 /// Errors reading from the payload - usually can be logged and ignored
 #[derive(Debug, Fail, Clone)]

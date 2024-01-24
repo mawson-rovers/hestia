@@ -2,19 +2,23 @@ use std::fmt::Formatter;
 use std::fs;
 use std::slice::Iter;
 use std::sync::Mutex;
+
 use chrono::Duration;
-use serde::Deserialize;
 use duration_str::deserialize_duration_chrono;
 use lazy_static::lazy_static;
-use serial_int::{SerialGenerator};
-use uts_ws1::board::BoardId;
-use uts_ws1::payload::Config;
+use serde::Deserialize;
+use serial_int::SerialGenerator;
+
+use crate::board::BoardId;
+use crate::payload::Config;
+
+pub mod runner;
 
 #[derive(Debug, PartialEq, Clone, Deserialize)]
 pub struct Programs {
     programs: Vec<Program>,
 
-    #[serde(default, alias="loop")]
+    #[serde(default, alias = "loop")]
     pub run_loop: bool,
 }
 
