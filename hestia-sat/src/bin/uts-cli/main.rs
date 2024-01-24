@@ -96,9 +96,10 @@ enum Command {
         temp: f32,
     },
 
-    /// Run a toml program file by name
+    /// Run a TOML program file by name
     Run {
-        program_name: String,
+        /// Relative or absolute path to TOML file
+        toml_file: String,
     },
 }
 
@@ -121,7 +122,7 @@ pub fn main() {
             Command::TargetSensor { board, target_sensor } => do_target_sensor(*board, *target_sensor),
             Command::Duty { board, duty } => do_your_duty(*board, *duty),
             Command::Max { board, temp } => do_max(*board, *temp),
-            Command::Run { program_name } => do_run(program_name),
+            Command::Run { toml_file } => do_run(toml_file),
         },
         None => do_status()
     }
@@ -133,14 +134,12 @@ fn do_max(board: u8, temp: f32) {
     show_status(board);
 }
 
-fn do_run(program_name: &str) {
+fn do_run(toml_file: &str) {
     let payload = Payload::create();
     info!("Configured with {} boards: {:?}", payload.iter().len(), payload.iter());
 
-    let filename = if program_name.ends_with(".toml") { program_name.to_string() } else { format!("{}.toml", program_name) };
-
-    let programs = Programs::load_from_file(&filename);
-    info!("Running programs from {}:\n{:#?}", filename, programs);
+    let programs = Programs::load_from_file(toml_file);
+    info!("Running programs from {}:\n{:#?}", toml_file, programs);
 
     runner::run(&payload, &programs);
     info!("Programs completed");
