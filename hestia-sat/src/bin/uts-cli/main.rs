@@ -1,15 +1,20 @@
-mod test;
-
+use std::io::Write;
 use std::thread;
 use std::time::Duration;
+
 use chrono::Utc;
 use clap::{Parser, Subcommand};
+use log::info;
+
 use uts_ws1::board::{Board, BoardDataProvider};
-use uts_ws1::payload::{Config, Payload};
 use uts_ws1::heater::{HeaterMode, TargetSensor};
 use uts_ws1::logger::LogWriter;
+use uts_ws1::payload::{Config, Payload};
+use uts_ws1::programs::{Programs, runner};
 use uts_ws1::reading::SensorReading;
 use uts_ws1::ReadResult;
+
+mod test;
 
 #[derive(Parser)]
 #[command(version, about)]
@@ -90,6 +95,12 @@ enum Command {
         /// temperature in °C
         temp: f32,
     },
+
+    /// Run a TOML program file by name
+    Run {
+        /// Relative or absolute path to TOML file
+        toml_file: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -111,6 +122,7 @@ pub fn main() {
             Command::TargetSensor { board, target_sensor } => do_target_sensor(*board, *target_sensor),
             Command::Duty { board, duty } => do_your_duty(*board, *duty),
             Command::Max { board, temp } => do_max(*board, *temp),
+            Command::Run { toml_file } => do_run(toml_file),
         },
         None => do_status()
     }
@@ -120,6 +132,17 @@ fn do_max(board: u8, temp: f32) {
     let board = single_board(board);
     board.write_max_temp(temp);
     show_status(board);
+}
+
+fn do_run(toml_file: &str) {
+    let payload = Payload::create();
+    info!("Configured with {} boards: {:?}", payload.iter().len(), payload.iter());
+
+    let programs = Programs::load_from_file(toml_file);
+    info!("Running programs from {}:\n{:#?}", toml_file, programs);
+
+    runner::run(&payload, &programs);
+    info!("Programs completed");
 }
 
 fn do_your_duty(board: u8, duty: u16) {

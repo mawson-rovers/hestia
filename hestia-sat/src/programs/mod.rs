@@ -2,28 +2,38 @@ use std::fmt::Formatter;
 use std::fs;
 use std::slice::Iter;
 use std::sync::Mutex;
+
 use chrono::Duration;
-use serde::Deserialize;
 use duration_str::deserialize_duration_chrono;
 use lazy_static::lazy_static;
-use serial_int::{SerialGenerator};
-use uts_ws1::board::BoardId;
-use uts_ws1::payload::Config;
+use serde::Deserialize;
+use serial_int::SerialGenerator;
+
+use crate::board::BoardId;
+use crate::payload::Config;
+
+pub mod runner;
 
 #[derive(Debug, PartialEq, Clone, Deserialize)]
 pub struct Programs {
     programs: Vec<Program>,
 
-    #[serde(default, alias="loop")]
+    #[serde(default, alias = "loop")]
     pub run_loop: bool,
 }
 
 impl Programs {
     pub fn load(config: &Config) -> Self {
         let file = config.program_file.as_ref()
-            .expect("Set UTS_PROGRAM_FILE to location of uts-programs.toml");
-        let str = fs::read_to_string(file).expect("uts-programs.toml not found");
-        toml::from_str(&str).expect("Failed to parse uts-programs.toml")
+            .expect("UTS_PROGRAM_FILE should be set to location of uts-programs.toml");
+        Self::load_from_file(file)
+    }
+
+    pub fn load_from_file(filename: &str) -> Self {
+        let str = fs::read_to_string(filename)
+            .unwrap_or_else(|err| panic!("Program file should be readable {}: {}", filename, err));
+        toml::from_str(&str)
+            .unwrap_or_else(|err| panic!("Program file should contain valid TOML {}: {}", filename, err))
     }
 
     pub fn iter(&self) -> Iter<Program> {
