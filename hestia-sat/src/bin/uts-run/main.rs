@@ -1,10 +1,8 @@
-use chrono::Duration;
 use log::info;
 
 use uts_ws1::payload::{Config, Payload};
-
 use uts_ws1::programs::Programs;
-use uts_ws1::programs::runner::{PayloadController, PayloadEvents};
+use uts_ws1::programs::runner;
 
 pub fn main() {
     let config = Config::read();
@@ -14,11 +12,5 @@ pub fn main() {
     let programs = Programs::load(&config);
     info!("Loaded programs:\n{:#?}", programs);
 
-    loop {
-        let mut events = PayloadEvents::new(&payload);
-        let program_list = &mut programs.iter();
-        let mut controller = PayloadController::new(&payload, program_list);
-        controller.run(&mut events, Duration::seconds(1));
-        if !programs.run_loop || controller.is_aborted() { break; }
-    }
+    runner::run(&payload, &programs);
 }

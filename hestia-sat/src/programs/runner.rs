@@ -13,7 +13,7 @@ use crate::board::{Board, BoardId};
 use crate::heater::{HeaterMode, TargetSensor};
 use crate::payload::Payload;
 
-use crate::programs::Program;
+use crate::programs::{Program, Programs};
 
 #[derive(Debug)]
 pub enum State<'a> {
@@ -245,6 +245,16 @@ fn read_board<'a>(board: &Board, heat_board: BoardId) -> Option<Event<'a>> {
         temp_sensor: sensor.id,
         temp: reading.display_value,
     })
+}
+
+pub fn run(payload: &Payload, programs: &Programs) {
+    loop {
+        let mut events = PayloadEvents::new(payload);
+        let program_list = &mut programs.iter();
+        let mut controller = PayloadController::new(payload, program_list);
+        controller.run(&mut events, Duration::seconds(1));
+        if !programs.run_loop || controller.is_aborted() { break; }
+    }
 }
 
 #[cfg(test)]

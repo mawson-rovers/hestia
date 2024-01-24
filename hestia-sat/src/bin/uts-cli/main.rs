@@ -1,18 +1,20 @@
-mod test;
-
-use std::env::set_var;
-use std::process::{exit};
-use std::{env, thread};
-use std::io::{stdout, Write};
+use std::io::Write;
+use std::thread;
 use std::time::Duration;
+
 use chrono::Utc;
 use clap::{Parser, Subcommand};
+use log::info;
+
 use uts_ws1::board::{Board, BoardDataProvider};
-use uts_ws1::payload::{Config, Payload};
 use uts_ws1::heater::{HeaterMode, TargetSensor};
 use uts_ws1::logger::LogWriter;
+use uts_ws1::payload::{Config, Payload};
+use uts_ws1::programs::{Programs, runner};
 use uts_ws1::reading::SensorReading;
 use uts_ws1::ReadResult;
+
+mod test;
 
 #[derive(Parser)]
 #[command(version, about)]
@@ -97,8 +99,7 @@ enum Command {
     /// Run a toml program file by name
     Run {
         program_name: String,
-    }
-
+    },
 }
 
 #[derive(Subcommand)]
@@ -120,7 +121,7 @@ pub fn main() {
             Command::TargetSensor { board, target_sensor } => do_target_sensor(*board, *target_sensor),
             Command::Duty { board, duty } => do_your_duty(*board, *duty),
             Command::Max { board, temp } => do_max(*board, *temp),
-            Command::Run {program_name } => do_run(program_name),
+            Command::Run { program_name } => do_run(program_name),
         },
         None => do_status()
     }
@@ -133,25 +134,16 @@ fn do_max(board: u8, temp: f32) {
 }
 
 fn do_run(program_name: &str) {
-    let mut path_to_bin = env::current_dir().expect("Could not get current dir");
-    path_to_bin.push("uts-run");
-    let run_bin = path_to_bin.as_path();
+    let payload = Payload::create();
+    info!("Configured with {} boards: {:?}", payload.iter().len(), payload.iter());
 
-    let mut path_to_program = env::current_dir().expect("Could not get current dir");
-    path_to_program.push(program_name);
-    path_to_program.set_extension("toml");
-    let program = path_to_program.as_path();
+    let filename = if program_name.ends_with(".toml") { program_name.to_string() } else { format!("{}.toml", program_name) };
 
-    println!("Will run {}", program.display());
-    let _ = stdout().flush();
+    let programs = Programs::load_from_file(&filename);
+    info!("Running programs from {}:\n{:#?}", filename, programs);
 
-    set_var("UTS_PROGRAM_FILE", program);
-    let status = std::process::Command::new(run_bin)
-        .status()
-        .expect("Failed to execute uts-run");
-
-    let code = status.code().unwrap_or_default();
-    exit(code)
+    runner::run(&payload, &programs);
+    info!("Programs completed");
 }
 
 fn do_your_duty(board: u8, duty: u16) {
