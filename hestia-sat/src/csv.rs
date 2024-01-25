@@ -7,8 +7,6 @@ use std::path::Path;
 
 use chrono::{DateTime, Utc};
 use chrono::format::{Item, StrftimeItems};
-use flate2::Compression;
-use flate2::write::GzEncoder;
 use lazy_static::lazy_static;
 use log::error;
 
@@ -213,22 +211,6 @@ impl CsvWriter {
             open_writer: Box::new(|| Ok(Box::new(io::stdout()))),
             line_ending: LineEnding::LF,
             write_headers: true,
-        }
-    }
-
-    pub fn compressed_file<P: AsRef<Path> + 'static>(path: P, is_new: bool) -> CsvWriter {
-        let options = OpenOptions::new()
-            .create(true)
-            .append(true)
-            .clone();
-        CsvWriter {
-            open_writer: Box::new(move || {
-                let file = options.open(&path)?;
-                let encoder = GzEncoder::new(file, Compression::fast());
-                Ok(Box::new(encoder))
-            }),
-            line_ending: LineEnding::CRLF,
-            write_headers: is_new,
         }
     }
 

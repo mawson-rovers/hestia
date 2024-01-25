@@ -4,11 +4,15 @@ use chrono::{Datelike, Utc};
 use log::info;
 use uts_ws1::payload::{Config, Payload};
 use uts_ws1::logger::LogWriter;
+use uts_ws1::zipper;
 
 pub fn main() {
     let config = Config::read();
-    loop {
-        // restarts each new day
+    loop { // restarts each new day
+        if config.compress_logs {
+            // compress logs when we start and after each day
+            zipper::zip_logs(&config);
+        }
         loop_logger_for_day(&config);
     }
 }
@@ -19,7 +23,7 @@ fn loop_logger_for_day(config: &Config) {
     let payload = Payload::from_config(config);
     info!("Configured with {} boards: {:?}", payload.iter().len(), payload.iter());
 
-    let mut writer = LogWriter::create_file_writer(log_path, &payload, &start_date, config.compress_logs);
+    let mut writer = LogWriter::create_file_writer(log_path, &payload, &start_date);
     writer.write_header_if_new();
 
     loop {

@@ -1,4 +1,3 @@
-use std::io::Write;
 use std::thread;
 use std::time::Duration;
 
@@ -12,7 +11,7 @@ use uts_ws1::logger::LogWriter;
 use uts_ws1::payload::{Config, Payload};
 use uts_ws1::programs::{Programs, runner};
 use uts_ws1::reading::SensorReading;
-use uts_ws1::ReadResult;
+use uts_ws1::{ReadResult, zipper};
 
 mod test;
 
@@ -101,6 +100,9 @@ enum Command {
         /// Relative or absolute path to TOML file
         toml_file: String,
     },
+
+    /// Compress all the log files in UTS_LOG_PATH
+    Zip,
 }
 
 #[derive(Subcommand)]
@@ -123,6 +125,7 @@ pub fn main() {
             Command::Duty { board, duty } => do_your_duty(*board, *duty),
             Command::Max { board, temp } => do_max(*board, *temp),
             Command::Run { toml_file } => do_run(toml_file),
+            Command::Zip => do_zip(),
         },
         None => do_status()
     }
@@ -161,6 +164,11 @@ fn do_target(board: u8, temp: f32) {
     let board = single_board(board);
     board.write_target_temp(temp);
     show_status(board);
+}
+
+fn do_zip() {
+    let config = Config::read();
+    zipper::zip_logs(&config);
 }
 
 fn single_board(board: u8) -> Board {
