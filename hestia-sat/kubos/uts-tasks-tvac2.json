@@ -1,0 +1,19 @@
+{
+  "tasks": [
+    {
+      "description": "Log temperature data",
+      "delay": "0s",
+      "app": {
+        "name": "uts-log"
+      }
+    },
+    {
+      "description": "Run TVac 2 experiment",
+      "delay": "30s",
+      "app": {
+        "name": "uts-cli",
+        "args": ["run", "/home/kubos/UTS/programs/tvac2.toml"]
+      }
+    }
+  ]
+}
