@@ -14,6 +14,7 @@ pub mod logger;
 pub mod reading;
 pub mod sensors;
 pub mod programs;
+pub mod zipper;
 
 // private modules
 mod device;
