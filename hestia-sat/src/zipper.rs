@@ -1,4 +1,4 @@
-use std::fs::File;
+use std::fs::{File, create_dir_all};
 use std::io;
 use std::io::{BufReader, BufWriter};
 use std::path::{Path, PathBuf};
@@ -7,19 +7,24 @@ use std::time::SystemTime;
 use flate2::Compression;
 use flate2::write::GzEncoder;
 use glob::glob;
+use log::info;
 
 use crate::payload::Config;
 
 pub fn zip_logs(config: &Config) {
     let path = config.log_path.as_ref().expect("UTS_LOG_PATH should be set");
-    let download_path = config.download_path.as_ref().expect("UTS_DOWNLOAD_PATH should be set");
+    let download_path: PathBuf = config.download_path.as_ref().expect("UTS_DOWNLOAD_PATH should be set").into();
+    if !download_path.exists() {
+        info!("Creating download directory at {}", download_path.display());
+        create_dir_all(&download_path).expect(&*format!("Could not create download directory {}", download_path.display()));
+    }
     let path = format!("{}/*.csv", path);
     for file in glob(&path).expect("Glob pattern failed").flatten() {
-        zip_file(file, download_path.into());
+        zip_file(file, &download_path);
     }
 }
 
-fn zip_file(in_file: PathBuf, download_path: PathBuf) {
+fn zip_file(in_file: PathBuf, download_path: &PathBuf) {
     let mut out_file = download_path.clone();
     out_file.push(in_file.file_name().unwrap());
     out_file.set_extension("csv.gz");
