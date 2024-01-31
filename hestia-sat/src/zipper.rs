@@ -12,14 +12,17 @@ use crate::payload::Config;
 
 pub fn zip_logs(config: &Config) {
     let path = config.log_path.as_ref().expect("UTS_LOG_PATH should be set");
+    let download_path = config.download_path.as_ref().expect("UTS_DOWNLOAD_PATH should be set");
     let path = format!("{}/*.csv", path);
     for file in glob(&path).expect("Glob pattern failed").flatten() {
-        zip_file(file);
+        zip_file(file, download_path.into());
     }
 }
 
-fn zip_file(in_file: PathBuf) {
-    let out_file = in_file.with_extension("csv.gz");
+fn zip_file(in_file: PathBuf, download_path: PathBuf) {
+    let mut out_file = download_path.clone();
+    out_file.push(in_file.file_name().unwrap());
+    out_file.set_extension("csv.gz");
     if out_file.exists() && mtime(&out_file) >= mtime(&in_file) {
         // ignore files we've already compressed
         return

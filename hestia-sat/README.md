@@ -63,6 +63,7 @@ The Hestia binaries can be configured by setting the following environment varia
 | variable            | default | description                                                                      |
 |---------------------|---------|----------------------------------------------------------------------------------|
 | `UTS_LOG_PATH`      |         | Log file directory                                                               |
+| `UTS_DOWNLOAD_PATH` |         | Path to output compressed logs for downloading                                   |
 | `UTS_COMPRESS_LOGS` | `false` | Use gzip compression when writing logs                                           |
 | `UTS_I2C_BUS`       | `1,2`   | List of active I2C bus numbers                                                   |
 | `UTS_BOARD_VERSION` | `V2_2`  | Board version, used for switching some address settings [`V1_1`, `V2_0`, `V2_2`] |
