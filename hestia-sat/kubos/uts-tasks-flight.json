@@ -1,8 +1,16 @@
 {
   "tasks": [
     {
-      "description": "Log temperature data",
+      "description": "Enable payload",
       "delay": "0s",
+      "app": {
+        "name": "uts-cli",
+        "args": ["enable"]
+      }
+    },
+    {
+      "description": "Log temperature data",
+      "delay": "5s",
       "app": {
         "name": "uts-log"
       }

@@ -10,6 +10,7 @@ pub mod board;
 pub mod payload;
 pub mod csv;
 pub mod heater;
+pub mod host;
 pub mod logger;
 pub mod reading;
 pub mod sensors;

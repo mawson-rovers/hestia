@@ -37,6 +37,7 @@ reqwest = "0.11.20"
 openssl = { version = "0.10.57", features = ["vendored"] }
 syslog = "6.1.0"
 flate2 = { version = "1.0.28", features = ["zlib"] }
+gpio = "0.4.1"
 
 [dev-dependencies]
 assert_approx_eq = "1.1.0"
