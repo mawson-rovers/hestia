@@ -16,11 +16,11 @@ pub fn gpio_set_high(pin: u16) {
 }
 
 #[cfg(not(target_os = "linux"))]
-pub fn gpio_set_low(pin: u16) {
+pub fn gpio_set_low(_pin: u16) {
     info!("GPIO operations only implemented for Linux");
 }
 
 #[cfg(not(target_os = "linux"))]
-pub fn gpio_set_high(pin: u16) {
+pub fn gpio_set_high(_pin: u16) {
     info!("GPIO operations only implemented for Linux");
 }
