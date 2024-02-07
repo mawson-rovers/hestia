@@ -20,6 +20,10 @@ mod test;
 struct CommandLine {
     #[command(subcommand)]
     command: Option<Command>,
+
+    /// Provided by flight scheduler and ignored
+    #[arg(short)]
+    config: Option<String>,
 }
 
 #[derive(Subcommand)]
