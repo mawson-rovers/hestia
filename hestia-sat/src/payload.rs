@@ -64,7 +64,7 @@ impl Config {
         if config.syslog {
             syslog::init(Facility::LOG_USER, LevelFilter::Info, None)
                 .expect("Failed to initialise syslog");
-            eprintln!("Sending log output to syslog")
+            eprintln!("Sending log output to syslog");
         } else {
             let _ = env_logger::try_init(); // don't fail if called multiple times
         }
