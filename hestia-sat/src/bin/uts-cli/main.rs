@@ -110,6 +110,9 @@ enum Command {
 
     /// Enable UTS payload on WS-1
     Enable,
+
+    /// Disable UTS payload on WS-1
+    Disable,
 }
 
 #[derive(Subcommand)]
@@ -134,6 +137,7 @@ pub fn main() {
             Command::Run { toml_file } => do_run(toml_file),
             Command::Zip => do_zip(),
             Command::Enable => do_enable(),
+            Command::Disable => do_disable(),
         },
         None => do_status()
     }
@@ -179,15 +183,14 @@ fn do_zip() {
     zipper::zip_logs(&config);
 }
 
-/// Equivalent of uts_en.sh on WS-1
-// echo 0 > /sys/class/gpio/gpio45/value
-// echo 1 > /sys/class/gpio/gpio47/value
-// echo 0 > /sys/class/gpio/gpio27/value
 fn do_enable() {
     let _ = Config::read(); // initialise logger, etc.
-    uts_ws1::host::gpio_set_low(45);
-    uts_ws1::host::gpio_set_high(47);
-    uts_ws1::host::gpio_set_low(27);
+    uts_ws1::host::enable_payload();
+}
+
+fn do_disable() {
+    let _ = Config::read(); // initialise logger, etc.
+    uts_ws1::host::disable_payload();
 }
 
 fn single_board(board: u8) -> Board {
