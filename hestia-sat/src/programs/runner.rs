@@ -162,6 +162,10 @@ impl<'a> PayloadController<'a> {
 
     pub fn start_heat(&self, program: &'a Program) -> State<'a> {
         info!("Starting heat for program: {:?}", &program);
+        for board in self.payload {
+            // #88 turn off heaters on all the boards, so we start in a known state
+            board.write_heater_mode(HeaterMode::OFF);
+        }
         let board = &self.payload[program.heat_board as u8];
         let end_time = Utc::now() + program.heat_time;
         board.write_heater_duty((program.heat_duty * 255.0) as u16);
