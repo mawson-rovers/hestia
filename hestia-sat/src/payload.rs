@@ -106,19 +106,6 @@ impl Payload {
         })
     }
 
-    /// Ignore the I2C_BUS config option and create both boards
-    pub fn all_boards() -> Payload {
-        Self::from_config(&Config {
-            i2c_bus: vec![1, 2],
-            ..Config::read()
-        })
-    }
-
-    /// Converts the payload into the first available board
-    pub fn into_board(self) -> Board {
-        self.into_iter().next().expect("Only one board")
-    }
-
     pub fn iter(&self) -> Iter<Board> {
         self.boards.iter()
     }
@@ -142,12 +129,92 @@ impl<'a> IntoIterator for &'a Payload {
     }
 }
 
-/// indexes on the I2C bus ID, i.e. 1 or 2
+/// Indexes on the I2C bus ID, i.e. 1 or 2. Panics if no matching board found.
 impl Index<u8> for Payload {
     type Output = Board;
 
     fn index(&self, bus_id: u8) -> &Self::Output {
         self.boards.iter().find(|b| b.bus.id == bus_id)
             .unwrap_or_else(|| panic!("Bus ID not found: {}", bus_id))
+    }
+}
+
+/// Returns the first board if None, otherwise indexes on the I2C bus ID, i.e. 1 or 2.
+/// Panics if no matching board found.
+impl Index<Option<u8>> for Payload {
+    type Output = Board;
+
+    fn index(&self, board_id: Option<u8>) -> &Self::Output {
+        match board_id {
+            Some(board_id) => {
+                &self[board_id]
+            },
+            None => {
+                assert!(self.iter().len() <= 1, "Multiple boards found, use -b or specify board");
+                self.iter().next().expect("No boards configured")
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::board::{Board, BoardId, BoardVersion};
+    use crate::payload::Payload;
+
+    #[test]
+    #[should_panic(expected = "No boards configured")]
+    fn test_payload_index_option_none_fails_when_empty() {
+        let payload = Payload::from_boards(vec![]);
+        let _ = payload[None];
+    }
+
+    #[test]
+    #[should_panic(expected = "Bus ID not found: 1")]
+    fn test_payload_index_option_some_fails_when_empty() {
+        let payload = Payload::from_boards(vec![]);
+        let _ = payload[Some(1)];
+    }
+
+    #[test]
+    fn test_payload_index_option() {
+        let top = Board::new(BoardId::Top, BoardVersion::V2_2);
+        let payload = Payload::from_boards(vec![top.clone()]);
+        assert_eq!(top, payload[Some(1)]);
+        assert_eq!(top, payload[None]);
+    }
+
+    #[test]
+    #[should_panic(expected = "Bus ID not found: 2")]
+    fn test_payload_index_option_invalid_index_top() {
+        let top = Board::new(BoardId::Top, BoardVersion::V2_2);
+        let payload = Payload::from_boards(vec![top]);
+        let _ = payload[Some(2)]; // should panic
+    }
+
+    #[test]
+    #[should_panic(expected = "Bus ID not found: 1")]
+    fn test_payload_index_option_invalid_index_bottom() {
+        let bottom = Board::new(BoardId::Bottom, BoardVersion::V2_2);
+        let payload = Payload::from_boards(vec![bottom]);
+        let _ = payload[Some(1)]; // should panic
+    }
+
+    #[test]
+    fn test_payload_index_with_multiple() {
+        let top = Board::new(BoardId::Top, BoardVersion::V2_2);
+        let bottom = Board::new(BoardId::Bottom, BoardVersion::V2_2);
+        let payload = Payload::from_boards(vec![top.clone(), bottom.clone()]);
+        assert_eq!(top, payload[Some(1)]);
+        assert_eq!(bottom, payload[Some(2)]);
+    }
+
+    #[test]
+    #[should_panic(expected = "Multiple boards found, use -b or specify board")]
+    fn test_payload_index_none_with_multiple_fails() {
+        let top = Board::new(BoardId::Top, BoardVersion::V2_2);
+        let bottom = Board::new(BoardId::Bottom, BoardVersion::V2_2);
+        let payload = Payload::from_boards(vec![top.clone(), bottom.clone()]);
+        let _ = payload[None];
     }
 }

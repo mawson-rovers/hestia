@@ -15,7 +15,7 @@ use crate::reading::{DisabledSensor, ReadableSensor, SensorReading};
 use crate::sensors::{Sensor, SensorInterface};
 
 
-#[derive(Debug, Copy, Clone, Deserialize)]
+#[derive(Debug, Copy, Clone, Deserialize, PartialEq, Eq)]
 pub enum BoardVersion {
     V1_1 = 110,
     V2_0 = 200,
@@ -340,6 +340,18 @@ impl Display for Board {
 impl Debug for Board {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         Display::fmt(&self, f)
+    }
+}
+
+impl PartialEq for Board {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id && self.version == other.version && self.bus == other.bus
+    }
+}
+
+impl Clone for Board {
+    fn clone(&self) -> Self {
+        Self::new(self.id, self.version)
     }
 }
 
