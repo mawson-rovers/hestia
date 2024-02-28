@@ -156,27 +156,27 @@ fn do_run(toml_file: &str) {
 }
 
 fn do_duty(board: Option<u8>, duty: u16) {
-    update_board(board, |b| b.write_heater_duty(duty));
+    update_board(board, |_, b| b.write_heater_duty(duty));
 }
 
 fn do_target_sensor(board: Option<u8>, target_sensor: TargetSensor) {
-    update_board(board, |b| b.write_target_sensor(target_sensor));
+    update_board(board, |_, b| b.write_target_sensor(target_sensor));
 }
 
 fn do_target(board: Option<u8>, temp: f32) {
-    update_board(board, |b| b.write_target_temp(temp));
+    update_board(board, |_, b| b.write_target_temp(temp));
 }
 
 fn do_max(board: Option<u8>, temp: f32) {
-    update_board(board, |b| b.write_max_temp(temp));
+    update_board(board, |_, b| b.write_max_temp(temp));
 }
 
 fn update_board<F>(board: Option<u8>, mut op: F)
-    where F: FnMut(&Board)
+    where F: FnMut(&Payload, &Board)
 {
     let payload = Payload::create();
     let board = &payload[board];
-    op(board);
+    op(&payload, board);
     show_status(&payload);
 }
 
@@ -196,27 +196,24 @@ fn do_disable() {
 }
 
 fn do_heater(board: Option<u8>, command: &HeaterCommand) {
-    let payload = Payload::create();
-    let this_board = &payload[board];
-
-    for other in &payload {
+    update_board(board, |payload, this_board| {
         // disable heater on other boards before enabling on this one
-        if this_board.id != other.id {
-            match command {
-                HeaterCommand::Off => {} // do nothing if switching off
-                _ => other.write_heater_mode(HeaterMode::OFF),
+        for other in payload {
+            if this_board.id != other.id {
+                match command {
+                    HeaterCommand::Off => {} // do nothing if switching off
+                    _ => other.write_heater_mode(HeaterMode::OFF),
+                }
             }
         }
-    }
 
-    // set mode on this board
-    match command {
-        HeaterCommand::Off => this_board.write_heater_mode(HeaterMode::OFF),
-        HeaterCommand::Thermostat => this_board.write_heater_mode(HeaterMode::PID),
-        HeaterCommand::On => this_board.write_heater_mode(HeaterMode::PWM),
-    }
-
-    show_status(&payload);
+        // set mode on this board
+        match command {
+            HeaterCommand::Off => this_board.write_heater_mode(HeaterMode::OFF),
+            HeaterCommand::Thermostat => this_board.write_heater_mode(HeaterMode::PID),
+            HeaterCommand::On => this_board.write_heater_mode(HeaterMode::PWM),
+        }
+    });
 }
 
 fn do_status() {
