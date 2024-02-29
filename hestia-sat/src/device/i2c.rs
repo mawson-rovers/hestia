@@ -35,7 +35,7 @@ impl From<I2cAddr> for I2cReg {
 }
 
 /// Byte-oriented interface to I2C bus
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct I2cBus {
     pub id: u8,
 }
@@ -185,7 +185,7 @@ impl LoggingI2cDevice {
     /// debug if it succeeds.
     pub fn write_register(&self, reg: I2cReg, desc: &str, data: u16) {
         debug!("{}: Setting {} to value <{}> (addr {}, reg {})",
-            self, desc, self.device.addr, reg, data);
+            self, desc, data, self.device.addr, reg);
         match self.device.write_u16(reg, data) {
             Ok(_) => {
                 debug!("{}: Set {} to value <{}>", self, desc, data);

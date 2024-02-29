@@ -49,9 +49,9 @@ enum Command {
 
     /// Set heater mode
     Heater {
-        /// Board to update
-        #[arg(short, long, required = true)]
-        board: u8,
+        /// Board to update. Required if two boards are connected.
+        #[arg(short, long)]
+        board: Option<u8>,
 
         /// Mode to configure on the heater. Turning on heater on one board will first
         /// disable it on any other connected boards.
@@ -61,9 +61,9 @@ enum Command {
 
     /// Set target temperature
     Target {
-        /// Board to update
-        #[arg(short, long, required = true)]
-        board: u8,
+        /// Board to update. Required if two boards are connected.
+        #[arg(short, long)]
+        board: Option<u8>,
 
         /// temperature in °C
         temp: f32,
@@ -71,9 +71,9 @@ enum Command {
 
     /// Set target sensor
     TargetSensor {
-        /// Board to update
-        #[arg(short, long, required = true)]
-        board: u8,
+        /// Board to update. Required if two boards are connected.
+        #[arg(short, long)]
+        board: Option<u8>,
 
         /// Target sensor: TH1, TH2, TH3, J7 or J8
         target_sensor: TargetSensor,
@@ -81,9 +81,9 @@ enum Command {
 
     /// Set PWM duty cycle
     Duty {
-        /// Board to update
-        #[arg(short, long, required = true)]
-        board: u8,
+        /// Board to update. Required if two boards are connected.
+        #[arg(short, long)]
+        board: Option<u8>,
 
         /// duty cycle (0-255 for PWM, 0-1000 for PID)
         duty: u16,
@@ -91,9 +91,9 @@ enum Command {
 
     /// Set max heater temperature
     Max {
-        /// Board to update
-        #[arg(short, long, required = true)]
-        board: u8,
+        /// Board to update. Required if two boards are connected.
+        #[arg(short, long)]
+        board: Option<u8>,
 
         /// temperature in °C
         temp: f32,
@@ -124,6 +124,7 @@ enum HeaterCommand {
 
 pub fn main() {
     let cli = CommandLine::parse();
+    // don't put any payload logic here - some commands don't require the payload to be on
     match &cli.command {
         Some(command) => match command {
             Command::Log => do_log(),
@@ -132,7 +133,7 @@ pub fn main() {
             Command::Heater { board, command } => do_heater(*board, command),
             Command::Target { board, temp } => do_target(*board, *temp),
             Command::TargetSensor { board, target_sensor } => do_target_sensor(*board, *target_sensor),
-            Command::Duty { board, duty } => do_your_duty(*board, *duty),
+            Command::Duty { board, duty } => do_duty(*board, *duty),
             Command::Max { board, temp } => do_max(*board, *temp),
             Command::Run { toml_file } => do_run(toml_file),
             Command::Zip => do_zip(),
@@ -141,12 +142,6 @@ pub fn main() {
         },
         None => do_status()
     }
-}
-
-fn do_max(board: u8, temp: f32) {
-    let board = single_board(board);
-    board.write_max_temp(temp);
-    show_status(board);
 }
 
 fn do_run(toml_file: &str) {
@@ -160,22 +155,29 @@ fn do_run(toml_file: &str) {
     info!("Programs completed");
 }
 
-fn do_your_duty(board: u8, duty: u16) {
-    let board = single_board(board);
-    board.write_heater_duty(duty);
-    show_status(board);
+fn do_duty(board: Option<u8>, duty: u16) {
+    update_board(board, |_, b| b.write_heater_duty(duty));
 }
 
-fn do_target_sensor(board: u8, target_sensor: TargetSensor) {
-    let board = single_board(board);
-    board.write_target_sensor(target_sensor);
-    show_status(board);
+fn do_target_sensor(board: Option<u8>, target_sensor: TargetSensor) {
+    update_board(board, |_, b| b.write_target_sensor(target_sensor));
 }
 
-fn do_target(board: u8, temp: f32) {
-    let board = single_board(board);
-    board.write_target_temp(temp);
-    show_status(board);
+fn do_target(board: Option<u8>, temp: f32) {
+    update_board(board, |_, b| b.write_target_temp(temp));
+}
+
+fn do_max(board: Option<u8>, temp: f32) {
+    update_board(board, |_, b| b.write_max_temp(temp));
+}
+
+fn update_board<F>(board: Option<u8>, mut op: F)
+    where F: FnMut(&Payload, &Board)
+{
+    let payload = Payload::create();
+    let board = &payload[board];
+    op(&payload, board);
+    show_status(&payload);
 }
 
 fn do_zip() {
@@ -193,42 +195,35 @@ fn do_disable() {
     uts_ws1::host::disable_payload();
 }
 
-fn single_board(board: u8) -> Board {
-    Payload::single_board(board).into_board()
-}
-
-fn do_heater(board_id: u8, command: &HeaterCommand) {
-    let all_boards = Payload::all_boards();
-
-    // disable heater on other boards before enabling on this one
-    let other_boards = all_boards.iter().filter(|b| b.bus.id != board_id);
-    for other in other_boards {
-        match command {
-            HeaterCommand::Off => {} // do nothing if switching off
-            _ => other.write_heater_mode(HeaterMode::OFF),
+fn do_heater(board: Option<u8>, command: &HeaterCommand) {
+    update_board(board, |payload, this_board| {
+        // disable heater on other boards before enabling on this one
+        for other in payload {
+            if this_board.id != other.id {
+                match command {
+                    HeaterCommand::Off => {} // do nothing if switching off
+                    _ => other.write_heater_mode(HeaterMode::OFF),
+                }
+            }
         }
-    }
-    // set mode on this board
-    let this_board = all_boards.iter().find(|b| b.bus.id == board_id);
-    if let Some(this_board) = this_board {
+
+        // set mode on this board
         match command {
             HeaterCommand::Off => this_board.write_heater_mode(HeaterMode::OFF),
             HeaterCommand::Thermostat => this_board.write_heater_mode(HeaterMode::PID),
             HeaterCommand::On => this_board.write_heater_mode(HeaterMode::PWM),
         }
-    }
-
-    show_status_all(all_boards);
+    });
 }
 
 fn do_status() {
     let payload = Payload::create();
-    show_status_all(payload);
+    show_status(&payload);
 }
 
-fn show_status_all(payload: Payload) {
+fn show_status(payload: &Payload) {
     for board in payload {
-        show_status(board);
+        show_board_status(board);
     }
 }
 
@@ -237,7 +232,7 @@ fn format_reading(reading: ReadResult<SensorReading<f32>>) -> String {
         .unwrap_or(String::from("#err"))
 }
 
-fn show_status(board: Board) {
+fn show_board_status(board: &Board) {
     if let Some(data) = board.read_data() {
         let heater_mode = data.heater_mode
             .map(|m| m.to_string())
@@ -265,7 +260,7 @@ fn show_status(board: Board) {
 
 fn do_log() {
     let config = Config::read();
-    let payload = Payload::from_config(&config);
+    let payload = Payload::create();
 
     let mut writer = LogWriter::create_stdout_writer(&payload);
     writer.write_header_if_new();
