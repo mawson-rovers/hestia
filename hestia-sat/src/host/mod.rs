@@ -1,5 +1,5 @@
 #[cfg(target_os = "linux")]
-use gpio::GpioOut;
+mod gpio;
 
 #[cfg(target_os = "linux")]
 use log::error;
@@ -24,7 +24,7 @@ pub fn disable_payload() {
 
 #[cfg(target_os = "linux")]
 pub fn gpio_set_low(pin: u16) {
-    if let Ok(mut gpio) = gpio::sysfs::SysFsGpioOutput::open(pin) {
+    if let Ok(mut gpio) = gpio::open(pin) {
         info!("Setting GPIO pin {} to low", pin);
         let _ = gpio.set_low();
     } else {
@@ -34,7 +34,7 @@ pub fn gpio_set_low(pin: u16) {
 
 #[cfg(target_os = "linux")]
 pub fn gpio_set_high(pin: u16) {
-    if let Ok(mut gpio) = gpio::sysfs::SysFsGpioOutput::open(pin) {
+    if let Ok(mut gpio) = gpio::open(pin) {
         info!("Setting GPIO pin {} to high", pin);
         let _ = gpio.set_high();
     } else {
