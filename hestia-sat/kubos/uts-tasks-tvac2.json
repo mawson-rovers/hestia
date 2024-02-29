@@ -25,7 +25,8 @@
     },
     {
       "description": "Zip data for download",
-      "time": "2024-01-01 00:00:00",
+      "delay": "60s",
+      "period": "60s",
       "app": {
         "name": "uts-cli",
         "args": ["zip"]
