@@ -70,6 +70,10 @@ impl<'a> State<'a> {
                             info!("Abort temp reached ({} > {}): {}", temp, program.temp_abort, program);
                             Some(controller.start_cool(program))
                         } else {
+                            if controller.should_log_status(current_time) {
+                                info!("Still heating, current temp: {:.2}, abort temp: {:.2}", temp, program.temp_abort);
+                                controller.set_last_status_log(current_time);
+                            }
                             None
                         }
                     }
@@ -86,15 +90,20 @@ impl<'a> State<'a> {
                             info!("Cool temp reached ({} <= {}): {}", temp, program.cool_temp, program);
                             Some(State::FinishedProgram)
                         } else {
+                            if controller.should_log_status(current_time) {
+                                info!("Still cooling, current temp: {:.2}, cool temp: {:.2}", temp, program.cool_temp);
+                                controller.set_last_status_log(current_time);
+                            }
                             None
                         }
                     }
                     _ => None
                 }
-            },
+            }
             &State::FinishedProgram => {
+                controller.reset_status_log();
                 Some(controller.next_program_or_done())
-            },
+            }
             &State::Done => None,
             state => Some(State::Failed {
                 message: format!("Invalid event {:#?} for state: {:#?}", event, state)
@@ -127,6 +136,7 @@ lazy_static! {
 pub struct PayloadController<'a> {
     payload: &'a Payload,
     programs: &'a mut dyn Iterator<Item=&'a Program>,
+    last_status_log: Option<DateTime<Utc>>,
 }
 
 impl<'a> PayloadController<'a> {
@@ -136,21 +146,21 @@ impl<'a> PayloadController<'a> {
             ABORT.store(true, Relaxed);
         }).expect("Error setting Ctrl-C handler");
 
-        PayloadController { payload, programs }
+        PayloadController { payload, programs, last_status_log: None }
     }
 
-    pub fn run(&mut self, events: &mut dyn Iterator<Item = Event<'a>>, duration: Duration) -> State<'a>
+    pub fn run(&mut self, events: &mut dyn Iterator<Item=Event<'a>>, duration: Duration) -> State<'a>
     {
         let duration = duration.to_std().unwrap();
         let mut state = self.start();
         for event in events {
             debug!("{} <- {:?}", &state, &event);
-            if state == State::Done { break }
+            if state == State::Done { break; }
             if let Some(new_state) = state.next(self, event) {
                 state = new_state
             }
             sleep(duration);
-            if self.is_aborted() { break }
+            if self.is_aborted() { break; }
         }
         state
     }
@@ -200,6 +210,24 @@ impl<'a> PayloadController<'a> {
 
     pub fn is_aborted(&self) -> bool {
         ABORT.load(Relaxed)
+    }
+
+    pub fn should_log_status(&self, current_time: DateTime<Utc>) -> bool {
+        match self.last_status_log {
+            None => true,
+            Some(last) => {
+                let time_diff = current_time - last;
+                time_diff.num_seconds() >= 60
+            }
+        }
+    }
+    
+    pub fn set_last_status_log(&mut self, current_time: DateTime<Utc>) {
+        self.last_status_log = Some(current_time)
+    }
+
+    pub fn reset_status_log(&mut self) {
+        self.last_status_log = None
     }
 }
 
