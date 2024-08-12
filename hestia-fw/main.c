@@ -25,14 +25,14 @@ unsigned int control_sensor = 0; // ADC input used for PWM control
 unsigned int set_point = TEMP_0C;
 unsigned int board_status = BOARD_STATUS_ON;
 unsigned int heater_mode = HEATER_MODE_OFF;
-unsigned int pwm_duty = HEATER_PWM_FREQ_DEFAULT; // Currently bit-banged 8 bit resolution
+unsigned int pwm_duty = HEATER_PWM_DUTY_DEFAULT; // 8 bit resolution
 unsigned int counter = 0;
 unsigned int max_temp = TEMP_120C; // Set to zero to disable max_temp check
 
 // PID control variables
 #define K_P         3       // PID proportional gain
 #define K_I_SHIFT   3       // PID integral shift right bits
-#define MAX_OUT     1000
+#define MAX_OUT     8000
 #define MIN_OUT     0
 
 // exponential moving average (EMA) control values
@@ -60,23 +60,24 @@ int main(void) {
     initADC();
     initTimer();
 
-    // #TODO continuously read and filter ADC values and send to internal array
+    __enable_interrupt(); // enable timer, I2C & ADC interrupts
+
     for (;;) {
         //TODO replace with timer
-        ADC12CTL0 |= ADC12SC;                   // Start conversion, software controlled
-        __bis_SR_register(CPUOFF + GIE + LPM0_bits);        // LPM0, ADC12_ISR will force exit
+        ADC12CTL0 |= ADC12SC;       // Start ADC conversion, software controlled
+        LPM0;                       // turn CPU off; ADC interrupt will resume
         heater_process();
     }
 }
 
 void initTimer() {
-    // Configure Timer A at 250 Hz
-    BCSCTL2 |= DIVS_3;                  // SMCLK: 16MHz DCO divided by 8 = 2 MHz (SLAU144K, table 5-4)
-    CCR0 = 1000;                        // timer frequency: SMCLK 2 MHz / 1000 = 2 kHz
+    // Configure Timer A at 1 kHz
+    BCSCTL2 |= DIVS_0;                  // SMCLK: 16MHz DCO divided by 1 = 16 MHz (SLAU144K, table 5-4)
+    CCR0 = 8000;                        // timer frequency: SMCLK 16 MHz / 8000 = 2 kHz
     TACCTL0 = CCIE;                     // enable A0 interrupt on CCR0 overflow
-    CCR2 = 0;                           // duty cycle: CCR2 / 1000
+    CCR2 = 0;                           // duty cycle: CCR2 / 8000
     TACCTL2 = OUTMOD_7;                 // CCR2 reset/set mode for output
-    TACTL = TASSEL_2 + MC_1 + ID_3;     // SMCLK, CCR0 up mode, input divider /8 = 250 Hz
+    TACTL = TASSEL_2 | MC_1 | ID_1;     // SMCLK, CCR0 up mode, input divider /2 = 1000 Hz
 }
 
 inline unsigned int update_pid(unsigned int value) {
@@ -105,7 +106,8 @@ void __attribute__ ((interrupt(TIMERA0_VECTOR))) Timer_A(void)
 #endif
 {
     ta_count++;
-    if (ta_count > 250) {
+    if (ta_count > 1000) {
+        // timer A is 1 kHz, so this runs once per second
         ta_count = 0;
         if (heater_mode == HEATER_MODE_PID) {
             P5OUT ^= LED_YELLOW;     // toggle PID indicator LED
@@ -147,7 +149,7 @@ void process_cmd_tx(unsigned char cmd) {
         transmit_uint(set_point);
     } else if (cmd == COMMAND_READ_TARGET_SENSOR) {
         transmit_uint(control_sensor);
-    } else if (cmd == COMMAND_READ_PWM_FREQ) {
+    } else if (cmd == COMMAND_READ_PWM_DUTY) {
         if (heater_mode == HEATER_MODE_PID) {
             transmit_uint(CCR2);
         } else {
@@ -196,8 +198,10 @@ void I2C_Slave_ProcessCMD(unsigned char *message_rx, uint16_t length) {
             control_sensor = package[0];
         }
         TransmitLen = 0;
-    } else if (cmd == COMMAND_WRITE_PWM_FREQ) {
-        pwm_duty = package[0];
+    } else if (cmd == COMMAND_WRITE_PWM_DUTY) {
+        if (package[0] <= HEATER_PWM_DUTY_MAX) {
+            pwm_duty = package[0];
+        }
         TransmitLen = 0;
     } else if (cmd == COMMAND_WRITE_MAX_TEMP) {
         if (length >= 2) {
@@ -240,17 +244,16 @@ void heater_process() {
         return;
     }
     if (heater_mode == HEATER_MODE_PWM) {
-        // TODO change PWM mode to use timer instead of bit-banging
+        counter++;
+        if (counter > HEATER_PWM_DUTY_MAX) {
+            counter = 0;
+        }
         if (is_pwm_heating_on()) {
             P1OUT |= HEATER_PIN;
             if (HESTIA_VERSION < 200) P5OUT |= LED_YELLOW;    // LED on
         } else {
             P1OUT &= ~HEATER_PIN;
             if (HESTIA_VERSION < 200) P5OUT &= ~LED_YELLOW;   // LED off
-        }
-        counter++;
-        if (counter > 255) {
-            counter = 0;
         }
     } else if (heater_mode == HEATER_MODE_PID) {
         // do nothing - PID timer will take care of heater pin and LEDs
@@ -267,6 +270,8 @@ void initClockTo16MHz() {
     }
     DCOCTL = 0;                 // Select lowest DCOx and MODx settings
     BCSCTL1 = CALBC1_16MHZ;     // Set DCO to 16 MHz
+    BCSCTL2 = 0;                // Reset clock settings to defaults
+    BCSCTL2 |= SELM_0;          // Set MCLK to use DCO
     DCOCTL = CALDCO_16MHZ;
 }
 
@@ -285,9 +290,9 @@ void initGPIO() {
 
 void initADC() {
     P6SEL = 0x0F;                             // Enable A/D channel inputs
-    ADC12CTL0 = ADC12ON + MSC;                // Turn on ADC12, multiple sample/conv mode
-    ADC12CTL0 |= SHT0_8;                      // Sample+hold time: 256 ADC12CLK cycles (~19.5 KHz)
-    ADC12CTL1 = SHP + CONSEQ_3;               // Use sampling timer, repeated sequence
+    ADC12CTL0 = ADC12ON | MSC;                // Turn on ADC12, multiple sample/conv mode
+    ADC12CTL0 |= SHT0_3;                      // Sample+hold time: 32 ADC12CLK cycles (6.4 us)
+    ADC12CTL1 = SHP + CONSEQ_1;               // Use sampling timer, single conversion
     ADC12CTL1 |= ADC12SSEL_0;                 // Use ADC12OSC internal oscillator (~5 MHz)
     ADC12CTL1 |= ADC12DIV_0;                  // ADC12 clock divider = /1
     ADC12MCTL0 = INCH_0;                      // ref+=AVcc, channel = A0
@@ -298,7 +303,7 @@ void initADC() {
     ADC12MCTL5 = INCH_5;                      // ref+=AVcc, channel = A5
     ADC12MCTL6 = INCH_6;                      // ref+=AVcc, channel = A6
     ADC12MCTL7 = INCH_7 + EOS;                // ref+=AVcc, channel = A7, end seq.
-    ADC12IE = 0x80;                           // Enable ADC12IFG.7
+    ADC12IE = BIT7;                           // Enable ADC12IFG.7
     ADC12CTL0 |= ENC;                         // Enable conversions
 }
 
@@ -322,23 +327,18 @@ void __attribute__ ((interrupt(ADC12_VECTOR))) ADC12_ISR(void)
 #error Compiler not supported!
 #endif
 {
-    adc_readings[0] = ADC12MEM0;
-    adc_readings[1] = ADC12MEM1;
-    adc_readings[2] = ADC12MEM2;
-    adc_readings[3] = ADC12MEM3;
-    adc_readings[4] = ADC12MEM4;
-    adc_readings[5] = ADC12MEM5;
-    adc_readings[6] = ADC12MEM6;
-    adc_readings[7] = ADC12MEM7;
-    // IFG is cleared by reads
-
-    for (int i = 0; i < ADC_SENSOR_COUNT; i++) {
-        if (apply_lpf[i]) {
-            adc_avg[i] = update_ema_filter(i,
-                                           adc_readings[i] < LPF_MAX ? adc_readings[i] : 0);
-        } else {
-            adc_avg[i] = update_ema_filter(i, adc_readings[i]);
-        }
+    if (heater_mode != HEATER_MODE_PWM || is_pwm_heating_on()) {
+        adc_readings[0] = ADC12MEM0;
+        adc_readings[1] = ADC12MEM1;
+        adc_readings[2] = ADC12MEM2;
+        adc_readings[3] = ADC12MEM3;
+        adc_readings[4] = ADC12MEM4;
+        adc_readings[5] = ADC12MEM5;
+        adc_readings[6] = ADC12MEM6;
+        adc_readings[7] = ADC12MEM7;
+        // IFG is cleared by reads
+    } else {
+        ADC12IFG = 0; // reset IFG manually when we're not reading data
     }
 
     __bic_SR_register_on_exit(CPUOFF);      // Clear CPUOFF bit from 0(SR)
