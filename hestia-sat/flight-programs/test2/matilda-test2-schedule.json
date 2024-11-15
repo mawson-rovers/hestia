@@ -16,8 +16,8 @@
       }
     },
     {
-      "description": "Run Matilda program 1 (top) at end of orbital night",
-      "time": "2024-11-16 01:00:00",
+      "description": "Run Matilda program 1 (top)",
+      "delay": "35s",
       "app": {
         "name": "uts-cli",
         "args": ["run", "/home/kubos/UTS/programs/matilda-test2-program1.toml"]
@@ -33,7 +33,7 @@
     },
     {
       "description": "Repeat Matilda program 1 (top) one orbit later",
-      "delay": "95m",
+      "delay": "190m",
       "app": {
         "name": "uts-cli",
         "args": ["run", "/home/kubos/UTS/programs/matilda-test2-program1.toml"]
@@ -41,7 +41,7 @@
     },
     {
       "description": "Repeat Matilda program 2 (bottom) one orbit later",
-      "delay": "95m",
+      "delay": "285m",
       "app": {
         "name": "uts-cli",
         "args": ["run", "/home/kubos/UTS/programs/matilda-test2-program2.toml"]
@@ -49,7 +49,7 @@
     },
     {
       "description": "Zip data for download",
-      "time": "2024-11-16 23:00:00",
+      "delay": "380m",
       "app": {
         "name": "uts-cli",
         "args": ["zip"]
