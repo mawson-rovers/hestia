@@ -17,7 +17,7 @@
     },
     {
       "description": "Run Matilda program 1 (top)",
-      "delay": "35s",
+      "delay": "10m",
       "app": {
         "name": "uts-cli",
         "args": ["run", "/home/kubos/UTS/programs/matilda-test2-program1.toml"]
@@ -33,7 +33,7 @@
     },
     {
       "description": "Repeat Matilda program 1 (top) one orbit later",
-      "delay": "190m",
+      "delay": "95m",
       "app": {
         "name": "uts-cli",
         "args": ["run", "/home/kubos/UTS/programs/matilda-test2-program1.toml"]
@@ -41,7 +41,7 @@
     },
     {
       "description": "Repeat Matilda program 2 (bottom) one orbit later",
-      "delay": "285m",
+      "delay": "95m",
       "app": {
         "name": "uts-cli",
         "args": ["run", "/home/kubos/UTS/programs/matilda-test2-program2.toml"]
@@ -49,7 +49,7 @@
     },
     {
       "description": "Zip data for download",
-      "delay": "380m",
+      "delay": "190m",
       "app": {
         "name": "uts-cli",
         "args": ["zip"]
