@@ -1,0 +1,75 @@
+{
+  "tasks": [
+    {
+      "description": "Enable payload",
+      "delay": "0s",
+      "app": {
+        "name": "uts-cli",
+        "args": ["enable"]
+      }
+    },
+    {
+      "description": "Log temperature data",
+      "delay": "5s",
+      "app": {
+        "name": "uts-log"
+      }
+    },
+    {
+      "description": "Run Matilda program 1 (top)",
+      "delay": "35s",
+      "app": {
+        "name": "uts-cli",
+        "args": ["run", "/home/kubos/UTS/programs/matilda-test2-program1.toml"]
+      }
+    },
+    {
+      "description": "Run Matilda program 2 (bottom) one orbit later",
+      "delay": "95m",
+      "app": {
+        "name": "uts-cli",
+        "args": ["run", "/home/kubos/UTS/programs/matilda-test2-program2.toml"]
+      }
+    },
+    {
+      "description": "Repeat Matilda program 1 (top) one orbit later",
+      "delay": "95m",
+      "app": {
+        "name": "uts-cli",
+        "args": ["run", "/home/kubos/UTS/programs/matilda-test2-program1.toml"]
+      }
+    },
+    {
+      "description": "Repeat Matilda program 2 (bottom) one orbit later",
+      "delay": "95m",
+      "app": {
+        "name": "uts-cli",
+        "args": ["run", "/home/kubos/UTS/programs/matilda-test2-program2.toml"]
+      }
+    },
+    {
+      "description": "Zip data for download",
+      "delay": "190m",
+      "app": {
+        "name": "uts-cli",
+        "args": ["zip"]
+      }
+    },
+    {
+      "description": "Terminate logger",
+      "delay": "24h",
+      "app": {
+        "name": "killall",
+        "args": ["uts-log"]
+      }
+    },
+    {
+      "description": "Disable payload",
+      "delay": "5s",
+      "app": {
+        "name": "uts-cli",
+        "args": ["disable"]
+      }
+    }
+  ]
+}
