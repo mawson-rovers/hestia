@@ -17,7 +17,7 @@
     },
     {
       "description": "Run Matilda program 1 (top)",
-      "delay": "95m",
+      "delay": "143m",
       "app": {
         "name": "uts-cli",
         "args": ["run", "/home/kubos/UTS/programs/matilda-test4-program1.toml"]
