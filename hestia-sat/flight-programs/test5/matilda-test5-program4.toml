@@ -1,0 +1,10 @@
+loop = false
+
+[[programs]]
+name = "Bottom"
+heat_board = "Bottom"
+thermostat = 40.0
+heat_time = "190m"
+temp_sensor = "TH1"
+temp_abort = 85.0
+cool_temp = 35.0
