@@ -3,7 +3,7 @@ loop = false
 [[programs]]
 name = "Bottom"
 heat_board = "Bottom"
-heat_time = "90m"
+heat_time = "120m"
 heat_duty = 0.5
 temp_sensor = "TH1"
 temp_abort = 100.0
